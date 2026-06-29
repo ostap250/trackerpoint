@@ -229,6 +229,37 @@
   .toast-done{ background:var(--good); color:#0e1117; }
   .toast-close{ background:transparent; border:1px solid var(--line) !important; color:var(--muted); }
 
+  /* grand reward card */
+  .grand-card{
+    margin-top:16px; padding:18px; border-radius:16px;
+    background:linear-gradient(135deg,#1e1a38,#1b2330);
+    border:1.5px solid var(--indigo); position:relative; overflow:hidden;
+  }
+  .grand-card::before{
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse at 70% 30%, rgba(138,123,230,.12) 0%, transparent 60%);
+    pointer-events:none;
+  }
+  .grand-title{ font-size:17px; font-weight:700; color:var(--txt); margin-bottom:4px; }
+  .grand-desc{ font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace;
+    line-height:1.5; margin-bottom:14px; }
+  .grand-progress-row{ display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:6px; }
+  .grand-pts-label{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+  .grand-pts-val{ font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--indigo); }
+  .grand-bar{ height:10px; border-radius:6px; background:#0f141c; border:1px solid var(--line);
+    overflow:hidden; margin-bottom:14px; }
+  .grand-fill{ height:100%; border-radius:5px; background:var(--indigo);
+    transition:width .6s cubic-bezier(.2,.8,.2,1); }
+  .grand-buy{
+    width:100%; font-family:'Sora',sans-serif; font-size:14px; font-weight:700;
+    background:var(--indigo); color:#11131c; border:none; border-radius:12px;
+    padding:13px; cursor:pointer; transition:.1s;
+  }
+  .grand-buy:active{ transform:scale(.97); }
+  .grand-buy:disabled{ background:#232d3b; color:var(--muted); border:1px solid var(--line);
+    font-weight:600; cursor:default; }
+
   /* notification snack (auto-dismiss) */
   #notifSnack{
     position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(12px);
@@ -376,6 +407,7 @@
       <div id="shopBudgetItems"></div>
       <div id="shopRewardItems"></div>
     </div>
+    <div id="shopGrandWrap"></div>
     <div class="foot-note">Витрачай зароблене. Поінти не згоряють — вони чекають.</div>
   </section>
 </div>
@@ -454,6 +486,7 @@ const SHOP_REWARDS=[
   {id:'fav_food',    name:'Замовити улюблену їжу', pts:250,desc:'замов що хочеш'},
   {id:'buy_smth',    name:'Купити щось собі',       pts:400,desc:'витрать на себе'},
 ];
+const GRAND_REWARD_PTS=1000;
 
 /* ---------- QUOTES (~100, anime + movies + TV) ---------- */
 const QUOTES=[
@@ -883,6 +916,33 @@ function renderShop(){
     };
     rWrap.appendChild(row);
   });
+
+  // grand reward
+  const ratio=Math.min(1,points.total/GRAND_REWARD_PTS);
+  const canGrand=points.total>=GRAND_REWARD_PTS;
+  const gWrap=$('shopGrandWrap'); gWrap.innerHTML='';
+  const grand=document.createElement('div'); grand.className='grand-card';
+  grand.innerHTML=`
+    <div class="grand-title">Велика нагорода</div>
+    <div class="grand-desc">(впиши свою мрію — девайс / поїздка / вільний день без лімітів)</div>
+    <div class="grand-progress-row">
+      <span class="grand-pts-label">прогрес</span>
+      <span class="grand-pts-val">${points.total} / ${GRAND_REWARD_PTS} pts</span>
+    </div>
+    <div class="grand-bar"><div class="grand-fill" style="width:0%"></div></div>
+    <button class="grand-buy" ${canGrand?'':'disabled'}>${canGrand?'🎁 Отримати нагороду':'потрібно '+GRAND_REWARD_PTS+' pts'}</button>`;
+  grand.querySelector('.grand-buy').onclick=async()=>{
+    if(points.total<GRAND_REWARD_PTS) return;
+    points.total-=GRAND_REWARD_PTS; points.last=0;
+    await sset('app_points',points);
+    renderPoints();
+    renderShop();
+    showNotif('🎊 Велика нагорода отримана! Ти заслужив це!');
+  };
+  gWrap.appendChild(grand);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const f=grand.querySelector('.grand-fill'); if(f) f.style.width=(ratio*100)+'%';
+  }));
 }
 
 /* ---------- HISTORY ---------- */
