@@ -23,14 +23,9 @@
   /* top nav */
   .nav{
     position:sticky; top:0; z-index:20;
-    display:flex; flex-direction:column; gap:8px;
     padding:calc(12px + env(safe-area-inset-top)) 0 10px;
     background:linear-gradient(180deg, var(--ink) 70%, transparent);
     margin-bottom:6px;
-  }
-  .toronto-clock{
-    font-family:'JetBrains Mono',monospace; font-size:11px;
-    color:var(--muted); text-align:center; letter-spacing:.12em;
   }
   .nav-row{ display:flex; gap:6px; }
   .nav-row button{
@@ -52,6 +47,16 @@
   .label{ font-size:11px; letter-spacing:.16em; text-transform:uppercase;
     font-family:'JetBrains Mono',monospace; color:var(--muted); }
 
+  /* big clock card */
+  .clock-card{ text-align:center; padding:24px 16px 20px; }
+  .clock-time{ font-family:'JetBrains Mono',monospace; font-size:58px; font-weight:700;
+    line-height:1; letter-spacing:-.01em; color:var(--txt); }
+  .clock-meta{ display:flex; justify-content:center; align-items:center; gap:10px; margin-top:10px; }
+  .clock-tz{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--muted); }
+  .clock-sep{ color:var(--line); font-size:12px; }
+  .clock-date{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+
   /* points */
   .pts-big{ font-family:'JetBrains Mono',monospace; font-size:46px; font-weight:700;
     line-height:1; margin:6px 0 2px; }
@@ -59,11 +64,11 @@
   .bar{ height:12px; border-radius:7px; background:#0f141c; border:1px solid var(--line);
     overflow:hidden; margin:14px 0 6px; }
   .fill{ height:100%; border-radius:6px; transition:width .5s cubic-bezier(.2,.8,.2,1), background .4s; }
-  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
-  .chip{ background:#232d3b; border:1px solid var(--line); color:var(--txt);
-    font-family:'Sora',sans-serif; font-size:12.5px; font-weight:600; padding:9px 12px;
-    border-radius:10px; cursor:pointer; transition:.1s; }
-  .chip:active{ transform:scale(.95); }
+  .pts-blocks{ display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-top:14px; }
+  .pts-block{ background:#232d3b; border:1px solid var(--line); color:var(--txt);
+    font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700;
+    padding:13px 0; border-radius:12px; cursor:pointer; text-align:center; transition:.1s; }
+  .pts-block:active{ transform:scale(.93); background:var(--panel-2); }
   .mini{ background:transparent; border:1px solid var(--line); color:var(--muted);
     font-family:'JetBrains Mono',monospace; font-size:11px; padding:7px 12px;
     border-radius:9px; cursor:pointer; margin-top:12px; }
@@ -112,7 +117,7 @@
   .tdel{ background:none; border:none; color:#54607a; font-size:18px; cursor:pointer; padding:0 4px; }
   .empty-note{ color:var(--muted); font-size:13px; text-align:center; padding:18px 0 6px; }
 
-  /* budget HUD reuse */
+  /* budget */
   .card-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .name{ font-size:15px; font-weight:600; display:flex; align-items:center; gap:9px; }
   .dot{ width:9px; height:9px; border-radius:50%; flex:none; }
@@ -152,7 +157,7 @@
     font-family:'JetBrains Mono',monospace; font-size:12px; padding:11px; border-radius:11px;
     cursor:pointer; margin-top:14px; }
 
-  /* daily quote */
+  /* quote */
   .quote-block{ margin-top:14px; padding:13px 15px; border:1px solid var(--line);
     border-radius:14px; background:var(--panel); }
   .quote-text{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted);
@@ -197,7 +202,6 @@
   @media (prefers-reduced-motion: reduce){ .fill,.mfill,.stat-bar-fill{ transition:none; } *{ transition:none!important; } }
 </style>
 
-<!-- reminder toast (outside .wrap to avoid stacking-context issues) -->
 <div class="toast-wrap" id="toastWrap">
   <div class="toast">
     <div class="toast-lbl">Нагадування</div>
@@ -212,7 +216,6 @@
 
 <div class="wrap">
   <div class="nav">
-    <div id="torontoClock" class="toronto-clock">--:--:--</div>
     <div class="nav-row">
       <button data-tab="main" class="active">Головна</button>
       <button data-tab="budget">Бюджет</button>
@@ -223,6 +226,16 @@
 
   <!-- ============ MAIN ============ -->
   <section id="main">
+
+    <div class="card clock-card">
+      <div class="clock-time" id="clockTime">--:--:--</div>
+      <div class="clock-meta">
+        <span class="clock-tz">Toronto</span>
+        <span class="clock-sep">·</span>
+        <span class="clock-date" id="clockDate"></span>
+      </div>
+    </div>
+
     <div class="quote-block" id="quoteBlock"></div>
 
     <div class="card">
@@ -233,7 +246,7 @@
       <div class="pts-big" id="ptsTotal">0</div>
       <div class="pts-sub" id="ptsToGoal"></div>
       <div class="bar"><div class="fill" id="ptsFill" style="background:var(--indigo)"></div></div>
-      <div class="chips" id="ptsChips"></div>
+      <div class="pts-blocks" id="ptsChips"></div>
       <button class="mini" id="ptsUndo">↩ відмінити останнє</button>
     </div>
 
@@ -303,7 +316,7 @@
 <script>
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
-const today = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD device-local (for cals/snapshot)
+const today = () => new Date().toLocaleDateString('en-CA');
 function mondayOf(d){ const x=new Date(d); const day=(x.getDay()+6)%7; x.setHours(0,0,0,0); x.setDate(x.getDate()-day); return x; }
 const fmt = n => Number.isInteger(n)? n : n.toFixed(1);
 const mem = {};
@@ -320,41 +333,47 @@ function torontoNow(){
   const g=t=>parts.find(p=>p.type===t)?.value??'00';
   return {
     date:`${g('year')}-${g('month')}-${g('day')}`,
+    hour:parseInt(g('hour'),10),
     hhmm:`${g('hour')}:${g('minute')}`,
     hhmmss:`${g('hour')}:${g('minute')}:${g('second')}`
   };
 }
 
-/* ---------- Toronto clock ---------- */
+function torontoDayOfYear(){
+  const {date}=torontoNow();
+  const [y,m,d]=date.split('-').map(Number);
+  return Math.floor((new Date(y,m-1,d)-new Date(y,0,1))/86400000)+1;
+}
+
+/* ---------- Big clock ---------- */
 function tickClock(){
-  $('torontoClock').textContent = torontoNow().hhmmss + ' · Toronto';
+  const t=torontoNow();
+  $('clockTime').textContent=t.hhmmss;
+  const d=new Date(t.date+'T00:00:00');
+  $('clockDate').textContent=d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 }
 tickClock();
-setInterval(tickClock, 1000);
+setInterval(tickClock,1000);
 
 /* ---------- CONFIG ---------- */
-const KCAL_GOAL={ kcal:2600, p:160, f:70, c:250 };
+const KCAL_GOAL={kcal:2600,p:160,f:70,c:250};
 const PTS_TARGET=500;
-const WINS=[
-  {name:'Зал',          pts:20},
-  {name:'Подача роботи',pts:15},
-  {name:'Англійська',   pts:10},
-  {name:'День у бюджеті',pts:15},
-];
+const PTS_STEPS=[1,10,15,20,25];
 const BUDGETS=[
   {key:'tiktok',name:'TikTok',unit:'год',total:7,step:0.5,color:'#E4574E'},
   {key:'dota',  name:'Дота',  unit:'год',total:6,step:1,  color:'#8A7BE6'},
   {key:'cheats',name:'Зриви (їжа)',unit:'шт',total:3,step:1,color:'#E0A646'},
 ];
 const GOALS=[
-  {key:'bench', name:'Пожати 90 кг',       type:'progress', start:72.5, current:72.5, target:90, unit:'кг', step:2.5},
-  {key:'weight',name:'Скинути 3 кг',        type:'progress', start:115.7,current:115.7,target:112.7,unit:'кг',step:0.3,down:true},
-  {key:'money', name:'Заробити за місяць',  type:'progress', start:0,   current:0,    target:2400,unit:'$', step:50},
-  {key:'photos',name:'Гарні фотки для соцмереж', type:'check', done:false},
+  {key:'bench', name:'Пожати 90 кг',      type:'progress',start:72.5, current:72.5, target:90,   unit:'кг',step:2.5},
+  {key:'weight',name:'Скинути 3 кг',       type:'progress',start:115.7,current:115.7,target:112.7,unit:'кг',step:0.3,down:true},
+  {key:'money', name:'Заробити за місяць', type:'progress',start:0,   current:0,    target:2400, unit:'$', step:50},
+  {key:'photos',name:'Гарні фотки для соцмереж',type:'check',done:false},
 ];
 
-/* ---------- QUOTES ---------- */
+/* ---------- QUOTES (~100, anime + movies + TV) ---------- */
 const QUOTES=[
+  // ANIME
   {q:"A lesson without pain is meaningless. You can't gain something without sacrificing something else.",src:"Edward Elric · Fullmetal Alchemist"},
   {q:"The world is cruel, but also very beautiful.",src:"Mikasa Ackerman · Attack on Titan"},
   {q:"Enjoy the little detours. That's where you'll find the things more important than what you want.",src:"Ging Freecss · Hunter × Hunter"},
@@ -369,10 +388,10 @@ const QUOTES=[
   {q:"The ticket to the future is always open.",src:"Vash the Stampede · Trigun"},
   {q:"Whatever you lose, you'll find it again. But what you throw away, you'll never get back.",src:"Kenshin Himura · Rurouni Kenshin"},
   {q:"The only way to truly escape the mundane is for you to constantly be evolving.",src:"Koro-sensei · Assassination Classroom"},
-  {q:"It's not the world that's messed up — it's those of us in it. Yes, killing each other is wrong. And yet we still do it.",src:"Ken Kaneki · Tokyo Ghoul"},
+  {q:"It's not the world that's messed up — it's those of us in it.",src:"Ken Kaneki · Tokyo Ghoul"},
   {q:"You can't sit around envying other people's worlds. You have to go out and change your own.",src:"Shinichi Izumi · Parasyte"},
-  {q:"Don't give up! There's no shame in falling down. True shame is to not stand up again.",src:"Shintaro Midorima · Kuroko no Basket"},
-  {q:"Moving on doesn't mean you forget about things. It just means you have to accept what happened and continue living.",src:"Erza Scarlet · Fairy Tail"},
+  {q:"There's no shame in falling down. True shame is to not stand up again.",src:"Kuroko no Basket"},
+  {q:"Moving on doesn't mean you forget. It means you accept what happened and continue living.",src:"Erza Scarlet · Fairy Tail"},
   {q:"A person grows when they're able to defeat their own weaknesses.",src:"Might Guy · Naruto"},
   {q:"We don't know what kind of people we truly are until the moment before our deaths.",src:"Itachi Uchiha · Naruto"},
   {q:"The worst part of being strong is that no one ever asks if you're okay.",src:"Levi Ackerman · Attack on Titan"},
@@ -381,19 +400,103 @@ const QUOTES=[
   {q:"Life is not a game of luck. If you wanna win, work hard.",src:"Sora · No Game No Life"},
   {q:"No matter how deep the night, it always turns to day eventually.",src:"Brook · One Piece"},
   {q:"I'll keep moving forward. Even if I have to crawl, even if it breaks me.",src:"Thorfinn · Vinland Saga"},
-  {q:"You need to accept the fact that you're not the best and have all the will to strive to be better than anyone you face.",src:"Roronoa Zoro · One Piece"},
+  {q:"You need to accept the fact that you're not the best and have all the will to strive to be better.",src:"Roronoa Zoro · One Piece"},
   {q:"Don't live for other people. Live your life for yourself.",src:"Victor Nikiforov · Yuri on Ice"},
   {q:"Even in the darkest place, something worthy of protection always emerges.",src:"Natsuki Subaru · Re:Zero"},
   {q:"The strong don't win. Those who win are strong.",src:"Erwin Smith · Attack on Titan"},
+  {q:"You can die anytime, but living takes true courage.",src:"Kenshin Himura · Rurouni Kenshin"},
+  {q:"If you don't take risks, you can't create a future.",src:"Monkey D. Luffy · One Piece"},
+  {q:"A dropout will beat a genius through hard work.",src:"Rock Lee · Naruto"},
+  {q:"Never forget who you want to become.",src:"Killua Zoldyck · Hunter × Hunter"},
+  {q:"Once you meet someone, you never really forget them.",src:"Zeniba · Spirited Away"},
+  {q:"It's fine now. Why? Because I am here!",src:"All Might · My Hero Academia"},
+  {q:"Don't forget. Always, somewhere, someone is fighting for you. As long as you remember her, you are not alone.",src:"Homura Akemi · Madoka Magica"},
+  {q:"There are no regrets. If one can be proud of one's life, one should not wish for another chance.",src:"Saber · Fate/Zero"},
+  {q:"If the king doesn't move, then his subjects won't follow.",src:"Lelouch vi Britannia · Code Geass"},
+  {q:"I never go back on my word. That's my ninja way.",src:"Naruto Uzumaki · Naruto"},
+  {q:"When you give up, that's when the game is over.",src:"Slam Dunk"},
+  {q:"The moment you give up is the moment you let someone else win.",src:"Koro-sensei · Assassination Classroom"},
+  // MOVIES
+  {q:"Get busy living, or get busy dying.",src:"Andy Dufresne · The Shawshank Redemption"},
+  {q:"Hope is a good thing, maybe the best of things, and no good thing ever dies.",src:"The Shawshank Redemption"},
+  {q:"You either die a hero, or you live long enough to see yourself become the villain.",src:"Harvey Dent · The Dark Knight"},
+  {q:"Why so serious?",src:"The Joker · The Dark Knight"},
+  {q:"Some men just want to watch the world burn.",src:"Alfred Pennyworth · The Dark Knight"},
+  {q:"It ain't about how hard you hit. It's about how hard you can get hit and keep moving forward.",src:"Rocky Balboa · Rocky Balboa"},
+  {q:"Why do we fall? So we can learn to pick ourselves up.",src:"Thomas Wayne · Batman Begins"},
+  {q:"It's not who I am underneath, but what I do that defines me.",src:"Bruce Wayne · Batman Begins"},
+  {q:"Do, or do not. There is no try.",src:"Yoda · Star Wars"},
+  {q:"Fear is the path to the dark side. Fear leads to anger; anger leads to hate; hate leads to suffering.",src:"Yoda · Star Wars"},
+  {q:"Carpe diem. Seize the day, boys. Make your lives extraordinary.",src:"Mr. Keating · Dead Poets Society"},
+  {q:"With great power comes great responsibility.",src:"Ben Parker · Spider-Man"},
+  {q:"What we do in life echoes in eternity.",src:"Maximus · Gladiator"},
+  {q:"All those moments will be lost in time, like tears in rain.",src:"Roy Batty · Blade Runner"},
+  {q:"There is no spoon.",src:"The Matrix"},
+  {q:"Free your mind.",src:"Morpheus · The Matrix"},
+  {q:"We accept the love we think we deserve.",src:"The Perks of Being a Wallflower"},
+  {q:"Life moves fast. If you don't stop and look around once in a while, you could miss it.",src:"Ferris Bueller's Day Off"},
+  {q:"The greatest trick the devil ever pulled was convincing the world he didn't exist.",src:"Verbal Kint · The Usual Suspects"},
+  {q:"After all, tomorrow is another day.",src:"Scarlett O'Hara · Gone with the Wind"},
+  {q:"A man who doesn't spend time with his family can never be a real man.",src:"Vito Corleone · The Godfather"},
+  {q:"To infinity and beyond.",src:"Buzz Lightyear · Toy Story"},
+  {q:"Just keep swimming.",src:"Dory · Finding Nemo"},
+  {q:"Every passing minute is another chance to turn it all around.",src:"Vanilla Sky"},
+  {q:"The stuff that dreams are made of.",src:"Sam Spade · The Maltese Falcon"},
+  {q:"May the Force be with you.",src:"Star Wars"},
+  {q:"You can't handle the truth!",src:"Col. Jessup · A Few Good Men"},
+  {q:"Here's looking at you, kid.",src:"Rick Blaine · Casablanca"},
+  {q:"Of all the gin joints in all the towns in all the world, she walks into mine.",src:"Rick Blaine · Casablanca"},
+  {q:"Toto, I've a feeling we're not in Kansas anymore.",src:"Dorothy · The Wizard of Oz"},
+  {q:"My mama always said life was like a box of chocolates. You never know what you're gonna get.",src:"Forrest Gump"},
+  {q:"Hasta la vista, baby.",src:"The Terminator · Terminator 2"},
+  {q:"You is kind, you is smart, you is important.",src:"Aibileen Clark · The Help"},
+  {q:"It takes a great deal of bravery to stand up to our enemies, but just as much to stand up to our friends.",src:"Albus Dumbledore · Harry Potter"},
+  {q:"We are who we choose to be.",src:"Green Goblin · Spider-Man"},
+  {q:"Why are you trying so hard to fit in when you were born to stand out?",src:"What a Girl Wants"},
+  // TV SERIES
+  {q:"Everybody lies.",src:"Dr. House · House M.D."},
+  {q:"When you play the game of thrones, you win or you die.",src:"Cersei Lannister · Game of Thrones"},
+  {q:"A mind needs books as a sword needs a whetstone, if it is to keep its edge.",src:"Tyrion Lannister · Game of Thrones"},
+  {q:"Chaos isn't a pit. Chaos is a ladder.",src:"Petyr Baelish · Game of Thrones"},
+  {q:"Not today.",src:"Syrio Forel · Game of Thrones"},
+  {q:"Any man who must say 'I am the king' is no true king.",src:"Tywin Lannister · Game of Thrones"},
+  {q:"Never forget what you are, for surely the world will not.",src:"Tyrion Lannister · Game of Thrones"},
+  {q:"A lion doesn't concern himself with the opinions of a sheep.",src:"Tywin Lannister · Game of Thrones"},
+  {q:"If you come at the king, you best not miss.",src:"Omar Little · The Wire"},
+  {q:"A man's got to have a code.",src:"Omar Little · The Wire"},
+  {q:"Every lie we tell incurs a debt to the truth. Sooner or later, that debt is paid.",src:"Valery Legasov · Chernobyl"},
+  {q:"What is the cost of lies? It's not that we'll mistake them for the truth.",src:"Valery Legasov · Chernobyl"},
+  {q:"I am the one who knocks.",src:"Walter White · Breaking Bad"},
+  {q:"Say my name.",src:"Walter White · Breaking Bad"},
+  {q:"A wrong decision is better than indecision.",src:"Tony Soprano · The Sopranos"},
+  {q:"We're not free in what we do, because we're not free in what we want.",src:"Dark · Netflix"},
+  {q:"The question isn't where, but when.",src:"Jonas Kahnwald · Dark"},
+  {q:"You see, but you do not observe.",src:"Sherlock Holmes · Sherlock"},
+  {q:"When you have eliminated the impossible, whatever remains, however improbable, must be the truth.",src:"Sherlock Holmes · Sherlock"},
+  {q:"In the land of the blind, the one-eyed man is king.",src:"Tommy Shelby · Peaky Blinders"},
+  {q:"I drink and I know things.",src:"Tyrion Lannister · Game of Thrones"},
+  {q:"Power is power.",src:"Cersei Lannister · Game of Thrones"},
+  {q:"Winter is coming.",src:"House Stark · Game of Thrones"},
+  {q:"Friends don't lie.",src:"Eleven · Stranger Things"},
+  {q:"Mornings are for coffee and contemplation.",src:"Chief Hopper · Stranger Things"},
+  {q:"People tell you who they are, but we ignore it because we want them to be who we want them to be.",src:"Don Draper · Mad Men"},
+  {q:"I love you, but you are not serious people.",src:"Logan Roy · Succession"},
+  {q:"You only do two days: the day you go in and the day you come out.",src:"The Wire"},
 ];
 
-function dayOfYear(){
-  const n=new Date(), s=new Date(n.getFullYear(),0,0);
-  return Math.floor((n-s)/86400000);
+/* ---------- Quote window logic ---------- */
+function quoteWindow(){
+  const h=torontoNow().hour;
+  if(h>=23||h<9) return 0;   // night    23–09
+  if(h<13)       return 1;   // morning  09–13
+  if(h<16)       return 2;   // afternoon 13–16
+  if(h<21)       return 3;   // evening  16–21
+  return 4;                   // late     21–23
 }
 
 function renderQuote(){
-  const q=QUOTES[dayOfYear()%QUOTES.length];
+  const idx=(torontoDayOfYear()*5+quoteWindow())%QUOTES.length;
+  const q=QUOTES[idx];
   $('quoteBlock').innerHTML=
     `<div class="quote-text">"${q.q}"</div><div class="quote-src">— ${q.src}</div>`;
 }
@@ -410,19 +513,19 @@ let history=[];
 function renderPoints(){
   $('ptsTotal').textContent=points.total;
   $('ptsTargetLbl').innerHTML=`ціль <b>${PTS_TARGET}</b>`;
-  const ratio=Math.min(1, points.total/PTS_TARGET);
+  const ratio=Math.min(1,points.total/PTS_TARGET);
   $('ptsFill').style.width=(ratio*100)+'%';
-  $('ptsFill').style.background = ratio>=1?'var(--good)':'var(--indigo)';
+  $('ptsFill').style.background=ratio>=1?'var(--good)':'var(--indigo)';
   const left=Math.max(0,PTS_TARGET-points.total);
-  $('ptsToGoal').textContent = left>0? `ще ${left} до цілі` : 'ціль досягнута 🔓';
+  $('ptsToGoal').textContent=left>0?`ще ${left} до цілі`:'ціль досягнута 🔓';
   $('ptsChips').innerHTML='';
-  WINS.forEach(w=>{
-    const b=document.createElement('button'); b.className='chip';
-    b.textContent=`${w.name} +${w.pts}`;
-    b.onclick=async()=>{ points.total+=w.pts; points.last=w.pts; await sset('app_points',points); renderPoints(); };
+  PTS_STEPS.forEach(v=>{
+    const b=document.createElement('button'); b.className='pts-block';
+    b.textContent=`+${v}`;
+    b.onclick=async()=>{ points.total+=v; points.last=v; await sset('app_points',points); renderPoints(); };
     $('ptsChips').appendChild(b);
   });
-  $('ptsUndo').disabled = points.last<=0;
+  $('ptsUndo').disabled=points.last<=0;
 }
 $('ptsUndo').onclick=async()=>{ if(points.last>0){ points.total=Math.max(0,points.total-points.last); points.last=0; await sset('app_points',points); renderPoints(); } };
 
@@ -434,7 +537,7 @@ function renderCals(){
   $('kcalReset').textContent='рахуй щоб знати';
   $('macros').innerHTML='';
   MAC.forEach(m=>{
-    const v=cals[m.k], goal=KCAL_GOAL[m.k], r=Math.min(1,v/goal);
+    const v=cals[m.k],goal=KCAL_GOAL[m.k],r=Math.min(1,v/goal);
     const el=document.createElement('div'); el.className='macro';
     el.innerHTML=`<div class="mlabel">${m.n}</div><div class="mval">${Math.round(v)}<span style="color:var(--muted);font-size:11px"> / ${goal}г</span></div>
       <div class="mbar"><div class="mfill" style="width:${r*100}%;background:${m.c}"></div></div>`;
@@ -442,7 +545,7 @@ function renderCals(){
   });
 }
 $('addFood').onclick=async()=>{
-  const k=+$('fKcal').value||0, p=+$('fP').value||0, f=+$('fF').value||0, c=+$('fC').value||0;
+  const k=+$('fKcal').value||0,p=+$('fP').value||0,f=+$('fF').value||0,c=+$('fC').value||0;
   if(!(k||p||f||c)) return;
   cals.kcal+=k; cals.p+=p; cals.f+=f; cals.c+=c;
   ['fKcal','fP','fF','fC'].forEach(id=>$(id).value='');
@@ -459,23 +562,21 @@ function fmtDate(s){
 
 function renderTasks(){
   const todayStr=torontoNow().date;
+  const active=tasks.items.filter(t=>!t.dueDate||t.dueDate<=todayStr);
+  const future=tasks.items.filter(t=>t.dueDate&&t.dueDate>todayStr)
+    .sort((a,b)=>a.dueDate!==b.dueDate?(a.dueDate<b.dueDate?-1:1):((a.dueTime||'')>(b.dueTime||'')?1:-1));
 
-  const active=tasks.items.filter(t=> !t.dueDate || t.dueDate<=todayStr);
-  const future=tasks.items.filter(t=> t.dueDate && t.dueDate>todayStr)
-    .sort((a,b)=> a.dueDate!==b.dueDate ? (a.dueDate<b.dueDate?-1:1) : ((a.dueTime||'')>(b.dueTime||'')?1:-1));
-
-  /* active list */
   const L=$('taskList'); L.innerHTML='';
   if(!active.length){
     L.innerHTML='<div class="empty-note">Порожньо. Додай перше, що треба зробити.</div>';
   } else {
     active.forEach(t=>{
       const idx=tasks.items.indexOf(t);
-      const isOverdue=t.dueDate && t.dueDate<todayStr;
+      const isOverdue=t.dueDate&&t.dueDate<todayStr;
       const row=document.createElement('div'); row.className='task'+(t.done?' done':'');
       const dueLabel=t.dueDate
-        ? `<span class="task-due${isOverdue?' task-overdue':''}">${fmtDate(t.dueDate)}${t.dueTime?' · '+t.dueTime:''}</span>`
-        : '';
+        ?`<span class="task-due${isOverdue?' task-overdue':''}">${fmtDate(t.dueDate)}${t.dueTime?' · '+t.dueTime:''}</span>`
+        :'';
       row.innerHTML=`<div class="checkbox">${t.done?'✓':''}</div><div class="ttext">${t.text.replace(/</g,'&lt;')}${dueLabel}</div><button class="tdel">×</button>`;
       row.querySelector('.checkbox').onclick=async()=>{ t.done=!t.done; await sset('app_tasks',tasks); renderTasks(); };
       row.querySelector('.tdel').onclick=async()=>{ tasks.items.splice(idx,1); await sset('app_tasks',tasks); renderTasks(); };
@@ -483,7 +584,6 @@ function renderTasks(){
     });
   }
 
-  /* upcoming section */
   const F=$('taskFuture'); F.innerHTML='';
   if(future.length){
     const card=document.createElement('div'); card.className='card';
@@ -506,7 +606,7 @@ async function addTask(){
   const v=$('taskInput').value.trim(); if(!v) return;
   const dd=$('taskDate').value||undefined;
   const dt=$('taskTime').value||undefined;
-  tasks.items.push({id:newId(), text:v, done:false, dueDate:dd, dueTime:dt});
+  tasks.items.push({id:newId(),text:v,done:false,dueDate:dd,dueTime:dt});
   $('taskInput').value=''; $('taskDate').value=''; $('taskTime').value='';
   await sset('app_tasks',tasks); renderTasks();
 }
@@ -520,7 +620,7 @@ function renderBudget(){
   $('budgetReset').innerHTML=`обнулення <b>${Math.ceil((next-new Date())/86400000)} дн</b>`;
   const wrap=$('budgetCards'); wrap.innerHTML='';
   BUDGETS.forEach(b=>{
-    const spent=budget.spent[b.key]||0, left=Math.max(0,b.total-spent), r=left/b.total, empty=left<=0, col=colorFor(r,b.color);
+    const spent=budget.spent[b.key]||0,left=Math.max(0,b.total-spent),r=left/b.total,empty=left<=0,col=colorFor(r,b.color);
     const c=document.createElement('div'); c.className='card'+(empty?' empty':'');
     c.innerHTML=`<div class="card-head"><div class="name"><span class="dot" style="background:${b.color}"></span>${b.name}</div>
       <div class="readout"><span class="big" style="color:${empty?'var(--muted)':col}">${fmt(left)}</span><span class="unit">${b.unit}</span>
@@ -540,7 +640,7 @@ $('newweek').onclick=async()=>{ budget={weekStart:mondayOf(new Date()).toISOStri
 /* ---------- GOALS ---------- */
 function renderGoals(){
   const wrap=$('goalCards'); wrap.innerHTML='';
-  goals.forEach((g,i)=>{
+  goals.forEach((g)=>{
     const c=document.createElement('div'); c.className='card'+(g.type==='check'&&g.done?' goal-done':'');
     if(g.type==='check'){
       c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div></div>
@@ -550,7 +650,7 @@ function renderGoals(){
       const span=Math.abs(g.target-g.start)||1;
       const prog=Math.abs(g.current-g.start);
       const r=Math.max(0,Math.min(1,prog/span));
-      const col = r>=1?'var(--good)':'var(--cyan)';
+      const col=r>=1?'var(--good)':'var(--cyan)';
       c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div>
         <div class="goal-val"><b>${fmt(g.current)}</b> / ${fmt(g.target)} ${g.unit}</div></div>
         <div class="bar"><div class="fill" style="width:${r*100}%;background:${col}"></div></div>
@@ -564,22 +664,19 @@ function renderGoals(){
   });
 }
 
-/* ---------- HISTORY / SNAPSHOT ---------- */
-async function saveSnapshot(prevCals, prevTasks){
-  if(!prevCals.date || prevCals.date===today()) return;
+/* ---------- HISTORY ---------- */
+async function saveSnapshot(prevCals,prevTasks){
+  if(!prevCals.date||prevCals.date===today()) return;
   const snap={
-    date: prevCals.date,
-    kcal: Math.round(prevCals.kcal),
-    p: Math.round(prevCals.p),
-    f: Math.round(prevCals.f),
-    c: Math.round(prevCals.c),
-    tasksDone: prevTasks.items.filter(x=>x.done).length,
-    tasksTotal: prevTasks.items.length,
+    date:prevCals.date,kcal:Math.round(prevCals.kcal),
+    p:Math.round(prevCals.p),f:Math.round(prevCals.f),c:Math.round(prevCals.c),
+    tasksDone:prevTasks.items.filter(x=>x.done).length,
+    tasksTotal:prevTasks.items.length,
   };
   history=history.filter(h=>h.date!==snap.date);
   history.unshift(snap);
   if(history.length>14) history=history.slice(0,14);
-  await sset('app_history', history);
+  await sset('app_history',history);
 }
 
 function renderStats(){
@@ -604,19 +701,15 @@ function renderStats(){
   });
 }
 
-/* ---------- REMINDER QUEUE ---------- */
+/* ---------- REMINDERS ---------- */
 let reminderQueue=[];
 const sessionReminded=new Set();
 
 function buildReminderQueue(){
-  const {date:todayStr, hhmm:nowHHMM}=torontoNow();
+  const {date:todayStr,hhmm:nowHHMM}=torontoNow();
   reminderQueue=tasks.items.filter(t=>
-    t.dueDate===todayStr &&
-    t.dueTime &&
-    !t.done &&
-    t.remindedAt!==todayStr &&
-    t.dueTime<=nowHHMM &&
-    !sessionReminded.has(t.id)
+    t.dueDate===todayStr&&t.dueTime&&!t.done&&
+    t.remindedAt!==todayStr&&t.dueTime<=nowHHMM&&!sessionReminded.has(t.id)
   );
   showNextReminder();
 }
@@ -635,12 +728,7 @@ async function dismissReminder(markDone){
   const t=reminderQueue.shift();
   const {date:todayStr}=torontoNow();
   const item=tasks.items.find(x=>x.id===t.id);
-  if(item){
-    item.remindedAt=todayStr;
-    if(markDone) item.done=true;
-    await sset('app_tasks',tasks);
-    renderTasks();
-  }
+  if(item){ item.remindedAt=todayStr; if(markDone) item.done=true; await sset('app_tasks',tasks); renderTasks(); }
   showNextReminder();
 }
 
@@ -652,36 +740,32 @@ const ALL_TABS=['main','budget','goals','stats'];
 document.querySelectorAll('.nav-row button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.nav-row button').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
-  ALL_TABS.forEach(t=>$(t).style.display = t===b.dataset.tab?'block':'none');
+  ALL_TABS.forEach(t=>$(t).style.display=t===b.dataset.tab?'block':'none');
 });
 
 /* ---------- INIT ---------- */
 (async function(){
-  points = await sget('app_points') || {total:0,last:0};
-  history = await sget('app_history') || [];
+  points=await sget('app_points')||{total:0,last:0};
+  history=await sget('app_history')||[];
 
-  const storedCals = await sget('app_cals') || {date:today(),kcal:0,p:0,f:0,c:0};
-  const storedTasks = await sget('app_tasks') || {date:today(),items:[]};
+  const storedCals=await sget('app_cals')||{date:today(),kcal:0,p:0,f:0,c:0};
+  const storedTasks=await sget('app_tasks')||{date:today(),items:[]};
+  storedTasks.items=storedTasks.items.map(t=>t.id?t:{...t,id:newId()});
 
-  /* migrate old tasks that have no id */
-  storedTasks.items = storedTasks.items.map(t=> t.id ? t : {...t, id:newId()});
+  if(storedCals.date!==today()) await saveSnapshot(storedCals,storedTasks);
 
-  if(storedCals.date!==today()){
-    await saveSnapshot(storedCals, storedTasks);
-  }
-
-  cals = storedCals.date===today() ? storedCals : {date:today(),kcal:0,p:0,f:0,c:0};
+  cals=storedCals.date===today()?storedCals:{date:today(),kcal:0,p:0,f:0,c:0};
   if(storedCals.date!==today()) await sset('app_cals',cals);
 
-  tasks = storedTasks;
-  await sset('app_tasks', tasks); // persist migration
+  tasks=storedTasks;
+  await sset('app_tasks',tasks);
 
-  budget = await sget('app_budget') || {weekStart:null,spent:{}};
+  budget=await sget('app_budget')||{weekStart:null,spent:{}};
   const wk=mondayOf(new Date()).toISOString();
   if(budget.weekStart!==wk){ budget={weekStart:wk,spent:{}}; BUDGETS.forEach(b=>budget.spent[b.key]=0); await sset('app_budget',budget); }
   BUDGETS.forEach(b=>{ if(budget.spent[b.key]==null) budget.spent[b.key]=0; });
 
-  goals = await sget('app_goals') || JSON.parse(JSON.stringify(GOALS));
+  goals=await sget('app_goals')||JSON.parse(JSON.stringify(GOALS));
 
   renderQuote(); renderPoints(); renderCals(); renderTasks(); renderBudget(); renderGoals(); renderStats();
   buildReminderQueue();
