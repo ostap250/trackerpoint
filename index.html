@@ -27,11 +27,11 @@
     background:linear-gradient(180deg, var(--ink) 70%, transparent);
     margin-bottom:6px;
   }
-  .nav-row{ display:flex; gap:6px; }
+  .nav-row{ display:flex; gap:5px; }
   .nav-row button{
-    flex:1; font-family:'Sora',sans-serif; font-weight:600; font-size:13px;
+    flex:1; font-family:'Sora',sans-serif; font-weight:600; font-size:11.5px;
     color:var(--muted); background:var(--panel); border:1px solid var(--line);
-    padding:11px 6px; border-radius:11px; cursor:pointer; transition:.15s;
+    padding:10px 4px; border-radius:11px; cursor:pointer; transition:.15s;
   }
   .nav-row button.active{ color:var(--txt); background:var(--panel-2); border-color:var(--indigo); }
 
@@ -136,9 +136,9 @@
   .spent-msg{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted); margin-top:11px; }
 
   /* goals */
-  .goal-top{ display:flex; justify-content:space-between; align-items:baseline; }
-  .goal-name{ font-size:15px; font-weight:600; }
-  .goal-val{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted); }
+  .goal-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .goal-name{ font-size:15px; font-weight:600; flex:1; }
+  .goal-val{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted); flex:none; }
   .goal-val b{ color:var(--txt); font-size:16px; }
   .goal-step{ display:flex; gap:7px; margin-top:12px; align-items:center; }
   .goal-step button{ flex:1; background:#232d3b; border:1px solid var(--line); color:var(--txt);
@@ -149,6 +149,19 @@
     font-family:'Sora',sans-serif; font-size:13px; font-weight:600; padding:11px; border-radius:11px;
     margin-top:12px; cursor:pointer; }
   .goal-done .goal-done-btn{ background:var(--good); border-color:var(--good); color:#0e1117; }
+  .goal-badge{
+    font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.1em;
+    text-transform:uppercase; font-weight:700; padding:3px 7px; border-radius:5px;
+    white-space:nowrap; flex:none;
+  }
+
+  /* goal bar glow */
+  @keyframes barPulse {
+    0%   { filter:brightness(1); }
+    40%  { filter:brightness(1.7); }
+    100% { filter:brightness(1); }
+  }
+  .fill.glow { animation:barPulse .55s ease-out; }
 
   .foot-note{ margin-top:16px; font-size:12px; color:var(--muted); line-height:1.6; text-align:center; }
   .resets{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-align:right; }
@@ -178,6 +191,23 @@
   .stat-tasks{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
     flex:none; width:36px; text-align:right; }
 
+  /* shop */
+  .shop-section{ font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace; color:var(--muted); margin:20px 2px 2px; }
+  .shop-item{ display:flex; align-items:center; gap:12px; padding:14px 4px;
+    border-bottom:1px solid var(--line); }
+  .shop-item:last-child{ border-bottom:none; }
+  .shop-info{ flex:1; }
+  .shop-name{ font-size:14px; font-weight:600; }
+  .shop-desc{ font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:3px; }
+  .shop-buy{
+    flex:none; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+    background:var(--indigo); color:#11131c; border:none; border-radius:10px;
+    padding:9px 13px; cursor:pointer; transition:.1s; white-space:nowrap;
+  }
+  .shop-buy:active{ transform:scale(.93); }
+  .shop-buy:disabled{ background:#232d3b; color:var(--muted); border:1px solid var(--line); cursor:default; }
+
   /* reminder toast */
   .toast-wrap{
     position:fixed; top:0; left:0; right:0; max-width:480px; margin:0 auto;
@@ -199,9 +229,28 @@
   .toast-done{ background:var(--good); color:#0e1117; }
   .toast-close{ background:transparent; border:1px solid var(--line) !important; color:var(--muted); }
 
-  @media (prefers-reduced-motion: reduce){ .fill,.mfill,.stat-bar-fill{ transition:none; } *{ transition:none!important; } }
+  /* notification snack (auto-dismiss) */
+  #notifSnack{
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(12px);
+    max-width:340px; width:90%;
+    background:var(--panel-2); border:1px solid var(--indigo);
+    border-radius:14px; padding:13px 18px;
+    font-family:'Sora',sans-serif; font-size:14px; font-weight:600;
+    color:var(--txt); text-align:center;
+    box-shadow:0 8px 32px rgba(0,0,0,.7);
+    opacity:0; pointer-events:none;
+    transition:opacity .22s, transform .22s;
+    z-index:300;
+  }
+  #notifSnack.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce){
+    .fill,.mfill,.stat-bar-fill{ transition:none; }
+    *{ transition:none!important; animation:none!important; }
+  }
 </style>
 
+<!-- reminder toast -->
 <div class="toast-wrap" id="toastWrap">
   <div class="toast">
     <div class="toast-lbl">Нагадування</div>
@@ -214,6 +263,9 @@
   </div>
 </div>
 
+<!-- notification snack -->
+<div id="notifSnack"></div>
+
 <div class="wrap">
   <div class="nav">
     <div class="nav-row">
@@ -221,6 +273,7 @@
       <button data-tab="budget">Бюджет</button>
       <button data-tab="goals">Цілі</button>
       <button data-tab="stats">Статистика</button>
+      <button data-tab="shop">Магазин</button>
     </div>
   </div>
 
@@ -311,6 +364,20 @@
     <h2 class="page">Останні 14 днів</h2>
     <div class="card"><div id="statsContent"></div></div>
   </section>
+
+  <!-- ============ SHOP ============ -->
+  <section id="shop" style="display:none">
+    <h2 class="page">Магазин</h2>
+    <div class="card" style="padding-bottom:8px">
+      <div class="head-row">
+        <span class="label">Баланс</span>
+        <span class="resets" id="shopPtsDisplay"></span>
+      </div>
+      <div id="shopBudgetItems"></div>
+      <div id="shopRewardItems"></div>
+    </div>
+    <div class="foot-note">Витрачай зароблене. Поінти не згоряють — вони чекають.</div>
+  </section>
 </div>
 
 <script>
@@ -359,21 +426,37 @@ setInterval(tickClock,1000);
 const KCAL_GOAL={kcal:2600,p:160,f:70,c:250};
 const PTS_TARGET=500;
 const PTS_STEPS=[1,10,15,20,25];
+
 const BUDGETS=[
-  {key:'tiktok',name:'TikTok',unit:'год',total:7,step:0.5,color:'#E4574E'},
-  {key:'dota',  name:'Дота',  unit:'год',total:6,step:1,  color:'#8A7BE6'},
-  {key:'cheats',name:'Зриви (їжа)',unit:'шт',total:3,step:1,color:'#E0A646'},
+  {key:'tiktok',name:'TikTok',      unit:'год',total:7,step:0.5,color:'#E4574E'},
+  {key:'dota',  name:'Дота',        unit:'год',total:6,step:1,  color:'#8A7BE6'},
+  {key:'cheats',name:'Зриви (їжа)',unit:'шт', total:3,step:1,  color:'#E0A646'},
 ];
+
 const GOALS=[
-  {key:'bench', name:'Пожати 90 кг',      type:'progress',start:72.5, current:72.5, target:90,   unit:'кг',step:2.5},
-  {key:'weight',name:'Скинути 3 кг',       type:'progress',start:115.7,current:115.7,target:112.7,unit:'кг',step:0.3,down:true},
-  {key:'money', name:'Заробити за місяць', type:'progress',start:0,   current:0,    target:2400, unit:'$', step:50},
-  {key:'photos',name:'Гарні фотки для соцмереж',type:'check',done:false},
+  {key:'bench', name:'Пожати 90 кг',             type:'progress',start:72.5, current:72.5, target:90,   unit:'кг',step:2.5, difficulty:'hard'},
+  {key:'weight',name:'Скинути 3 кг',              type:'progress',start:115.7,current:115.7,target:112.7,unit:'кг',step:0.3, difficulty:'normal',down:true},
+  {key:'money', name:'Заробити за місяць',        type:'progress',start:0,   current:0,    target:2400, unit:'$', step:50,  difficulty:'normal'},
+  {key:'photos',name:'Гарні фотки для соцмереж', type:'check',   done:false,                                              difficulty:'easy'},
+];
+
+const DIFF_COLOR={easy:'#38B89A',normal:'#E0A646',hard:'#E4574E'};
+const DIFF_LABEL={easy:'Легко',normal:'Нормально',hard:'Важко'};
+const DIFF_PTS  ={easy:100,    normal:200,        hard:300};
+
+const SHOP_BUDGET=[
+  {id:'tiktok30',name:'+30 хв TikTok',pts:15, key:'tiktok',bonus:0.5, desc:'додає 0.5 год до бюджету'},
+  {id:'dota1h',  name:'+1 год Дота',  pts:40, key:'dota',  bonus:1,   desc:'додає 1 год до бюджету'},
+  {id:'cheat1',  name:'+1 зрив їжа', pts:35, key:'cheats', bonus:1,   desc:'додає 1 шт до бюджету'},
+];
+const SHOP_REWARDS=[
+  {id:'gaming_night',name:'Вечір гри без лімітів',pts:200,desc:'весь вечір без обмежень'},
+  {id:'fav_food',    name:'Замовити улюблену їжу', pts:250,desc:'замов що хочеш'},
+  {id:'buy_smth',    name:'Купити щось собі',       pts:400,desc:'витрать на себе'},
 ];
 
 /* ---------- QUOTES (~100, anime + movies + TV) ---------- */
 const QUOTES=[
-  // ANIME
   {q:"A lesson without pain is meaningless. You can't gain something without sacrificing something else.",src:"Edward Elric · Fullmetal Alchemist"},
   {q:"The world is cruel, but also very beautiful.",src:"Mikasa Ackerman · Attack on Titan"},
   {q:"Enjoy the little detours. That's where you'll find the things more important than what you want.",src:"Ging Freecss · Hunter × Hunter"},
@@ -416,7 +499,6 @@ const QUOTES=[
   {q:"I never go back on my word. That's my ninja way.",src:"Naruto Uzumaki · Naruto"},
   {q:"When you give up, that's when the game is over.",src:"Slam Dunk"},
   {q:"The moment you give up is the moment you let someone else win.",src:"Koro-sensei · Assassination Classroom"},
-  // MOVIES
   {q:"Get busy living, or get busy dying.",src:"Andy Dufresne · The Shawshank Redemption"},
   {q:"Hope is a good thing, maybe the best of things, and no good thing ever dies.",src:"The Shawshank Redemption"},
   {q:"You either die a hero, or you live long enough to see yourself become the villain.",src:"Harvey Dent · The Dark Knight"},
@@ -453,7 +535,6 @@ const QUOTES=[
   {q:"It takes a great deal of bravery to stand up to our enemies, but just as much to stand up to our friends.",src:"Albus Dumbledore · Harry Potter"},
   {q:"We are who we choose to be.",src:"Green Goblin · Spider-Man"},
   {q:"Why are you trying so hard to fit in when you were born to stand out?",src:"What a Girl Wants"},
-  // TV SERIES
   {q:"Everybody lies.",src:"Dr. House · House M.D."},
   {q:"When you play the game of thrones, you win or you die.",src:"Cersei Lannister · Game of Thrones"},
   {q:"A mind needs books as a sword needs a whetstone, if it is to keep its edge.",src:"Tyrion Lannister · Game of Thrones"},
@@ -487,11 +568,11 @@ const QUOTES=[
 /* ---------- Quote window logic ---------- */
 function quoteWindow(){
   const h=torontoNow().hour;
-  if(h>=23||h<9) return 0;   // night    23–09
-  if(h<13)       return 1;   // morning  09–13
-  if(h<16)       return 2;   // afternoon 13–16
-  if(h<21)       return 3;   // evening  16–21
-  return 4;                   // late     21–23
+  if(h>=23||h<9) return 0;
+  if(h<13)       return 1;
+  if(h<16)       return 2;
+  if(h<21)       return 3;
+  return 4;
 }
 
 function renderQuote(){
@@ -505,9 +586,19 @@ function renderQuote(){
 let points={total:0,last:0};
 let cals={date:today(),kcal:0,p:0,f:0,c:0};
 let tasks={date:today(),items:[]};
-let budget={weekStart:null,spent:{}};
+let budget={weekStart:null,spent:{},bonus:{}};
 let goals=null;
 let history=[];
+
+/* ---------- NOTIFICATION SNACK ---------- */
+let _notifTimer=null;
+function showNotif(text){
+  const el=$('notifSnack');
+  el.textContent=text;
+  el.classList.add('show');
+  clearTimeout(_notifTimer);
+  _notifTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
 
 /* ---------- POINTS ---------- */
 function renderPoints(){
@@ -522,12 +613,14 @@ function renderPoints(){
   PTS_STEPS.forEach(v=>{
     const b=document.createElement('button'); b.className='pts-block';
     b.textContent=`+${v}`;
-    b.onclick=async()=>{ points.total+=v; points.last=v; await sset('app_points',points); renderPoints(); };
+    b.onclick=async()=>{ points.total+=v; points.last=v; await sset('app_points',points); renderPoints(); renderShop(); };
     $('ptsChips').appendChild(b);
   });
   $('ptsUndo').disabled=points.last<=0;
 }
-$('ptsUndo').onclick=async()=>{ if(points.last>0){ points.total=Math.max(0,points.total-points.last); points.last=0; await sset('app_points',points); renderPoints(); } };
+$('ptsUndo').onclick=async()=>{
+  if(points.last>0){ points.total=Math.max(0,points.total-points.last); points.last=0; await sset('app_points',points); renderPoints(); renderShop(); }
+};
 
 /* ---------- CALORIES ---------- */
 const MAC=[{k:'p',n:'Білки',c:'#38B89A'},{k:'f',n:'Жири',c:'#E0A646'},{k:'c',n:'Вугл',c:'#4FB8CE'}];
@@ -614,17 +707,26 @@ $('taskAdd').onclick=addTask;
 $('taskInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addTask(); });
 
 /* ---------- BUDGET ---------- */
+function budgetCap(key){ return (BUDGETS.find(b=>b.key===key)?.total||0)+(budget.bonus[key]||0); }
 function colorFor(r,base){ if(r<=0.18)return'var(--low)'; if(r<=0.45)return'var(--mid)'; return base; }
+
 function renderBudget(){
   const next=mondayOf(new Date()); next.setDate(next.getDate()+7);
   $('budgetReset').innerHTML=`обнулення <b>${Math.ceil((next-new Date())/86400000)} дн</b>`;
   const wrap=$('budgetCards'); wrap.innerHTML='';
   BUDGETS.forEach(b=>{
-    const spent=budget.spent[b.key]||0,left=Math.max(0,b.total-spent),r=left/b.total,empty=left<=0,col=colorFor(r,b.color);
+    const cap=budgetCap(b.key);
+    const spent=budget.spent[b.key]||0;
+    const left=Math.max(0,cap-spent);
+    const r=cap>0?left/cap:0;
+    const empty=left<=0;
+    const col=colorFor(r,b.color);
+    const bonusAmt=budget.bonus[b.key]||0;
+    const bonusNote=bonusAmt>0?` <span style="color:var(--good);font-size:10px">+${fmt(bonusAmt)} бонус</span>`:'';
     const c=document.createElement('div'); c.className='card'+(empty?' empty':'');
-    c.innerHTML=`<div class="card-head"><div class="name"><span class="dot" style="background:${b.color}"></span>${b.name}</div>
+    c.innerHTML=`<div class="card-head"><div class="name"><span class="dot" style="background:${b.color}"></span>${b.name}${bonusNote}</div>
       <div class="readout"><span class="big" style="color:${empty?'var(--muted)':col}">${fmt(left)}</span><span class="unit">${b.unit}</span>
-      <span class="of">з ${fmt(b.total)} ${b.unit} лишилось</span></div></div>
+      <span class="of">з ${fmt(cap)} ${b.unit} лишилось</span></div></div>
       <div class="bar"><div class="fill" style="width:${r*100}%;background:${col}"></div></div>
       <div class="row"><button class="spend" data-k="${b.key}" ${empty?'disabled':''}>− ${fmt(b.step)} ${b.unit}${empty?' · вичерпано':''}</button>
       <button class="undo" data-u="${b.key}" ${spent<=0?'disabled':''}>↩</button></div>
@@ -634,33 +736,152 @@ function renderBudget(){
   wrap.querySelectorAll('.spend').forEach(btn=>btn.onclick=()=>spendB(btn.dataset.k,1));
   wrap.querySelectorAll('.undo').forEach(btn=>btn.onclick=()=>spendB(btn.dataset.u,-1));
 }
-async function spendB(key,dir){ const b=BUDGETS.find(x=>x.key===key); let s=(budget.spent[key]||0)+dir*b.step; s=Math.max(0,Math.min(b.total,s)); budget.spent[key]=s; await sset('app_budget',budget); renderBudget(); }
-$('newweek').onclick=async()=>{ budget={weekStart:mondayOf(new Date()).toISOString(),spent:{}}; BUDGETS.forEach(b=>budget.spent[b.key]=0); await sset('app_budget',budget); renderBudget(); };
+
+async function spendB(key,dir){
+  const b=BUDGETS.find(x=>x.key===key);
+  const cap=budgetCap(key);
+  let s=(budget.spent[key]||0)+dir*b.step;
+  s=Math.max(0,Math.min(cap,s));
+  budget.spent[key]=s;
+  await sset('app_budget',budget);
+  renderBudget();
+}
+
+$('newweek').onclick=async()=>{
+  budget={weekStart:mondayOf(new Date()).toISOString(),spent:{},bonus:{}};
+  BUDGETS.forEach(b=>{ budget.spent[b.key]=0; budget.bonus[b.key]=0; });
+  await sset('app_budget',budget);
+  renderBudget();
+  renderShop();
+};
 
 /* ---------- GOALS ---------- */
+async function checkMilestone(g){
+  if(g.rewarded) return;
+  let complete=false;
+  if(g.type==='check'){
+    complete=g.done;
+  } else {
+    const span=Math.abs(g.target-g.start)||1;
+    complete=Math.abs(g.current-g.start)>=span;
+  }
+  if(!complete) return;
+  g.rewarded=true;
+  const reward=DIFF_PTS[g.difficulty||'normal'];
+  points.total+=reward;
+  points.last=reward;
+  await sset('app_goals',goals);
+  await sset('app_points',points);
+  renderPoints();
+  showNotif(`🏆 ${g.name} — +${reward} поінтів!`);
+}
+
 function renderGoals(){
   const wrap=$('goalCards'); wrap.innerHTML='';
-  goals.forEach((g)=>{
-    const c=document.createElement('div'); c.className='card'+(g.type==='check'&&g.done?' goal-done':'');
+  goals.forEach(g=>{
+    const diff=g.difficulty||'normal';
+    const badgeColor=DIFF_COLOR[diff];
+    const badgeHTML=`<span class="goal-badge" style="background:${badgeColor}22;color:${badgeColor};border:1px solid ${badgeColor}55">${DIFF_LABEL[diff]}</span>`;
+
+    const c=document.createElement('div');
+    c.className='card'+(g.type==='check'&&g.done?' goal-done':'');
+
     if(g.type==='check'){
-      c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div></div>
+      c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div>${badgeHTML}</div>
         <button class="goal-done-btn">${g.done?'✓ Зроблено':'Позначити зробленим'}</button>`;
-      c.querySelector('.goal-done-btn').onclick=async()=>{ g.done=!g.done; await sset('app_goals',goals); renderGoals(); };
+      c.querySelector('.goal-done-btn').onclick=async()=>{
+        g.done=!g.done;
+        c.className='card'+(g.done?' goal-done':'');
+        c.querySelector('.goal-done-btn').textContent=g.done?'✓ Зроблено':'Позначити зробленим';
+        await sset('app_goals',goals);
+        if(g.done) await checkMilestone(g);
+      };
     } else {
       const span=Math.abs(g.target-g.start)||1;
-      const prog=Math.abs(g.current-g.start);
-      const r=Math.max(0,Math.min(1,prog/span));
+      const r=Math.max(0,Math.min(1,Math.abs(g.current-g.start)/span));
       const col=r>=1?'var(--good)':'var(--cyan)';
-      c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div>
-        <div class="goal-val"><b>${fmt(g.current)}</b> / ${fmt(g.target)} ${g.unit}</div></div>
-        <div class="bar"><div class="fill" style="width:${r*100}%;background:${col}"></div></div>
+      c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div>${badgeHTML}</div>
+        <div style="display:flex;justify-content:flex-end;margin-top:6px">
+          <div class="goal-val"><b class="gv-cur">${fmt(g.current)}</b> / ${fmt(g.target)} ${g.unit}</div>
+        </div>
+        <div class="bar" style="margin-top:10px"><div class="fill gfill" style="width:0%;background:${col}"></div></div>
         <div class="goal-step"><button data-d="-1">− ${fmt(g.step)}</button><button data-d="1">+ ${fmt(g.step)}</button></div>`;
+
+      // animate bar entrance
+      const fillEl=c.querySelector('.gfill');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ fillEl.style.width=(r*100)+'%'; }));
+
       c.querySelectorAll('.goal-step button').forEach(btn=>btn.onclick=async()=>{
+        const oldR=Math.max(0,Math.min(1,Math.abs(g.current-g.start)/span));
         g.current=Math.round((g.current+(+btn.dataset.d)*g.step)*10)/10;
-        await sset('app_goals',goals); renderGoals();
+        const newR=Math.max(0,Math.min(1,Math.abs(g.current-g.start)/span));
+        const newCol=newR>=1?'var(--good)':'var(--cyan)';
+
+        c.querySelector('.gv-cur').textContent=fmt(g.current);
+        fillEl.style.background=newCol;
+        fillEl.style.width=(newR*100)+'%';
+
+        if(newR>oldR){
+          fillEl.classList.remove('glow');
+          void fillEl.offsetWidth; // force reflow to restart animation
+          fillEl.classList.add('glow');
+        }
+
+        await sset('app_goals',goals);
+        await checkMilestone(g);
       });
     }
     wrap.appendChild(c);
+  });
+}
+
+/* ---------- SHOP ---------- */
+function renderShop(){
+  $('shopPtsDisplay').innerHTML=`<b>${points.total}</b> pts`;
+
+  const bWrap=$('shopBudgetItems');
+  bWrap.innerHTML=`<div class="shop-section">Бюджет втіх</div>`;
+  SHOP_BUDGET.forEach(item=>{
+    const canBuy=points.total>=item.pts;
+    const row=document.createElement('div'); row.className='shop-item';
+    row.innerHTML=`<div class="shop-info">
+      <div class="shop-name">${item.name}</div>
+      <div class="shop-desc">${item.desc}</div>
+    </div>
+    <button class="shop-buy" ${canBuy?'':' disabled'}>${item.pts} pts</button>`;
+    row.querySelector('.shop-buy').onclick=async()=>{
+      if(points.total<item.pts) return;
+      points.total-=item.pts; points.last=0;
+      budget.bonus[item.key]=(budget.bonus[item.key]||0)+item.bonus;
+      await sset('app_points',points);
+      await sset('app_budget',budget);
+      renderPoints();
+      renderBudget();
+      renderShop();
+      showNotif(`✓ ${item.name} додано до бюджету`);
+    };
+    bWrap.appendChild(row);
+  });
+
+  const rWrap=$('shopRewardItems');
+  rWrap.innerHTML=`<div class="shop-section" style="margin-top:16px">Нагороди</div>`;
+  SHOP_REWARDS.forEach(item=>{
+    const canBuy=points.total>=item.pts;
+    const row=document.createElement('div'); row.className='shop-item';
+    row.innerHTML=`<div class="shop-info">
+      <div class="shop-name">${item.name}</div>
+      <div class="shop-desc">${item.desc}</div>
+    </div>
+    <button class="shop-buy" ${canBuy?'':' disabled'}>${item.pts} pts</button>`;
+    row.querySelector('.shop-buy').onclick=async()=>{
+      if(points.total<item.pts) return;
+      points.total-=item.pts; points.last=0;
+      await sset('app_points',points);
+      renderPoints();
+      renderShop();
+      showNotif(`🎉 ${item.name} — насолоджуйся!`);
+    };
+    rWrap.appendChild(row);
   });
 }
 
@@ -736,7 +957,7 @@ $('toastDone').onclick=()=>dismissReminder(true);
 $('toastClose').onclick=()=>dismissReminder(false);
 
 /* ---------- NAV ---------- */
-const ALL_TABS=['main','budget','goals','stats'];
+const ALL_TABS=['main','budget','goals','stats','shop'];
 document.querySelectorAll('.nav-row button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.nav-row button').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
@@ -760,14 +981,29 @@ document.querySelectorAll('.nav-row button').forEach(b=>b.onclick=()=>{
   tasks=storedTasks;
   await sset('app_tasks',tasks);
 
-  budget=await sget('app_budget')||{weekStart:null,spent:{}};
+  budget=await sget('app_budget')||{weekStart:null,spent:{},bonus:{}};
+  if(!budget.bonus) budget.bonus={};
   const wk=mondayOf(new Date()).toISOString();
-  if(budget.weekStart!==wk){ budget={weekStart:wk,spent:{}}; BUDGETS.forEach(b=>budget.spent[b.key]=0); await sset('app_budget',budget); }
-  BUDGETS.forEach(b=>{ if(budget.spent[b.key]==null) budget.spent[b.key]=0; });
+  if(budget.weekStart!==wk){
+    budget={weekStart:wk,spent:{},bonus:{}};
+    BUDGETS.forEach(b=>{ budget.spent[b.key]=0; budget.bonus[b.key]=0; });
+    await sset('app_budget',budget);
+  }
+  BUDGETS.forEach(b=>{
+    if(budget.spent[b.key]==null) budget.spent[b.key]=0;
+    if(budget.bonus[b.key]==null) budget.bonus[b.key]=0;
+  });
 
   goals=await sget('app_goals')||JSON.parse(JSON.stringify(GOALS));
+  // migrate difficulty from defaults for existing saved goals
+  goals.forEach(g=>{
+    if(!g.difficulty){
+      const def=GOALS.find(d=>d.key===g.key);
+      if(def) g.difficulty=def.difficulty||'normal';
+    }
+  });
 
-  renderQuote(); renderPoints(); renderCals(); renderTasks(); renderBudget(); renderGoals(); renderStats();
+  renderQuote(); renderPoints(); renderCals(); renderTasks(); renderBudget(); renderGoals(); renderStats(); renderShop();
   buildReminderQueue();
 })();
 </script>
