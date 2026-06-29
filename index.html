@@ -23,16 +23,22 @@
   /* top nav */
   .nav{
     position:sticky; top:0; z-index:20;
-    display:flex; gap:6px; padding:calc(12px + env(safe-area-inset-top)) 0 10px;
+    display:flex; flex-direction:column; gap:8px;
+    padding:calc(12px + env(safe-area-inset-top)) 0 10px;
     background:linear-gradient(180deg, var(--ink) 70%, transparent);
     margin-bottom:6px;
   }
-  .nav button{
+  .toronto-clock{
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+    color:var(--muted); text-align:center; letter-spacing:.12em;
+  }
+  .nav-row{ display:flex; gap:6px; }
+  .nav-row button{
     flex:1; font-family:'Sora',sans-serif; font-weight:600; font-size:13px;
     color:var(--muted); background:var(--panel); border:1px solid var(--line);
     padding:11px 6px; border-radius:11px; cursor:pointer; transition:.15s;
   }
-  .nav button.active{ color:var(--txt); background:var(--panel-2); border-color:var(--indigo); }
+  .nav-row button.active{ color:var(--txt); background:var(--panel-2); border-color:var(--indigo); }
 
   h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
     font-family:'JetBrains Mono',monospace; color:var(--indigo); margin:14px 2px 2px; }
@@ -86,6 +92,12 @@
   .task-add input::placeholder{ color:#54607a; }
   .task-add button{ background:var(--indigo); border:none; color:#11131c; font-weight:700;
     font-size:18px; width:46px; border-radius:11px; cursor:pointer; }
+  .task-date-row{ display:flex; gap:7px; margin-top:7px; }
+  .task-date-row input{
+    flex:1; background:#0f141c; border:1px solid var(--line); color:var(--txt);
+    font-family:'JetBrains Mono',monospace; font-size:12px; padding:9px 8px;
+    border-radius:9px; color-scheme:dark; min-width:0;
+  }
   .task{ display:flex; align-items:center; gap:11px; padding:12px 4px; border-bottom:1px solid var(--line); }
   .task:last-child{ border-bottom:none; }
   .checkbox{ width:22px; height:22px; border-radius:7px; border:1.5px solid var(--line);
@@ -94,6 +106,9 @@
   .task.done .checkbox{ background:var(--good); border-color:var(--good); }
   .task.done .ttext{ color:var(--muted); text-decoration:line-through; }
   .ttext{ flex:1; font-size:14px; }
+  .task-due{ display:block; font-family:'JetBrains Mono',monospace; font-size:10px;
+    color:var(--muted); margin-top:3px; }
+  .task-overdue{ color:var(--low); }
   .tdel{ background:none; border:none; color:#54607a; font-size:18px; cursor:pointer; padding:0 4px; }
   .empty-note{ color:var(--muted); font-size:13px; text-align:center; padding:18px 0 6px; }
 
@@ -158,15 +173,52 @@
   .stat-tasks{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
     flex:none; width:36px; text-align:right; }
 
+  /* reminder toast */
+  .toast-wrap{
+    position:fixed; top:0; left:0; right:0; max-width:480px; margin:0 auto;
+    z-index:200; padding:calc(env(safe-area-inset-top) + 10px) 16px 0;
+    pointer-events:none; display:none;
+  }
+  .toast{
+    background:var(--panel-2); border:1px solid var(--indigo);
+    border-radius:16px; padding:16px; pointer-events:all;
+    box-shadow:0 8px 32px rgba(0,0,0,.65);
+  }
+  .toast-lbl{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--indigo); margin-bottom:8px; }
+  .toast-text{ font-family:'Sora',sans-serif; font-size:15px; font-weight:600; }
+  .toast-time{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin-top:4px; }
+  .toast-btns{ display:flex; gap:8px; margin-top:12px; }
+  .toast-btns button{ flex:1; font-family:'Sora',sans-serif; font-size:13px; font-weight:600;
+    padding:10px; border-radius:10px; cursor:pointer; border:none; }
+  .toast-done{ background:var(--good); color:#0e1117; }
+  .toast-close{ background:transparent; border:1px solid var(--line) !important; color:var(--muted); }
+
   @media (prefers-reduced-motion: reduce){ .fill,.mfill,.stat-bar-fill{ transition:none; } *{ transition:none!important; } }
 </style>
 
+<!-- reminder toast (outside .wrap to avoid stacking-context issues) -->
+<div class="toast-wrap" id="toastWrap">
+  <div class="toast">
+    <div class="toast-lbl">Нагадування</div>
+    <div class="toast-text" id="toastText"></div>
+    <div class="toast-time" id="toastTime"></div>
+    <div class="toast-btns">
+      <button class="toast-done" id="toastDone">Готово ✓</button>
+      <button class="toast-close" id="toastClose">Закрити</button>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
   <div class="nav">
-    <button data-tab="main" class="active">Головна</button>
-    <button data-tab="budget">Бюджет</button>
-    <button data-tab="goals">Цілі</button>
-    <button data-tab="stats">Статистика</button>
+    <div id="torontoClock" class="toronto-clock">--:--:--</div>
+    <div class="nav-row">
+      <button data-tab="main" class="active">Головна</button>
+      <button data-tab="budget">Бюджет</button>
+      <button data-tab="goals">Цілі</button>
+      <button data-tab="stats">Статистика</button>
+    </div>
   </div>
 
   <!-- ============ MAIN ============ -->
@@ -211,8 +263,14 @@
         <input id="taskInput" placeholder="що треба зробити…" />
         <button id="taskAdd">+</button>
       </div>
+      <div class="task-date-row">
+        <input id="taskDate" type="date" />
+        <input id="taskTime" type="time" />
+      </div>
       <div id="taskList"></div>
     </div>
+
+    <div id="taskFuture"></div>
   </section>
 
   <!-- ============ BUDGET ============ -->
@@ -245,14 +303,36 @@
 <script>
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
-const today = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+const today = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD device-local (for cals/snapshot)
 function mondayOf(d){ const x=new Date(d); const day=(x.getDay()+6)%7; x.setHours(0,0,0,0); x.setDate(x.getDate()-day); return x; }
 const fmt = n => Number.isInteger(n)? n : n.toFixed(1);
 const mem = {};
 async function sget(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return mem[k]?JSON.parse(mem[k]):null; } }
 async function sset(k,v){ const s=JSON.stringify(v); try{ localStorage.setItem(k,s); }catch(e){ mem[k]=s; } }
 
-/* ---------- CONFIG — підфіксуй тут ---------- */
+/* ---------- Toronto time ---------- */
+function torontoNow(){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'America/Toronto', hourCycle:'h23',
+    year:'numeric',month:'2-digit',day:'2-digit',
+    hour:'2-digit',minute:'2-digit',second:'2-digit'
+  }).formatToParts(new Date());
+  const g=t=>parts.find(p=>p.type===t)?.value??'00';
+  return {
+    date:`${g('year')}-${g('month')}-${g('day')}`,
+    hhmm:`${g('hour')}:${g('minute')}`,
+    hhmmss:`${g('hour')}:${g('minute')}:${g('second')}`
+  };
+}
+
+/* ---------- Toronto clock ---------- */
+function tickClock(){
+  $('torontoClock').textContent = torontoNow().hhmmss + ' · Toronto';
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+/* ---------- CONFIG ---------- */
 const KCAL_GOAL={ kcal:2600, p:160, f:70, c:250 };
 const PTS_TARGET=500;
 const WINS=[
@@ -372,18 +452,64 @@ async function resetCals(){ cals={date:today(),kcal:0,p:0,f:0,c:0}; await sset('
 $('kcalReset2').onclick=resetCals;
 
 /* ---------- TASKS ---------- */
-function renderTasks(){
-  const L=$('taskList'); L.innerHTML='';
-  if(!tasks.items.length){ L.innerHTML='<div class="empty-note">Порожньо. Додай перше, що треба зробити.</div>'; return; }
-  tasks.items.forEach((t,i)=>{
-    const row=document.createElement('div'); row.className='task'+(t.done?' done':'');
-    row.innerHTML=`<div class="checkbox">${t.done?'✓':''}</div><div class="ttext">${t.text.replace(/</g,'&lt;')}</div><button class="tdel">×</button>`;
-    row.querySelector('.checkbox').onclick=async()=>{ t.done=!t.done; await sset('app_tasks',tasks); renderTasks(); };
-    row.querySelector('.tdel').onclick=async()=>{ tasks.items.splice(i,1); await sset('app_tasks',tasks); renderTasks(); };
-    L.appendChild(row);
-  });
+function fmtDate(s){
+  const d=new Date(s+'T00:00:00');
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
 }
-async function addTask(){ const v=$('taskInput').value.trim(); if(!v) return; tasks.items.push({text:v,done:false}); $('taskInput').value=''; await sset('app_tasks',tasks); renderTasks(); }
+
+function renderTasks(){
+  const todayStr=torontoNow().date;
+
+  const active=tasks.items.filter(t=> !t.dueDate || t.dueDate<=todayStr);
+  const future=tasks.items.filter(t=> t.dueDate && t.dueDate>todayStr)
+    .sort((a,b)=> a.dueDate!==b.dueDate ? (a.dueDate<b.dueDate?-1:1) : ((a.dueTime||'')>(b.dueTime||'')?1:-1));
+
+  /* active list */
+  const L=$('taskList'); L.innerHTML='';
+  if(!active.length){
+    L.innerHTML='<div class="empty-note">Порожньо. Додай перше, що треба зробити.</div>';
+  } else {
+    active.forEach(t=>{
+      const idx=tasks.items.indexOf(t);
+      const isOverdue=t.dueDate && t.dueDate<todayStr;
+      const row=document.createElement('div'); row.className='task'+(t.done?' done':'');
+      const dueLabel=t.dueDate
+        ? `<span class="task-due${isOverdue?' task-overdue':''}">${fmtDate(t.dueDate)}${t.dueTime?' · '+t.dueTime:''}</span>`
+        : '';
+      row.innerHTML=`<div class="checkbox">${t.done?'✓':''}</div><div class="ttext">${t.text.replace(/</g,'&lt;')}${dueLabel}</div><button class="tdel">×</button>`;
+      row.querySelector('.checkbox').onclick=async()=>{ t.done=!t.done; await sset('app_tasks',tasks); renderTasks(); };
+      row.querySelector('.tdel').onclick=async()=>{ tasks.items.splice(idx,1); await sset('app_tasks',tasks); renderTasks(); };
+      L.appendChild(row);
+    });
+  }
+
+  /* upcoming section */
+  const F=$('taskFuture'); F.innerHTML='';
+  if(future.length){
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML='<span class="label">Заплановано</span>';
+    future.forEach(t=>{
+      const idx=tasks.items.indexOf(t);
+      const row=document.createElement('div'); row.className='task'+(t.done?' done':'');
+      row.innerHTML=`<div class="checkbox">${t.done?'✓':''}</div><div class="ttext">${t.text.replace(/</g,'&lt;')}<span class="task-due">${fmtDate(t.dueDate)}${t.dueTime?' · '+t.dueTime:''}</span></div><button class="tdel">×</button>`;
+      row.querySelector('.checkbox').onclick=async()=>{ t.done=!t.done; await sset('app_tasks',tasks); renderTasks(); };
+      row.querySelector('.tdel').onclick=async()=>{ tasks.items.splice(idx,1); await sset('app_tasks',tasks); renderTasks(); };
+      card.appendChild(row);
+    });
+    F.appendChild(card);
+  }
+}
+
+function newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+async function addTask(){
+  const v=$('taskInput').value.trim(); if(!v) return;
+  const dd=$('taskDate').value||undefined;
+  const dt=$('taskTime').value||undefined;
+  tasks.items.push({id:newId(), text:v, done:false, dueDate:dd, dueTime:dt});
+  $('taskInput').value=''; $('taskDate').value=''; $('taskTime').value='';
+  await sset('app_tasks',tasks); renderTasks();
+}
 $('taskAdd').onclick=addTask;
 $('taskInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addTask(); });
 
@@ -450,7 +576,7 @@ async function saveSnapshot(prevCals, prevTasks){
     tasksDone: prevTasks.items.filter(x=>x.done).length,
     tasksTotal: prevTasks.items.length,
   };
-  history = history.filter(h=>h.date!==snap.date);
+  history=history.filter(h=>h.date!==snap.date);
   history.unshift(snap);
   if(history.length>14) history=history.slice(0,14);
   await sset('app_history', history);
@@ -466,8 +592,8 @@ function renderStats(){
     const d=new Date(h.date+'T00:00:00');
     const label=d.toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
     const kcalRatio=Math.min(1,(h.kcal||0)/KCAL_GOAL.kcal);
-    const kcalCol = kcalRatio>=0.9?'var(--good)':kcalRatio>=0.6?'var(--indigo)':'var(--muted)';
-    const taskTxt = h.tasksTotal>0 ? `${h.tasksDone}/${h.tasksTotal}` : '—';
+    const kcalCol=kcalRatio>=0.9?'var(--good)':kcalRatio>=0.6?'var(--indigo)':'var(--muted)';
+    const taskTxt=h.tasksTotal>0?`${h.tasksDone}/${h.tasksTotal}`:'—';
     const row=document.createElement('div'); row.className='stat-row';
     row.innerHTML=
       `<span class="stat-date">${label}</span>`+
@@ -478,10 +604,53 @@ function renderStats(){
   });
 }
 
+/* ---------- REMINDER QUEUE ---------- */
+let reminderQueue=[];
+const sessionReminded=new Set();
+
+function buildReminderQueue(){
+  const {date:todayStr, hhmm:nowHHMM}=torontoNow();
+  reminderQueue=tasks.items.filter(t=>
+    t.dueDate===todayStr &&
+    t.dueTime &&
+    !t.done &&
+    t.remindedAt!==todayStr &&
+    t.dueTime<=nowHHMM &&
+    !sessionReminded.has(t.id)
+  );
+  showNextReminder();
+}
+
+function showNextReminder(){
+  if(!reminderQueue.length){ $('toastWrap').style.display='none'; return; }
+  const t=reminderQueue[0];
+  sessionReminded.add(t.id);
+  $('toastText').textContent=t.text;
+  $('toastTime').textContent=`${fmtDate(t.dueDate)} · ${t.dueTime}`;
+  $('toastWrap').style.display='block';
+}
+
+async function dismissReminder(markDone){
+  if(!reminderQueue.length) return;
+  const t=reminderQueue.shift();
+  const {date:todayStr}=torontoNow();
+  const item=tasks.items.find(x=>x.id===t.id);
+  if(item){
+    item.remindedAt=todayStr;
+    if(markDone) item.done=true;
+    await sset('app_tasks',tasks);
+    renderTasks();
+  }
+  showNextReminder();
+}
+
+$('toastDone').onclick=()=>dismissReminder(true);
+$('toastClose').onclick=()=>dismissReminder(false);
+
 /* ---------- NAV ---------- */
 const ALL_TABS=['main','budget','goals','stats'];
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.nav-row button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.nav-row button').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
   ALL_TABS.forEach(t=>$(t).style.display = t===b.dataset.tab?'block':'none');
 });
@@ -494,6 +663,9 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   const storedCals = await sget('app_cals') || {date:today(),kcal:0,p:0,f:0,c:0};
   const storedTasks = await sget('app_tasks') || {date:today(),items:[]};
 
+  /* migrate old tasks that have no id */
+  storedTasks.items = storedTasks.items.map(t=> t.id ? t : {...t, id:newId()});
+
   if(storedCals.date!==today()){
     await saveSnapshot(storedCals, storedTasks);
   }
@@ -502,6 +674,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   if(storedCals.date!==today()) await sset('app_cals',cals);
 
   tasks = storedTasks;
+  await sset('app_tasks', tasks); // persist migration
 
   budget = await sget('app_budget') || {weekStart:null,spent:{}};
   const wk=mondayOf(new Date()).toISOString();
@@ -511,5 +684,6 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   goals = await sget('app_goals') || JSON.parse(JSON.stringify(GOALS));
 
   renderQuote(); renderPoints(); renderCals(); renderTasks(); renderBudget(); renderGoals(); renderStats();
+  buildReminderQueue();
 })();
 </script>
