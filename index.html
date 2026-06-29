@@ -137,7 +137,28 @@
     font-family:'JetBrains Mono',monospace; font-size:12px; padding:11px; border-radius:11px;
     cursor:pointer; margin-top:14px; }
 
-  @media (prefers-reduced-motion: reduce){ .fill,.mfill{ transition:none; } *{ transition:none!important; } }
+  /* daily quote */
+  .quote-block{ margin-top:14px; padding:13px 15px; border:1px solid var(--line);
+    border-radius:14px; background:var(--panel); }
+  .quote-text{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted);
+    line-height:1.65; }
+  .quote-src{ font-family:'JetBrains Mono',monospace; font-size:10px; color:#54607a; margin-top:7px; }
+
+  /* stats */
+  .stat-row{ display:flex; align-items:center; gap:10px; padding:11px 0;
+    border-bottom:1px solid var(--line); }
+  .stat-row:last-child{ border-bottom:none; }
+  .stat-date{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
+    flex:none; width:66px; }
+  .stat-kcal{ font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700;
+    flex:none; width:48px; }
+  .stat-bar-wrap{ flex:1; height:6px; border-radius:4px; background:#0f141c;
+    border:1px solid var(--line); overflow:hidden; }
+  .stat-bar-fill{ height:100%; border-radius:3px; background:var(--indigo); transition:width .4s; }
+  .stat-tasks{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
+    flex:none; width:36px; text-align:right; }
+
+  @media (prefers-reduced-motion: reduce){ .fill,.mfill,.stat-bar-fill{ transition:none; } *{ transition:none!important; } }
 </style>
 
 <div class="wrap">
@@ -145,10 +166,13 @@
     <button data-tab="main" class="active">Головна</button>
     <button data-tab="budget">Бюджет</button>
     <button data-tab="goals">Цілі</button>
+    <button data-tab="stats">Статистика</button>
   </div>
 
   <!-- ============ MAIN ============ -->
   <section id="main">
+    <div class="quote-block" id="quoteBlock"></div>
+
     <div class="card">
       <div class="head-row">
         <span class="label">Поінти</span>
@@ -210,6 +234,12 @@
     <div id="goalCards"></div>
     <div class="foot-note">Менші цілі = більше виграних. Це про рух, не про вирок.</div>
   </section>
+
+  <!-- ============ STATS ============ -->
+  <section id="stats" style="display:none">
+    <h2 class="page">Останні 14 днів</h2>
+    <div class="card"><div id="statsContent"></div></div>
+  </section>
 </div>
 
 <script>
@@ -224,7 +254,7 @@ async function sset(k,v){ const s=JSON.stringify(v); try{ localStorage.setItem(k
 
 /* ---------- CONFIG — підфіксуй тут ---------- */
 const KCAL_GOAL={ kcal:2600, p:160, f:70, c:250 };
-const PTS_TARGET=500;            // ціль накопичення (напр. розблокувати стрім)
+const PTS_TARGET=500;
 const WINS=[
   {name:'Зал',          pts:20},
   {name:'Подача роботи',pts:15},
@@ -243,12 +273,58 @@ const GOALS=[
   {key:'photos',name:'Гарні фотки для соцмереж', type:'check', done:false},
 ];
 
+/* ---------- QUOTES ---------- */
+const QUOTES=[
+  {q:"A lesson without pain is meaningless. You can't gain something without sacrificing something else.",src:"Edward Elric · Fullmetal Alchemist"},
+  {q:"The world is cruel, but also very beautiful.",src:"Mikasa Ackerman · Attack on Titan"},
+  {q:"Enjoy the little detours. That's where you'll find the things more important than what you want.",src:"Ging Freecss · Hunter × Hunter"},
+  {q:"Those who break the rules are scum, but those who abandon their comrades are worse than scum.",src:"Kakashi Hatake · Naruto"},
+  {q:"If you don't share someone's pain, you can never understand them.",src:"Pain · Naruto"},
+  {q:"A real warrior doesn't need a sword.",src:"Thors · Vinland Saga"},
+  {q:"Happiness is simple.",src:"Thors · Vinland Saga"},
+  {q:"Even if things are painful and tough, people should appreciate what it means to be alive at all.",src:"Yato · Noragami"},
+  {q:"Hard work betrays none, but dreams betray many.",src:"Hikigaya Hachiman · OreGairu"},
+  {q:"Fear is not evil. It tells you what your weakness is.",src:"Gildarts Clive · Fairy Tail"},
+  {q:"People's lives don't end when they die. It ends when they lose faith.",src:"Itachi Uchiha · Naruto"},
+  {q:"The ticket to the future is always open.",src:"Vash the Stampede · Trigun"},
+  {q:"Whatever you lose, you'll find it again. But what you throw away, you'll never get back.",src:"Kenshin Himura · Rurouni Kenshin"},
+  {q:"The only way to truly escape the mundane is for you to constantly be evolving.",src:"Koro-sensei · Assassination Classroom"},
+  {q:"It's not the world that's messed up — it's those of us in it. Yes, killing each other is wrong. And yet we still do it.",src:"Ken Kaneki · Tokyo Ghoul"},
+  {q:"You can't sit around envying other people's worlds. You have to go out and change your own.",src:"Shinichi Izumi · Parasyte"},
+  {q:"Don't give up! There's no shame in falling down. True shame is to not stand up again.",src:"Shintaro Midorima · Kuroko no Basket"},
+  {q:"Moving on doesn't mean you forget about things. It just means you have to accept what happened and continue living.",src:"Erza Scarlet · Fairy Tail"},
+  {q:"A person grows when they're able to defeat their own weaknesses.",src:"Might Guy · Naruto"},
+  {q:"We don't know what kind of people we truly are until the moment before our deaths.",src:"Itachi Uchiha · Naruto"},
+  {q:"The worst part of being strong is that no one ever asks if you're okay.",src:"Levi Ackerman · Attack on Titan"},
+  {q:"Nothing in this world is certain except the way you choose to live.",src:"Askeladd · Vinland Saga"},
+  {q:"Power without perception is spiritually useless and therefore of no true value.",src:"Meruem · Hunter × Hunter"},
+  {q:"Life is not a game of luck. If you wanna win, work hard.",src:"Sora · No Game No Life"},
+  {q:"No matter how deep the night, it always turns to day eventually.",src:"Brook · One Piece"},
+  {q:"I'll keep moving forward. Even if I have to crawl, even if it breaks me.",src:"Thorfinn · Vinland Saga"},
+  {q:"You need to accept the fact that you're not the best and have all the will to strive to be better than anyone you face.",src:"Roronoa Zoro · One Piece"},
+  {q:"Don't live for other people. Live your life for yourself.",src:"Victor Nikiforov · Yuri on Ice"},
+  {q:"Even in the darkest place, something worthy of protection always emerges.",src:"Natsuki Subaru · Re:Zero"},
+  {q:"The strong don't win. Those who win are strong.",src:"Erwin Smith · Attack on Titan"},
+];
+
+function dayOfYear(){
+  const n=new Date(), s=new Date(n.getFullYear(),0,0);
+  return Math.floor((n-s)/86400000);
+}
+
+function renderQuote(){
+  const q=QUOTES[dayOfYear()%QUOTES.length];
+  $('quoteBlock').innerHTML=
+    `<div class="quote-text">"${q.q}"</div><div class="quote-src">— ${q.src}</div>`;
+}
+
 /* ---------- STATE ---------- */
 let points={total:0,last:0};
 let cals={date:today(),kcal:0,p:0,f:0,c:0};
 let tasks={date:today(),items:[]};
 let budget={weekStart:null,spent:{}};
 let goals=null;
+let history=[];
 
 /* ---------- POINTS ---------- */
 function renderPoints(){
@@ -362,21 +438,70 @@ function renderGoals(){
   });
 }
 
+/* ---------- HISTORY / SNAPSHOT ---------- */
+async function saveSnapshot(prevCals, prevTasks){
+  if(!prevCals.date || prevCals.date===today()) return;
+  const snap={
+    date: prevCals.date,
+    kcal: Math.round(prevCals.kcal),
+    p: Math.round(prevCals.p),
+    f: Math.round(prevCals.f),
+    c: Math.round(prevCals.c),
+    tasksDone: prevTasks.items.filter(x=>x.done).length,
+    tasksTotal: prevTasks.items.length,
+  };
+  history = history.filter(h=>h.date!==snap.date);
+  history.unshift(snap);
+  if(history.length>14) history=history.slice(0,14);
+  await sset('app_history', history);
+}
+
+function renderStats(){
+  const wrap=$('statsContent'); wrap.innerHTML='';
+  if(!history.length){
+    wrap.innerHTML='<div class="empty-note">Статистика з\'явиться після першого повного дня.<br>Приходь завтра!</div>';
+    return;
+  }
+  history.forEach(h=>{
+    const d=new Date(h.date+'T00:00:00');
+    const label=d.toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+    const kcalRatio=Math.min(1,(h.kcal||0)/KCAL_GOAL.kcal);
+    const kcalCol = kcalRatio>=0.9?'var(--good)':kcalRatio>=0.6?'var(--indigo)':'var(--muted)';
+    const taskTxt = h.tasksTotal>0 ? `${h.tasksDone}/${h.tasksTotal}` : '—';
+    const row=document.createElement('div'); row.className='stat-row';
+    row.innerHTML=
+      `<span class="stat-date">${label}</span>`+
+      `<span class="stat-kcal" style="color:${kcalCol}">${h.kcal||0}</span>`+
+      `<div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${kcalRatio*100}%;background:${kcalCol}"></div></div>`+
+      `<span class="stat-tasks">${taskTxt}</span>`;
+    wrap.appendChild(row);
+  });
+}
+
 /* ---------- NAV ---------- */
+const ALL_TABS=['main','budget','goals','stats'];
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
-  ['main','budget','goals'].forEach(t=>$(t).style.display = t===b.dataset.tab?'block':'none');
+  ALL_TABS.forEach(t=>$(t).style.display = t===b.dataset.tab?'block':'none');
 });
 
 /* ---------- INIT ---------- */
 (async function(){
   points = await sget('app_points') || {total:0,last:0};
+  history = await sget('app_history') || [];
 
-  cals = await sget('app_cals') || {date:today(),kcal:0,p:0,f:0,c:0};
-  if(cals.date!==today()) await resetCals();
+  const storedCals = await sget('app_cals') || {date:today(),kcal:0,p:0,f:0,c:0};
+  const storedTasks = await sget('app_tasks') || {date:today(),items:[]};
 
-  tasks = await sget('app_tasks') || {date:today(),items:[]};
+  if(storedCals.date!==today()){
+    await saveSnapshot(storedCals, storedTasks);
+  }
+
+  cals = storedCals.date===today() ? storedCals : {date:today(),kcal:0,p:0,f:0,c:0};
+  if(storedCals.date!==today()) await sset('app_cals',cals);
+
+  tasks = storedTasks;
 
   budget = await sget('app_budget') || {weekStart:null,spent:{}};
   const wk=mondayOf(new Date()).toISOString();
@@ -385,6 +510,6 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
 
   goals = await sget('app_goals') || JSON.parse(JSON.stringify(GOALS));
 
-  renderPoints(); renderCals(); renderTasks(); renderBudget(); renderGoals();
+  renderQuote(); renderPoints(); renderCals(); renderTasks(); renderBudget(); renderGoals(); renderStats();
 })();
 </script>
