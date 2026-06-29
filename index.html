@@ -1,0 +1,390 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Tracker</title>
+<meta name="theme-color" content="#0E1117" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Tracker" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  :root {
+    --ink:#0E1117; --panel:#161C26; --panel-2:#1B2330; --line:#28323F;
+    --txt:#E7ECF3; --muted:#7E8AA0; --indigo:#8A7BE6;
+    --good:#38B89A; --mid:#E0A646; --low:#E4574E; --cyan:#4FB8CE;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{
+    margin:0; background:radial-gradient(1100px 520px at 50% -10%, #1a2330 0%, transparent 60%), var(--ink);
+    color:var(--txt); font-family:'Sora',system-ui,sans-serif; min-height:100vh;
+  }
+  .wrap{ max-width:480px; margin:0 auto; padding:0 16px 70px; }
+
+  /* top nav */
+  .nav{
+    position:sticky; top:0; z-index:20;
+    display:flex; gap:6px; padding:12px 0 10px;
+    background:linear-gradient(180deg, var(--ink) 70%, transparent);
+    margin-bottom:6px;
+  }
+  .nav button{
+    flex:1; font-family:'Sora',sans-serif; font-weight:600; font-size:13px;
+    color:var(--muted); background:var(--panel); border:1px solid var(--line);
+    padding:11px 6px; border-radius:11px; cursor:pointer; transition:.15s;
+  }
+  .nav button.active{ color:var(--txt); background:var(--panel-2); border-color:var(--indigo); }
+
+  h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace; color:var(--indigo); margin:14px 2px 2px; }
+
+  .card{
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line); border-radius:16px; padding:16px; margin-top:14px;
+    position:relative; overflow:hidden;
+  }
+  .card.empty{ opacity:.58; }
+  .label{ font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace; color:var(--muted); }
+
+  /* points */
+  .pts-big{ font-family:'JetBrains Mono',monospace; font-size:46px; font-weight:700;
+    line-height:1; margin:6px 0 2px; }
+  .pts-sub{ font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace; }
+  .bar{ height:12px; border-radius:7px; background:#0f141c; border:1px solid var(--line);
+    overflow:hidden; margin:14px 0 6px; }
+  .fill{ height:100%; border-radius:6px; transition:width .5s cubic-bezier(.2,.8,.2,1), background .4s; }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
+  .chip{ background:#232d3b; border:1px solid var(--line); color:var(--txt);
+    font-family:'Sora',sans-serif; font-size:12.5px; font-weight:600; padding:9px 12px;
+    border-radius:10px; cursor:pointer; transition:.1s; }
+  .chip:active{ transform:scale(.95); }
+  .mini{ background:transparent; border:1px solid var(--line); color:var(--muted);
+    font-family:'JetBrains Mono',monospace; font-size:11px; padding:7px 12px;
+    border-radius:9px; cursor:pointer; margin-top:12px; }
+
+  /* macros */
+  .head-row{ display:flex; justify-content:space-between; align-items:baseline; }
+  .kcal-big{ font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; }
+  .kcal-of{ font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace; }
+  .macros{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:14px; }
+  .macro .mlabel{ font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; }
+  .macro .mval{ font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; margin:3px 0 6px; }
+  .mbar{ height:7px; border-radius:5px; background:#0f141c; border:1px solid var(--line); overflow:hidden; }
+  .mfill{ height:100%; transition:width .4s; }
+  .add-food{ display:grid; grid-template-columns:repeat(4,1fr) auto; gap:6px; margin-top:14px; }
+  .add-food input{ width:100%; background:#0f141c; border:1px solid var(--line); color:var(--txt);
+    font-family:'JetBrains Mono',monospace; font-size:12px; padding:9px 6px; border-radius:9px; text-align:center; }
+  .add-food input::placeholder{ color:#54607a; }
+  .add-food button{ background:var(--indigo); border:none; color:#11131c; font-weight:700;
+    font-size:16px; border-radius:9px; padding:0 12px; cursor:pointer; }
+  .add-food button:active{ transform:scale(.94); }
+
+  /* tasks */
+  .task-add{ display:flex; gap:7px; margin-top:6px; }
+  .task-add input{ flex:1; background:#0f141c; border:1px solid var(--line); color:var(--txt);
+    font-family:'Sora',sans-serif; font-size:14px; padding:11px 12px; border-radius:11px; }
+  .task-add input::placeholder{ color:#54607a; }
+  .task-add button{ background:var(--indigo); border:none; color:#11131c; font-weight:700;
+    font-size:18px; width:46px; border-radius:11px; cursor:pointer; }
+  .task{ display:flex; align-items:center; gap:11px; padding:12px 4px; border-bottom:1px solid var(--line); }
+  .task:last-child{ border-bottom:none; }
+  .checkbox{ width:22px; height:22px; border-radius:7px; border:1.5px solid var(--line);
+    flex:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:13px; color:var(--ink); transition:.15s; }
+  .task.done .checkbox{ background:var(--good); border-color:var(--good); }
+  .task.done .ttext{ color:var(--muted); text-decoration:line-through; }
+  .ttext{ flex:1; font-size:14px; }
+  .tdel{ background:none; border:none; color:#54607a; font-size:18px; cursor:pointer; padding:0 4px; }
+  .empty-note{ color:var(--muted); font-size:13px; text-align:center; padding:18px 0 6px; }
+
+  /* budget HUD reuse */
+  .card-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .name{ font-size:15px; font-weight:600; display:flex; align-items:center; gap:9px; }
+  .dot{ width:9px; height:9px; border-radius:50%; flex:none; }
+  .readout{ font-family:'JetBrains Mono',monospace; text-align:right; line-height:1; }
+  .readout .big{ font-size:22px; font-weight:700; }
+  .readout .unit{ font-size:11px; color:var(--muted); margin-left:2px; }
+  .readout .of{ font-size:11px; color:var(--muted); display:block; margin-top:4px; }
+  .row{ display:flex; gap:8px; align-items:center; }
+  .spend{ flex:1; background:#232d3b; border:1px solid var(--line); color:var(--txt);
+    font-family:'Sora',sans-serif; font-size:14px; font-weight:600; padding:12px 10px;
+    border-radius:11px; cursor:pointer; transition:.1s; }
+  .spend:active{ transform:scale(.96); } .spend:disabled{ opacity:.4; }
+  .undo{ flex:none; width:46px; background:transparent; border:1px solid var(--line);
+    color:var(--muted); font-size:17px; padding:12px 0; border-radius:11px; cursor:pointer; }
+  .undo:disabled{ opacity:.3; }
+  .spent-msg{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted); margin-top:11px; }
+
+  /* goals */
+  .goal-top{ display:flex; justify-content:space-between; align-items:baseline; }
+  .goal-name{ font-size:15px; font-weight:600; }
+  .goal-val{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted); }
+  .goal-val b{ color:var(--txt); font-size:16px; }
+  .goal-step{ display:flex; gap:7px; margin-top:12px; align-items:center; }
+  .goal-step button{ flex:1; background:#232d3b; border:1px solid var(--line); color:var(--txt);
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; padding:10px;
+    border-radius:10px; cursor:pointer; }
+  .goal-step button:active{ transform:scale(.96); }
+  .goal-done-btn{ width:100%; background:#232d3b; border:1px solid var(--line); color:var(--txt);
+    font-family:'Sora',sans-serif; font-size:13px; font-weight:600; padding:11px; border-radius:11px;
+    margin-top:12px; cursor:pointer; }
+  .goal-done .goal-done-btn{ background:var(--good); border-color:var(--good); color:#0e1117; }
+
+  .foot-note{ margin-top:16px; font-size:12px; color:var(--muted); line-height:1.6; text-align:center; }
+  .resets{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-align:right; }
+  .resets b{ color:var(--txt); }
+  .newweek{ width:100%; background:transparent; border:1px solid var(--line); color:var(--muted);
+    font-family:'JetBrains Mono',monospace; font-size:12px; padding:11px; border-radius:11px;
+    cursor:pointer; margin-top:14px; }
+
+  @media (prefers-reduced-motion: reduce){ .fill,.mfill{ transition:none; } *{ transition:none!important; } }
+</style>
+
+<div class="wrap">
+  <div class="nav">
+    <button data-tab="main" class="active">Головна</button>
+    <button data-tab="budget">Бюджет</button>
+    <button data-tab="goals">Цілі</button>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <section id="main">
+    <div class="card">
+      <div class="head-row">
+        <span class="label">Поінти</span>
+        <span class="resets" id="ptsTargetLbl"></span>
+      </div>
+      <div class="pts-big" id="ptsTotal">0</div>
+      <div class="pts-sub" id="ptsToGoal"></div>
+      <div class="bar"><div class="fill" id="ptsFill" style="background:var(--indigo)"></div></div>
+      <div class="chips" id="ptsChips"></div>
+      <button class="mini" id="ptsUndo">↩ відмінити останнє</button>
+    </div>
+
+    <div class="card">
+      <div class="head-row">
+        <span class="label">Калорії · сьогодні</span>
+        <span class="kcal-of" id="kcalReset"></span>
+      </div>
+      <div style="margin-top:8px">
+        <span class="kcal-big" id="kcalNow">0</span>
+        <span class="kcal-of" id="kcalGoal"></span>
+      </div>
+      <div class="macros" id="macros"></div>
+      <div class="add-food">
+        <input id="fKcal" type="number" inputmode="numeric" placeholder="ккал" />
+        <input id="fP" type="number" inputmode="numeric" placeholder="Б" />
+        <input id="fF" type="number" inputmode="numeric" placeholder="Ж" />
+        <input id="fC" type="number" inputmode="numeric" placeholder="В" />
+        <button id="addFood">+</button>
+      </div>
+      <button class="mini" id="kcalReset2">↺ обнулити день</button>
+    </div>
+
+    <div class="card">
+      <span class="label">Справи на сьогодні</span>
+      <div class="task-add" style="margin-top:12px">
+        <input id="taskInput" placeholder="що треба зробити…" />
+        <button id="taskAdd">+</button>
+      </div>
+      <div id="taskList"></div>
+    </div>
+  </section>
+
+  <!-- ============ BUDGET ============ -->
+  <section id="budget" style="display:none">
+    <div class="head-row" style="margin-top:14px">
+      <h2 class="page" style="margin:0">Бюджет втіх · тиждень</h2>
+      <span class="resets" id="budgetReset"></span>
+    </div>
+    <div id="budgetCards"></div>
+    <button class="newweek" id="newweek">↺ Почати новий тиждень</button>
+    <div class="foot-note">
+      Не нагорода за хороше — стеля на те, що й так робиш.<br />Бюджет скінчився — не провал. Понеділок обнулить.
+    </div>
+  </section>
+
+  <!-- ============ GOALS ============ -->
+  <section id="goals" style="display:none">
+    <h2 class="page">Майлстоуни</h2>
+    <div id="goalCards"></div>
+    <div class="foot-note">Менші цілі = більше виграних. Це про рух, не про вирок.</div>
+  </section>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const today = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+function mondayOf(d){ const x=new Date(d); const day=(x.getDay()+6)%7; x.setHours(0,0,0,0); x.setDate(x.getDate()-day); return x; }
+const fmt = n => Number.isInteger(n)? n : n.toFixed(1);
+const mem = {};
+async function sget(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return mem[k]?JSON.parse(mem[k]):null; } }
+async function sset(k,v){ const s=JSON.stringify(v); try{ localStorage.setItem(k,s); }catch(e){ mem[k]=s; } }
+
+/* ---------- CONFIG — підфіксуй тут ---------- */
+const KCAL_GOAL={ kcal:2600, p:160, f:70, c:250 };
+const PTS_TARGET=500;            // ціль накопичення (напр. розблокувати стрім)
+const WINS=[
+  {name:'Зал',          pts:20},
+  {name:'Подача роботи',pts:15},
+  {name:'Англійська',   pts:10},
+  {name:'День у бюджеті',pts:15},
+];
+const BUDGETS=[
+  {key:'tiktok',name:'TikTok',unit:'год',total:7,step:0.5,color:'#E4574E'},
+  {key:'dota',  name:'Дота',  unit:'год',total:6,step:1,  color:'#8A7BE6'},
+  {key:'cheats',name:'Зриви (їжа)',unit:'шт',total:3,step:1,color:'#E0A646'},
+];
+const GOALS=[
+  {key:'bench', name:'Пожати 90 кг',       type:'progress', start:72.5, current:72.5, target:90, unit:'кг', step:2.5},
+  {key:'weight',name:'Скинути 3 кг',        type:'progress', start:115.7,current:115.7,target:112.7,unit:'кг',step:0.3,down:true},
+  {key:'money', name:'Заробити за місяць',  type:'progress', start:0,   current:0,    target:2400,unit:'$', step:50},
+  {key:'photos',name:'Гарні фотки для соцмереж', type:'check', done:false},
+];
+
+/* ---------- STATE ---------- */
+let points={total:0,last:0};
+let cals={date:today(),kcal:0,p:0,f:0,c:0};
+let tasks={date:today(),items:[]};
+let budget={weekStart:null,spent:{}};
+let goals=null;
+
+/* ---------- POINTS ---------- */
+function renderPoints(){
+  $('ptsTotal').textContent=points.total;
+  $('ptsTargetLbl').innerHTML=`ціль <b>${PTS_TARGET}</b>`;
+  const ratio=Math.min(1, points.total/PTS_TARGET);
+  $('ptsFill').style.width=(ratio*100)+'%';
+  $('ptsFill').style.background = ratio>=1?'var(--good)':'var(--indigo)';
+  const left=Math.max(0,PTS_TARGET-points.total);
+  $('ptsToGoal').textContent = left>0? `ще ${left} до цілі` : 'ціль досягнута 🔓';
+  $('ptsChips').innerHTML='';
+  WINS.forEach(w=>{
+    const b=document.createElement('button'); b.className='chip';
+    b.textContent=`${w.name} +${w.pts}`;
+    b.onclick=async()=>{ points.total+=w.pts; points.last=w.pts; await sset('app_points',points); renderPoints(); };
+    $('ptsChips').appendChild(b);
+  });
+  $('ptsUndo').disabled = points.last<=0;
+}
+$('ptsUndo').onclick=async()=>{ if(points.last>0){ points.total=Math.max(0,points.total-points.last); points.last=0; await sset('app_points',points); renderPoints(); } };
+
+/* ---------- CALORIES ---------- */
+const MAC=[{k:'p',n:'Білки',c:'#38B89A'},{k:'f',n:'Жири',c:'#E0A646'},{k:'c',n:'Вугл',c:'#4FB8CE'}];
+function renderCals(){
+  $('kcalNow').textContent=Math.round(cals.kcal);
+  $('kcalGoal').textContent=` / ${KCAL_GOAL.kcal} ккал`;
+  $('kcalReset').textContent='рахуй щоб знати';
+  $('macros').innerHTML='';
+  MAC.forEach(m=>{
+    const v=cals[m.k], goal=KCAL_GOAL[m.k], r=Math.min(1,v/goal);
+    const el=document.createElement('div'); el.className='macro';
+    el.innerHTML=`<div class="mlabel">${m.n}</div><div class="mval">${Math.round(v)}<span style="color:var(--muted);font-size:11px"> / ${goal}г</span></div>
+      <div class="mbar"><div class="mfill" style="width:${r*100}%;background:${m.c}"></div></div>`;
+    $('macros').appendChild(el);
+  });
+}
+$('addFood').onclick=async()=>{
+  const k=+$('fKcal').value||0, p=+$('fP').value||0, f=+$('fF').value||0, c=+$('fC').value||0;
+  if(!(k||p||f||c)) return;
+  cals.kcal+=k; cals.p+=p; cals.f+=f; cals.c+=c;
+  ['fKcal','fP','fF','fC'].forEach(id=>$(id).value='');
+  await sset('app_cals',cals); renderCals();
+};
+async function resetCals(){ cals={date:today(),kcal:0,p:0,f:0,c:0}; await sset('app_cals',cals); renderCals(); }
+$('kcalReset2').onclick=resetCals;
+
+/* ---------- TASKS ---------- */
+function renderTasks(){
+  const L=$('taskList'); L.innerHTML='';
+  if(!tasks.items.length){ L.innerHTML='<div class="empty-note">Порожньо. Додай перше, що треба зробити.</div>'; return; }
+  tasks.items.forEach((t,i)=>{
+    const row=document.createElement('div'); row.className='task'+(t.done?' done':'');
+    row.innerHTML=`<div class="checkbox">${t.done?'✓':''}</div><div class="ttext">${t.text.replace(/</g,'&lt;')}</div><button class="tdel">×</button>`;
+    row.querySelector('.checkbox').onclick=async()=>{ t.done=!t.done; await sset('app_tasks',tasks); renderTasks(); };
+    row.querySelector('.tdel').onclick=async()=>{ tasks.items.splice(i,1); await sset('app_tasks',tasks); renderTasks(); };
+    L.appendChild(row);
+  });
+}
+async function addTask(){ const v=$('taskInput').value.trim(); if(!v) return; tasks.items.push({text:v,done:false}); $('taskInput').value=''; await sset('app_tasks',tasks); renderTasks(); }
+$('taskAdd').onclick=addTask;
+$('taskInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addTask(); });
+
+/* ---------- BUDGET ---------- */
+function colorFor(r,base){ if(r<=0.18)return'var(--low)'; if(r<=0.45)return'var(--mid)'; return base; }
+function renderBudget(){
+  const next=mondayOf(new Date()); next.setDate(next.getDate()+7);
+  $('budgetReset').innerHTML=`обнулення <b>${Math.ceil((next-new Date())/86400000)} дн</b>`;
+  const wrap=$('budgetCards'); wrap.innerHTML='';
+  BUDGETS.forEach(b=>{
+    const spent=budget.spent[b.key]||0, left=Math.max(0,b.total-spent), r=left/b.total, empty=left<=0, col=colorFor(r,b.color);
+    const c=document.createElement('div'); c.className='card'+(empty?' empty':'');
+    c.innerHTML=`<div class="card-head"><div class="name"><span class="dot" style="background:${b.color}"></span>${b.name}</div>
+      <div class="readout"><span class="big" style="color:${empty?'var(--muted)':col}">${fmt(left)}</span><span class="unit">${b.unit}</span>
+      <span class="of">з ${fmt(b.total)} ${b.unit} лишилось</span></div></div>
+      <div class="bar"><div class="fill" style="width:${r*100}%;background:${col}"></div></div>
+      <div class="row"><button class="spend" data-k="${b.key}" ${empty?'disabled':''}>− ${fmt(b.step)} ${b.unit}${empty?' · вичерпано':''}</button>
+      <button class="undo" data-u="${b.key}" ${spent<=0?'disabled':''}>↩</button></div>
+      ${empty?'<div class="spent-msg">Стоп на цей тиждень. Без драми — понеділок обнулить.</div>':''}`;
+    wrap.appendChild(c);
+  });
+  wrap.querySelectorAll('.spend').forEach(btn=>btn.onclick=()=>spendB(btn.dataset.k,1));
+  wrap.querySelectorAll('.undo').forEach(btn=>btn.onclick=()=>spendB(btn.dataset.u,-1));
+}
+async function spendB(key,dir){ const b=BUDGETS.find(x=>x.key===key); let s=(budget.spent[key]||0)+dir*b.step; s=Math.max(0,Math.min(b.total,s)); budget.spent[key]=s; await sset('app_budget',budget); renderBudget(); }
+$('newweek').onclick=async()=>{ budget={weekStart:mondayOf(new Date()).toISOString(),spent:{}}; BUDGETS.forEach(b=>budget.spent[b.key]=0); await sset('app_budget',budget); renderBudget(); };
+
+/* ---------- GOALS ---------- */
+function renderGoals(){
+  const wrap=$('goalCards'); wrap.innerHTML='';
+  goals.forEach((g,i)=>{
+    const c=document.createElement('div'); c.className='card'+(g.type==='check'&&g.done?' goal-done':'');
+    if(g.type==='check'){
+      c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div></div>
+        <button class="goal-done-btn">${g.done?'✓ Зроблено':'Позначити зробленим'}</button>`;
+      c.querySelector('.goal-done-btn').onclick=async()=>{ g.done=!g.done; await sset('app_goals',goals); renderGoals(); };
+    } else {
+      const span=Math.abs(g.target-g.start)||1;
+      const prog=Math.abs(g.current-g.start);
+      const r=Math.max(0,Math.min(1,prog/span));
+      const col = r>=1?'var(--good)':'var(--cyan)';
+      c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div>
+        <div class="goal-val"><b>${fmt(g.current)}</b> / ${fmt(g.target)} ${g.unit}</div></div>
+        <div class="bar"><div class="fill" style="width:${r*100}%;background:${col}"></div></div>
+        <div class="goal-step"><button data-d="-1">− ${fmt(g.step)}</button><button data-d="1">+ ${fmt(g.step)}</button></div>`;
+      c.querySelectorAll('.goal-step button').forEach(btn=>btn.onclick=async()=>{
+        g.current=Math.round((g.current+(+btn.dataset.d)*g.step)*10)/10;
+        await sset('app_goals',goals); renderGoals();
+      });
+    }
+    wrap.appendChild(c);
+  });
+}
+
+/* ---------- NAV ---------- */
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  ['main','budget','goals'].forEach(t=>$(t).style.display = t===b.dataset.tab?'block':'none');
+});
+
+/* ---------- INIT ---------- */
+(async function(){
+  points = await sget('app_points') || {total:0,last:0};
+
+  cals = await sget('app_cals') || {date:today(),kcal:0,p:0,f:0,c:0};
+  if(cals.date!==today()) await resetCals();
+
+  tasks = await sget('app_tasks') || {date:today(),items:[]};
+
+  budget = await sget('app_budget') || {weekStart:null,spent:{}};
+  const wk=mondayOf(new Date()).toISOString();
+  if(budget.weekStart!==wk){ budget={weekStart:wk,spent:{}}; BUDGETS.forEach(b=>budget.spent[b.key]=0); await sset('app_budget',budget); }
+  BUDGETS.forEach(b=>{ if(budget.spent[b.key]==null) budget.spent[b.key]=0; });
+
+  goals = await sget('app_goals') || JSON.parse(JSON.stringify(GOALS));
+
+  renderPoints(); renderCals(); renderTasks(); renderBudget(); renderGoals();
+})();
+</script>
