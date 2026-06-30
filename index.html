@@ -27,16 +27,19 @@
 
 <div class="wrap">
   <div class="nav">
+    <!-- 7 tabs — nav-row scrolls horizontally on mobile -->
     <div class="nav-row">
       <button data-tab="main"   class="active">Головна</button>
+      <button data-tab="gym">Зал</button>
+      <button data-tab="food">Їжа</button>
       <button data-tab="budget">Бюджет</button>
       <button data-tab="goals">Цілі</button>
-      <button data-tab="stats">Статистика</button>
       <button data-tab="shop">Магазин</button>
+      <button data-tab="stats">Статистика</button>
     </div>
   </div>
 
-  <!-- ======= MAIN ======= -->
+  <!-- ======= HOME ======= -->
   <section id="main">
     <!-- Clock -->
     <div class="card clock-card">
@@ -51,13 +54,13 @@
     <!-- Quote -->
     <div class="quote-block" id="quoteBlock"></div>
 
-    <!-- Gym quick action -->
+    <!-- Gym navigation card -->
     <div class="card gym-card">
       <div>
         <div class="gym-label">🏋 Спортзал</div>
-        <div class="gym-sub" id="gymSub">Записати тренування → +20 pts у очікування</div>
+        <div class="gym-sub">Програма тренувань · XP · Прогрес м'язів</div>
       </div>
-      <button class="gym-btn" id="gymBtn">Записати</button>
+      <button class="gym-btn" id="gymHomeBtn">Відкрити</button>
     </div>
 
     <!-- Points + Rank -->
@@ -89,6 +92,32 @@
       <button class="export-btn" id="exportPendingBtn">⇡ Експортувати список</button>
       <button class="mini" id="ptsUndo">↩ відмінити останнє підтверджене</button>
     </div>
+
+    <!-- Tasks -->
+    <div class="card">
+      <span class="label">Справи на сьогодні</span>
+      <div class="task-add" style="margin-top:12px">
+        <input id="taskInput" placeholder="що треба зробити…" />
+        <button id="taskAdd">+</button>
+      </div>
+      <div class="task-date-row">
+        <input id="taskDate" type="date" />
+        <input id="taskTime" type="time" />
+      </div>
+      <div id="taskList"></div>
+    </div>
+    <div id="taskFuture"></div>
+  </section>
+
+  <!-- ======= ЗАЛ (GYM) ======= -->
+  <section id="gym" style="display:none">
+    <h2 class="page">Зал</h2>
+    <div id="gymContent"></div>
+  </section>
+
+  <!-- ======= ЇЖА (CALORIES + FOOD DB) ======= -->
+  <section id="food" style="display:none">
+    <h2 class="page">Їжа</h2>
 
     <!-- Calories -->
     <div class="card">
@@ -134,21 +163,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Tasks -->
-    <div class="card">
-      <span class="label">Справи на сьогодні</span>
-      <div class="task-add" style="margin-top:12px">
-        <input id="taskInput" placeholder="що треба зробити…" />
-        <button id="taskAdd">+</button>
-      </div>
-      <div class="task-date-row">
-        <input id="taskDate" type="date" />
-        <input id="taskTime" type="time" />
-      </div>
-      <div id="taskList"></div>
-    </div>
-    <div id="taskFuture"></div>
   </section>
 
   <!-- ======= BUDGET ======= -->
@@ -169,21 +183,6 @@
     <div class="foot-note">Менші цілі = більше виграних. Це про рух, не про вирок.</div>
   </section>
 
-  <!-- ======= STATS ======= -->
-  <section id="stats" style="display:none">
-    <h2 class="page">Статистика</h2>
-    <div class="stats-tabs">
-      <button class="stab active" data-stab="days">Дні</button>
-      <button class="stab" data-stab="pts">Поінти</button>
-      <button class="stab" data-stab="shop">Покупки</button>
-      <button class="stab" data-stab="tasks">Завдання</button>
-    </div>
-    <div id="statsPane_days"  class="card"><div id="statsContent"></div></div>
-    <div id="statsPane_pts"   class="card" style="display:none"><div id="ptsLogContent"></div></div>
-    <div id="statsPane_shop"  class="card" style="display:none"><div id="shopLogContent"></div></div>
-    <div id="statsPane_tasks" class="card" style="display:none"><div id="tasksLogContent"></div></div>
-  </section>
-
   <!-- ======= SHOP ======= -->
   <section id="shop" style="display:none">
     <h2 class="page">Магазин</h2>
@@ -197,6 +196,21 @@
     </div>
     <div id="shopGrandWrap"></div>
     <div class="foot-note">Витрачай зароблене. Поінти не згоряють.</div>
+  </section>
+
+  <!-- ======= STATS ======= -->
+  <section id="stats" style="display:none">
+    <h2 class="page">Статистика</h2>
+    <div class="stats-tabs">
+      <button class="stab active" data-stab="days">Дні</button>
+      <button class="stab" data-stab="pts">Поінти</button>
+      <button class="stab" data-stab="shop">Покупки</button>
+      <button class="stab" data-stab="tasks">Завдання</button>
+    </div>
+    <div id="statsPane_days"  class="card"><div id="statsContent"></div></div>
+    <div id="statsPane_pts"   class="card" style="display:none"><div id="ptsLogContent"></div></div>
+    <div id="statsPane_shop"  class="card" style="display:none"><div id="shopLogContent"></div></div>
+    <div id="statsPane_tasks" class="card" style="display:none"><div id="tasksLogContent"></div></div>
   </section>
 </div>
 
@@ -212,6 +226,7 @@
 <script src="js/goals.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/shop.js"></script>
+<script src="js/gym.js"></script>
 <script src="js/app.js"></script>
 
 </body>

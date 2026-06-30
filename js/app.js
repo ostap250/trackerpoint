@@ -1,11 +1,17 @@
 /* ---- Tab navigation ---- */
-const ALL_TABS = ['main', 'budget', 'goals', 'stats', 'shop'];
+const ALL_TABS = ['main', 'gym', 'food', 'budget', 'goals', 'shop', 'stats'];
 
-document.querySelectorAll('.nav-row button').forEach(b => b.onclick = () => {
+function switchTab(tabId) {
   document.querySelectorAll('.nav-row button').forEach(x => x.classList.remove('active'));
-  b.classList.add('active');
-  ALL_TABS.forEach(t => $(t).style.display = t === b.dataset.tab ? 'block' : 'none');
-});
+  const btn = document.querySelector(`.nav-row button[data-tab="${tabId}"]`);
+  if (btn) btn.classList.add('active');
+  ALL_TABS.forEach(t => $(t).style.display = t === tabId ? 'block' : 'none');
+}
+
+document.querySelectorAll('.nav-row button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+/* Home → navigate to Зал */
+$('gymHomeBtn').onclick = () => switchTab('gym');
 
 /* ---- App initialisation ---- */
 (async function init() {
@@ -17,6 +23,13 @@ document.querySelectorAll('.nav-row button').forEach(b => b.onclick = () => {
   spendLog  = await sget('app_spend_log')  || [];
   tasksLog  = await sget('app_tasks_log')  || [];
   meals     = await sget('app_meals')      || [];
+  gymData   = await sget('app_gym')        || initGymData();
+
+  /* Migrate: ensure all muscle keys present */
+  MUSCLES.forEach(m => {
+    if (!gymData.muscles[m.key]) gymData.muscles[m.key] = { level:1, xp:0 };
+  });
+  if (!gymData.workoutLog) gymData.workoutLog = [];
 
   /* Calories — reset on new day, save snapshot of previous day */
   const storedCals  = await sget('app_cals')  || { date:today(), kcal:0, p:0, f:0, c:0 };
@@ -62,5 +75,6 @@ document.querySelectorAll('.nav-row button').forEach(b => b.onclick = () => {
   renderGoals();
   renderStats();
   renderShop();
+  renderGym();
   buildReminderQueue();
 })();

@@ -178,7 +178,4 @@ $('ptsUndo').onclick = async () => {
   }
 };
 
-$('gymBtn').onclick = async () => {
-  await addPending(20, 'Зал');
-  showNotif('Тренування записано → +20 pts в очікуванні');
-};
+/* gymHomeBtn navigation is wired in app.js */

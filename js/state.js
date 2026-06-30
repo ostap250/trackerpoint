@@ -7,3 +7,5 @@ let selectedMeal  = null;
 let mealMult      = 1;
 let pendingAmount  = 0;
 let pendingEditId  = null;
+let gymData;          // loaded from app_gym
+let activeDay     = 'A'; // currently selected workout day
