@@ -2,14 +2,16 @@
 const ALL_TABS = ['main', 'gym', 'food', 'budget', 'goals', 'shop', 'stats', 'ranks'];
 
 function switchTab(tabId) {
-  document.querySelectorAll('.nav-row button').forEach(x => x.classList.remove('active'));
-  const btn = document.querySelector(`.nav-row button[data-tab="${tabId}"]`);
+  /* ranks is a sub-page of gym — keep gym tab highlighted */
+  const navTabId = tabId === 'ranks' ? 'gym' : tabId;
+  document.querySelectorAll('.bnav-item').forEach(x => x.classList.remove('active'));
+  const btn = document.querySelector(`.bnav-item[data-tab="${navTabId}"]`);
   if (btn) btn.classList.add('active');
   ALL_TABS.forEach(t => $(t).style.display = t === tabId ? 'block' : 'none');
   if (tabId === 'ranks') renderRanks();
 }
 
-document.querySelectorAll('.nav-row button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+document.querySelectorAll('.bnav-item').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
 /* Home → navigate to Зал */
 $('gymHomeBtn').onclick = () => switchTab('gym');

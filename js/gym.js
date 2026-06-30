@@ -273,6 +273,13 @@ function renderGym() {
     grid.appendChild(cell);
   });
   mp.appendChild(grid);
+
+  const ranksBtn = document.createElement('button');
+  ranksBtn.className = 'ranks-link-btn';
+  ranksBtn.textContent = 'Таблиця рангів →';
+  ranksBtn.onclick = () => switchTab('ranks');
+  mp.appendChild(ranksBtn);
+
   wrap.appendChild(mp);
 
   /* Day selector */

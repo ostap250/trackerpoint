@@ -3,7 +3,7 @@
 ## What this is
 A personal habitpoints tracker. Single static site, deployed on GitHub Pages.
 Plain HTML/CSS/JS, NO build step, NO framework, NO npm. Data in localStorage.
-Files: index.html + css/styles.css + js/*.js (12 modules).
+Files: index.html + css/styles.css + js/*.js (13 modules).
 
 ## Hard rules (do not break)
 - NEVER add a bundler, framework, or build step. Must stay deployable as static
@@ -31,15 +31,19 @@ index.html (HTML only) → css/styles.css → js modules in load order:
   app.js     — tab navigation (switchTab), async INIT
 
 ## Pages / navigation
-7 tabs (nav scrolls horizontally): Головна | Зал | Їжа | Бюджет | Цілі | Магазин | Статистика
+Bottom fixed nav bar (Instagram-style, safe-area aware) with 7 items + inline SVG icons:
+  Дім | Зал | Їжа | Бюджет | Цілі | Магазин | Стат
+Ранги is an 8th section (#ranks) reachable via "Таблиця рангів →" button in the Зал muscle
+panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 
 - Головна: clock, quote, gym nav card, points+pending, today's tasks
-- Зал: warmup notes, constraints, muscle panel, Day A/B/C selector, exercise logging
-- Їжа: calorie tracker + macro bars + food database (moved from Home)
+- Зал: warmup notes, constraints, muscle panel + Ранги link, Day A/B/C selector, exercise logging
+- Їжа: calorie tracker + macro bars + food database
 - Бюджет: weekly indulgence budget (TikTok/Dota/Зриви)
 - Цілі: milestone progress bars
 - Магазин: spend points on budget boosts / rewards
 - Статистика: Дні / Поінти / Покупки / Завдання sub-tabs
+- Ранги (sub-page): per-muscle level/rank/XP + XP to next rank + full rank ladder table
 
 ## Core concepts
 - Points: permanent currency, NEVER expire. Earned via Pending flow (reason required),

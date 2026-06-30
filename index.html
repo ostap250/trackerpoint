@@ -26,19 +26,6 @@
 <div id="notifSnack"></div>
 
 <div class="wrap">
-  <div class="nav">
-    <!-- 7 tabs — nav-row scrolls horizontally on mobile -->
-    <div class="nav-row">
-      <button data-tab="main"   class="active">Головна</button>
-      <button data-tab="gym">Зал</button>
-      <button data-tab="food">Їжа</button>
-      <button data-tab="budget">Бюджет</button>
-      <button data-tab="goals">Цілі</button>
-      <button data-tab="shop">Магазин</button>
-      <button data-tab="stats">Статистика</button>
-      <button data-tab="ranks">Ранги</button>
-    </div>
-  </div>
 
   <!-- ======= HOME ======= -->
   <section id="main">
@@ -160,7 +147,27 @@
           <input id="mealPro"  type="number" inputmode="numeric" placeholder="Б" />
           <input id="mealFat"  type="number" inputmode="numeric" placeholder="Ж" />
           <input id="mealCarb" type="number" inputmode="numeric" placeholder="В" />
-          <button id="saveMeal">+</button>
+          <button id="saveMealRedesign the main navigation to be mobile-first and cleaner. Keep style/tokens,
+no build step, don't change localStorage keys, update CLAUDE.md. Commit after.
+
+- Move the top nav to a BOTTOM fixed navigation bar (like Instagram/TikTok),
+  pinned to the bottom of the viewport, safe-area aware (respect iPhone home
+  indicator with env(safe-area-inset-bottom)).
+- 7 items: Home / Зал / Їжа / Бюджет / Цілі / Магазин / Статистика. Show each as
+  a small ICON with a tiny label under it. Use simple inline SVG icons (no icon
+  library, no external requests) that fit the existing dark theme:
+    Home=house, Зал=dumbbell, Їжа=fork/utensils, Бюджет=wallet, Цілі=target/flag,
+    Магазин=shopping bag, Статистика=bar chart.
+- Active tab: accent color (the existing indigo) for icon + label; inactive tabs
+  muted/grey. Add a subtle top-border or dot indicator on the active item.
+- Make sure all 7 fit on a 360px-wide phone without horizontal scroll (shrink
+  icon/label sizes as needed, equal flex widths). If 7 truly don't fit, allow the
+  bar to scroll horizontally as a fallback, but try to fit them first.
+- Add bottom padding to page content so the fixed bar never covers the last
+  elements on any page.
+- Remove the old top nav buttons. Keep the clock card as the top element of Home.
+
+Then commit and push.">+</button>
         </div>
       </div>
     </div>
@@ -219,6 +226,73 @@
     <div id="statsPane_tasks" class="card" style="display:none"><div id="tasksLogContent"></div></div>
   </section>
 </div>
+
+<!-- Bottom navigation (Instagram/TikTok-style, safe-area aware) -->
+<nav class="bottom-nav" id="bottomNav">
+
+  <button class="bnav-item active" data-tab="main">
+    <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span class="bnav-label">Дім</span>
+  </button>
+
+  <button class="bnav-item" data-tab="gym">
+    <svg class="bnav-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="1" y="8" width="5" height="8" rx="1.5"/>
+      <rect x="18" y="8" width="5" height="8" rx="1.5"/>
+      <rect x="6" y="10.5" width="12" height="3" rx="1"/>
+    </svg>
+    <span class="bnav-label">Зал</span>
+  </button>
+
+  <button class="bnav-item" data-tab="food">
+    <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <line x1="8" y1="2" x2="8" y2="22"/>
+      <path d="M6 2v6a2 2 0 004 0V2"/>
+      <line x1="16" y1="2" x2="16" y2="22"/>
+      <path d="M14 2c2 3 4 6 0 8"/>
+    </svg>
+    <span class="bnav-label">Їжа</span>
+  </button>
+
+  <button class="bnav-item" data-tab="budget">
+    <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2" y="7" width="20" height="14" rx="2"/>
+      <path d="M16 3H8a1 1 0 00-1 1v3"/>
+      <circle cx="17" cy="14" r="2" fill="currentColor" stroke="none"/>
+    </svg>
+    <span class="bnav-label">Бюджет</span>
+  </button>
+
+  <button class="bnav-item" data-tab="goals">
+    <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="4" y1="22" x2="4" y2="3"/>
+      <path d="M4 4h12l-4 5 4 5H4"/>
+    </svg>
+    <span class="bnav-label">Цілі</span>
+  </button>
+
+  <button class="bnav-item" data-tab="shop">
+    <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 01-8 0"/>
+    </svg>
+    <span class="bnav-label">Магазин</span>
+  </button>
+
+  <button class="bnav-item" data-tab="stats">
+    <svg class="bnav-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="3" y="13" width="4" height="8" rx="1"/>
+      <rect x="10" y="7" width="4" height="14" rx="1"/>
+      <rect x="17" y="3" width="4" height="18" rx="1"/>
+    </svg>
+    <span class="bnav-label">Стат</span>
+  </button>
+
+</nav>
 
 <!-- Load order: config → storage → state → ui → features → app -->
 <script src="js/config.js"></script>
