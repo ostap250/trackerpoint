@@ -29,9 +29,9 @@
   }
   .nav-row{ display:flex; gap:5px; }
   .nav-row button{
-    flex:1; font-family:'Sora',sans-serif; font-weight:600; font-size:11.5px;
+    flex:1; font-family:'Sora',sans-serif; font-weight:600; font-size:11px;
     color:var(--muted); background:var(--panel); border:1px solid var(--line);
-    padding:10px 4px; border-radius:11px; cursor:pointer; transition:.15s;
+    padding:10px 3px; border-radius:11px; cursor:pointer; transition:.15s;
   }
   .nav-row button.active{ color:var(--txt); background:var(--panel-2); border-color:var(--indigo); }
 
@@ -57,18 +57,108 @@
   .clock-sep{ color:var(--line); font-size:12px; }
   .clock-date{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
 
+  /* rank hex badge */
+  .rank-hex {
+    position:relative; width:52px; height:52px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .rank-hex::before {
+    content:''; position:absolute; inset:0;
+    clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+    background:var(--rcolor,#888);
+  }
+  .rank-hex .rlbl {
+    position:relative; z-index:1;
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#0e1117;
+  }
+  /* rank row in points card */
+  .rank-row{ display:flex; align-items:center; gap:14px; padding-bottom:14px; border-bottom:1px solid var(--line); margin-bottom:14px; }
+  .rank-info{ flex:1; min-width:0; }
+  .rank-name{ font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; }
+  .rank-sub{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin-top:3px; }
+  .rank-bar{ height:6px; border-radius:4px; background:#0f141c; border:1px solid var(--line); overflow:hidden; margin-top:7px; }
+  .rank-fill{ height:100%; border-radius:3px; transition:width .5s cubic-bezier(.2,.8,.2,1); }
+
+  /* gym card */
+  .gym-card{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; }
+  .gym-label{ font-size:15px; font-weight:700; }
+  .gym-sub{ font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:2px; }
+  .gym-btn{
+    flex:none; background:var(--indigo); border:none; color:#11131c;
+    font-family:'Sora',sans-serif; font-size:13px; font-weight:700;
+    padding:11px 18px; border-radius:12px; cursor:pointer; transition:.1s;
+    white-space:nowrap;
+  }
+  .gym-btn:active{ transform:scale(.95); }
+
   /* points */
   .pts-big{ font-family:'JetBrains Mono',monospace; font-size:46px; font-weight:700;
-    line-height:1; margin:6px 0 2px; }
+    line-height:1; margin:4px 0 2px; }
   .pts-sub{ font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace; }
   .bar{ height:12px; border-radius:7px; background:#0f141c; border:1px solid var(--line);
     overflow:hidden; margin:14px 0 6px; }
   .fill{ height:100%; border-radius:6px; transition:width .5s cubic-bezier(.2,.8,.2,1), background .4s; }
-  .pts-blocks{ display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-top:14px; }
-  .pts-block{ background:#232d3b; border:1px solid var(--line); color:var(--txt);
+  .pts-blocks{ display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-top:12px; }
+  .pts-block{
+    background:#232d3b; border:1.5px solid var(--line); color:var(--txt);
     font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700;
-    padding:13px 0; border-radius:12px; cursor:pointer; text-align:center; transition:.1s; }
-  .pts-block:active{ transform:scale(.93); background:var(--panel-2); }
+    padding:12px 0; border-radius:12px; cursor:pointer; text-align:center; transition:.1s;
+  }
+  .pts-block:active{ transform:scale(.93); }
+  .pts-block.selected{ border-color:var(--indigo); background:rgba(138,123,230,.18); color:var(--indigo); }
+  .add-pending-form{ margin-top:12px; display:flex; gap:7px; }
+  .add-pending-form input{
+    flex:1; background:#0f141c; border:1px solid var(--line); color:var(--txt);
+    font-family:'Sora',sans-serif; font-size:13px; padding:10px 11px; border-radius:10px;
+  }
+  .add-pending-form input::placeholder{ color:#54607a; }
+  .add-pending-form button{
+    flex:none; background:var(--indigo); border:none; color:#11131c;
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+    padding:10px 13px; border-radius:10px; cursor:pointer; white-space:nowrap;
+  }
+  /* pending list */
+  .pending-section-label{
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--muted); margin-top:16px; margin-bottom:8px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .pending-item{
+    display:flex; align-items:center; gap:8px; padding:10px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .pending-item:last-child{ border-bottom:none; }
+  .pend-amt{ font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700;
+    color:var(--good); flex:none; min-width:38px; }
+  .pend-rsn{ flex:1; font-size:13px; color:var(--txt); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pend-date{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); flex:none; }
+  .pend-btns{ display:flex; gap:5px; flex:none; }
+  .pend-btns button{
+    width:28px; height:28px; border-radius:7px; border:1px solid var(--line);
+    background:transparent; cursor:pointer; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pend-ok{ color:var(--good) !important; border-color:var(--good) !important; }
+  .pend-del{ color:var(--low) !important; }
+  .pend-edit{ color:var(--muted) !important; }
+  .pend-edit-row{ display:flex; gap:6px; padding:8px 4px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .pend-edit-row input{
+    flex:1; min-width:60px; background:#0f141c; border:1px solid var(--line); color:var(--txt);
+    font-family:'JetBrains Mono',monospace; font-size:12px; padding:7px 8px; border-radius:8px;
+  }
+  .pend-edit-row .esave{
+    background:var(--good); border:none; color:#0e1117; font-weight:700;
+    font-size:12px; padding:7px 10px; border-radius:8px; cursor:pointer;
+  }
+  .pend-edit-row .ecancel{
+    background:transparent; border:1px solid var(--line); color:var(--muted);
+    font-size:12px; padding:7px 8px; border-radius:8px; cursor:pointer;
+  }
+  .export-btn{
+    display:block; width:100%; background:transparent; border:1px solid var(--line);
+    color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:11px;
+    padding:8px; border-radius:9px; cursor:pointer; margin-top:10px; text-align:center;
+  }
   .mini{ background:transparent; border:1px solid var(--line); color:var(--muted);
     font-family:'JetBrains Mono',monospace; font-size:11px; padding:7px 12px;
     border-radius:9px; cursor:pointer; margin-top:12px; }
@@ -82,13 +172,61 @@
   .macro .mval{ font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; margin:3px 0 6px; }
   .mbar{ height:7px; border-radius:5px; background:#0f141c; border:1px solid var(--line); overflow:hidden; }
   .mfill{ height:100%; transition:width .4s; }
+  /* meal search */
+  .meal-search-wrap{ position:relative; margin-top:14px; }
+  .meal-search-wrap input{
+    width:100%; background:#0f141c; border:1px solid var(--line); color:var(--txt);
+    font-family:'Sora',sans-serif; font-size:13px; padding:10px 12px; border-radius:10px;
+  }
+  .meal-search-wrap input::placeholder{ color:#54607a; }
+  .meal-results{
+    position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:30;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:12px;
+    overflow:hidden;
+  }
+  .meal-res-item{
+    padding:11px 13px; cursor:pointer; border-bottom:1px solid var(--line);
+    font-size:13px; transition:.1s;
+  }
+  .meal-res-item:last-child{ border-bottom:none; }
+  .meal-res-item:hover{ background:rgba(138,123,230,.1); }
+  .meal-res-meta{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin-top:2px; }
+  .meal-selected{ margin-top:10px; background:#0f141c; border:1px solid var(--indigo);
+    border-radius:12px; padding:12px; }
+  .meal-sel-name{ font-size:14px; font-weight:600; }
+  .meal-sel-info{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin-top:3px; }
+  .meal-mult-row{ display:flex; gap:6px; margin:10px 0 10px; }
+  .meal-mult{
+    flex:1; background:#232d3b; border:1px solid var(--line); color:var(--muted);
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+    padding:8px; border-radius:8px; cursor:pointer; transition:.1s;
+  }
+  .meal-mult.active{ background:rgba(138,123,230,.2); border-color:var(--indigo); color:var(--indigo); }
+  .meal-add-btn{
+    width:100%; background:var(--indigo); border:none; color:#11131c;
+    font-family:'Sora',sans-serif; font-size:13px; font-weight:700;
+    padding:10px; border-radius:10px; cursor:pointer;
+  }
   .add-food{ display:grid; grid-template-columns:repeat(4,1fr) auto; gap:6px; margin-top:14px; }
   .add-food input{ width:100%; background:#0f141c; border:1px solid var(--line); color:var(--txt);
     font-family:'JetBrains Mono',monospace; font-size:12px; padding:9px 6px; border-radius:9px; text-align:center; }
   .add-food input::placeholder{ color:#54607a; }
   .add-food button{ background:var(--indigo); border:none; color:#11131c; font-weight:700;
     font-size:16px; border-radius:9px; padding:0 12px; cursor:pointer; }
-  .add-food button:active{ transform:scale(.94); }
+  /* manage meals */
+  .meals-list{ margin-top:10px; }
+  .meal-row{ display:flex; align-items:center; gap:8px; padding:10px 4px; border-bottom:1px solid var(--line); }
+  .meal-row:last-child{ border-bottom:none; }
+  .meal-row-name{ flex:1; font-size:13px; font-weight:600; }
+  .meal-row-meta{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); }
+  .meal-del{ background:none; border:none; color:var(--low); font-size:17px; cursor:pointer; padding:0 4px; }
+  .add-meal-form{ display:grid; grid-template-columns:1fr repeat(4,.5fr) auto; gap:5px; margin-top:10px; }
+  .add-meal-form input{ background:#0f141c; border:1px solid var(--line); color:var(--txt);
+    font-family:'JetBrains Mono',monospace; font-size:11px; padding:8px 5px; border-radius:8px; text-align:center; }
+  .add-meal-form input:first-child{ text-align:left; padding-left:9px; }
+  .add-meal-form input::placeholder{ color:#54607a; }
+  .add-meal-form button{ background:var(--good); border:none; color:#0e1117; font-weight:700;
+    font-size:13px; border-radius:8px; padding:0 10px; cursor:pointer; }
 
   /* tasks */
   .task-add{ display:flex; gap:7px; margin-top:6px; }
@@ -154,8 +292,6 @@
     text-transform:uppercase; font-weight:700; padding:3px 7px; border-radius:5px;
     white-space:nowrap; flex:none;
   }
-
-  /* goal bar glow */
   @keyframes barPulse {
     0%   { filter:brightness(1); }
     40%  { filter:brightness(1.7); }
@@ -163,21 +299,15 @@
   }
   .fill.glow { animation:barPulse .55s ease-out; }
 
-  .foot-note{ margin-top:16px; font-size:12px; color:var(--muted); line-height:1.6; text-align:center; }
-  .resets{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-align:right; }
-  .resets b{ color:var(--txt); }
-  .newweek{ width:100%; background:transparent; border:1px solid var(--line); color:var(--muted);
-    font-family:'JetBrains Mono',monospace; font-size:12px; padding:11px; border-radius:11px;
-    cursor:pointer; margin-top:14px; }
-
-  /* quote */
-  .quote-block{ margin-top:14px; padding:13px 15px; border:1px solid var(--line);
-    border-radius:14px; background:var(--panel); }
-  .quote-text{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted);
-    line-height:1.65; }
-  .quote-src{ font-family:'JetBrains Mono',monospace; font-size:10px; color:#54607a; margin-top:7px; }
-
-  /* stats */
+  /* stats sub-tabs */
+  .stats-tabs{ display:flex; gap:5px; margin-top:14px; }
+  .stab{
+    flex:1; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    background:var(--panel); border:1px solid var(--line); color:var(--muted);
+    padding:9px 4px; border-radius:9px; cursor:pointer; transition:.15s;
+  }
+  .stab.active{ background:var(--panel-2); border-color:var(--indigo); color:var(--txt); }
   .stat-row{ display:flex; align-items:center; gap:10px; padding:11px 0;
     border-bottom:1px solid var(--line); }
   .stat-row:last-child{ border-bottom:none; }
@@ -190,6 +320,14 @@
   .stat-bar-fill{ height:100%; border-radius:3px; background:var(--indigo); transition:width .4s; }
   .stat-tasks{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
     flex:none; width:36px; text-align:right; }
+  /* log rows */
+  .log-row{ padding:11px 4px; border-bottom:1px solid var(--line); }
+  .log-row:last-child{ border-bottom:none; }
+  .log-main{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .log-val{ font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; flex:none; }
+  .log-name{ font-size:13px; flex:1; }
+  .log-date{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); flex:none; }
+  .log-sub{ font-size:11px; color:var(--muted); margin-top:2px; }
 
   /* shop */
   .shop-section{ font-size:11px; letter-spacing:.16em; text-transform:uppercase;
@@ -207,29 +345,7 @@
   }
   .shop-buy:active{ transform:scale(.93); }
   .shop-buy:disabled{ background:#232d3b; color:var(--muted); border:1px solid var(--line); cursor:default; }
-
-  /* reminder toast */
-  .toast-wrap{
-    position:fixed; top:0; left:0; right:0; max-width:480px; margin:0 auto;
-    z-index:200; padding:calc(env(safe-area-inset-top) + 10px) 16px 0;
-    pointer-events:none; display:none;
-  }
-  .toast{
-    background:var(--panel-2); border:1px solid var(--indigo);
-    border-radius:16px; padding:16px; pointer-events:all;
-    box-shadow:0 8px 32px rgba(0,0,0,.65);
-  }
-  .toast-lbl{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.14em;
-    text-transform:uppercase; color:var(--indigo); margin-bottom:8px; }
-  .toast-text{ font-family:'Sora',sans-serif; font-size:15px; font-weight:600; }
-  .toast-time{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin-top:4px; }
-  .toast-btns{ display:flex; gap:8px; margin-top:12px; }
-  .toast-btns button{ flex:1; font-family:'Sora',sans-serif; font-size:13px; font-weight:600;
-    padding:10px; border-radius:10px; cursor:pointer; border:none; }
-  .toast-done{ background:var(--good); color:#0e1117; }
-  .toast-close{ background:transparent; border:1px solid var(--line) !important; color:var(--muted); }
-
-  /* grand reward card */
+  /* grand reward */
   .grand-card{
     margin-top:16px; padding:18px; border-radius:16px;
     background:linear-gradient(135deg,#1e1a38,#1b2330);
@@ -241,47 +357,67 @@
     pointer-events:none;
   }
   .grand-title{ font-size:17px; font-weight:700; color:var(--txt); margin-bottom:4px; }
-  .grand-desc{ font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace;
-    line-height:1.5; margin-bottom:14px; }
-  .grand-progress-row{ display:flex; justify-content:space-between; align-items:baseline;
-    margin-bottom:6px; }
+  .grand-desc{ font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace; line-height:1.5; margin-bottom:14px; }
+  .grand-progress-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
   .grand-pts-label{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
   .grand-pts-val{ font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--indigo); }
-  .grand-bar{ height:10px; border-radius:6px; background:#0f141c; border:1px solid var(--line);
-    overflow:hidden; margin-bottom:14px; }
-  .grand-fill{ height:100%; border-radius:5px; background:var(--indigo);
-    transition:width .6s cubic-bezier(.2,.8,.2,1); }
+  .grand-bar{ height:10px; border-radius:6px; background:#0f141c; border:1px solid var(--line); overflow:hidden; margin-bottom:14px; }
+  .grand-fill{ height:100%; border-radius:5px; background:var(--indigo); transition:width .6s cubic-bezier(.2,.8,.2,1); }
   .grand-buy{
     width:100%; font-family:'Sora',sans-serif; font-size:14px; font-weight:700;
     background:var(--indigo); color:#11131c; border:none; border-radius:12px;
     padding:13px; cursor:pointer; transition:.1s;
   }
   .grand-buy:active{ transform:scale(.97); }
-  .grand-buy:disabled{ background:#232d3b; color:var(--muted); border:1px solid var(--line);
-    font-weight:600; cursor:default; }
+  .grand-buy:disabled{ background:#232d3b; color:var(--muted); border:1px solid var(--line); font-weight:600; cursor:default; }
 
-  /* notification snack (auto-dismiss) */
+  /* quote */
+  .quote-block{ margin-top:14px; padding:13px 15px; border:1px solid var(--line);
+    border-radius:14px; background:var(--panel); }
+  .quote-text{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted); line-height:1.65; }
+  .quote-src{ font-family:'JetBrains Mono',monospace; font-size:10px; color:#54607a; margin-top:7px; }
+
+  .foot-note{ margin-top:16px; font-size:12px; color:var(--muted); line-height:1.6; text-align:center; }
+  .resets{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-align:right; }
+  .resets b{ color:var(--txt); }
+  .newweek{ width:100%; background:transparent; border:1px solid var(--line); color:var(--muted);
+    font-family:'JetBrains Mono',monospace; font-size:12px; padding:11px; border-radius:11px; cursor:pointer; margin-top:14px; }
+
+  /* reminder toast */
+  .toast-wrap{
+    position:fixed; top:0; left:0; right:0; max-width:480px; margin:0 auto;
+    z-index:200; padding:calc(env(safe-area-inset-top) + 10px) 16px 0;
+    pointer-events:none; display:none;
+  }
+  .toast{ background:var(--panel-2); border:1px solid var(--indigo); border-radius:16px; padding:16px;
+    pointer-events:all; box-shadow:0 8px 32px rgba(0,0,0,.65); }
+  .toast-lbl{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--indigo); margin-bottom:8px; }
+  .toast-text{ font-family:'Sora',sans-serif; font-size:15px; font-weight:600; }
+  .toast-time{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin-top:4px; }
+  .toast-btns{ display:flex; gap:8px; margin-top:12px; }
+  .toast-btns button{ flex:1; font-family:'Sora',sans-serif; font-size:13px; font-weight:600;
+    padding:10px; border-radius:10px; cursor:pointer; border:none; }
+  .toast-done{ background:var(--good); color:#0e1117; }
+  .toast-close{ background:transparent; border:1px solid var(--line) !important; color:var(--muted); }
+
+  /* notification snack */
   #notifSnack{
     position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(12px);
     max-width:340px; width:90%;
-    background:var(--panel-2); border:1px solid var(--indigo);
-    border-radius:14px; padding:13px 18px;
-    font-family:'Sora',sans-serif; font-size:14px; font-weight:600;
-    color:var(--txt); text-align:center;
-    box-shadow:0 8px 32px rgba(0,0,0,.7);
-    opacity:0; pointer-events:none;
-    transition:opacity .22s, transform .22s;
-    z-index:300;
+    background:var(--panel-2); border:1px solid var(--indigo); border-radius:14px; padding:13px 18px;
+    font-family:'Sora',sans-serif; font-size:14px; font-weight:600; color:var(--txt); text-align:center;
+    box-shadow:0 8px 32px rgba(0,0,0,.7); opacity:0; pointer-events:none;
+    transition:opacity .22s, transform .22s; z-index:300;
   }
   #notifSnack.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
   @media (prefers-reduced-motion: reduce){
-    .fill,.mfill,.stat-bar-fill{ transition:none; }
+    .fill,.mfill,.stat-bar-fill,.rank-fill,.grand-fill{ transition:none; }
     *{ transition:none!important; animation:none!important; }
   }
 </style>
 
-<!-- reminder toast -->
 <div class="toast-wrap" id="toastWrap">
   <div class="toast">
     <div class="toast-lbl">Нагадування</div>
@@ -293,8 +429,6 @@
     </div>
   </div>
 </div>
-
-<!-- notification snack -->
 <div id="notifSnack"></div>
 
 <div class="wrap">
@@ -308,21 +442,39 @@
     </div>
   </div>
 
-  <!-- ============ MAIN ============ -->
+  <!-- ======= MAIN ======= -->
   <section id="main">
-
     <div class="card clock-card">
       <div class="clock-time" id="clockTime">--:--:--</div>
       <div class="clock-meta">
-        <span class="clock-tz">Toronto</span>
-        <span class="clock-sep">·</span>
+        <span class="clock-tz">Toronto</span><span class="clock-sep">·</span>
         <span class="clock-date" id="clockDate"></span>
       </div>
     </div>
 
     <div class="quote-block" id="quoteBlock"></div>
 
+    <!-- Gym quick action -->
+    <div class="card gym-card">
+      <div>
+        <div class="gym-label">🏋 Спортзал</div>
+        <div class="gym-sub" id="gymSub">Записати тренування → +20 pts у очікування</div>
+      </div>
+      <button class="gym-btn" id="gymBtn">Записати</button>
+    </div>
+
+    <!-- Points + Rank -->
     <div class="card">
+      <!-- Rank row -->
+      <div class="rank-row" id="rankRow">
+        <div class="rank-hex" id="rankHex"><span class="rlbl" id="rankLbl">?</span></div>
+        <div class="rank-info">
+          <div class="rank-name" id="rankName">—</div>
+          <div class="rank-sub" id="rankSub"></div>
+          <div class="rank-bar"><div class="rank-fill" id="rankFill"></div></div>
+        </div>
+      </div>
+      <!-- Balance -->
       <div class="head-row">
         <span class="label">Поінти</span>
         <span class="resets" id="ptsTargetLbl"></span>
@@ -330,10 +482,22 @@
       <div class="pts-big" id="ptsTotal">0</div>
       <div class="pts-sub" id="ptsToGoal"></div>
       <div class="bar"><div class="fill" id="ptsFill" style="background:var(--indigo)"></div></div>
+      <!-- Add pending -->
       <div class="pts-blocks" id="ptsChips"></div>
-      <button class="mini" id="ptsUndo">↩ відмінити останнє</button>
+      <div class="add-pending-form">
+        <input id="ptsReason" placeholder="причина (Зал, Англійська…)" />
+        <button id="ptsAddBtn">+ Очікування</button>
+      </div>
+      <!-- Pending list -->
+      <div class="pending-section-label">
+        <span>Очікувані <span id="pendingCount"></span></span>
+      </div>
+      <div id="pendingList"></div>
+      <button class="export-btn" id="exportPendingBtn">⇡ Експортувати список</button>
+      <button class="mini" id="ptsUndo">↩ відмінити останнє підтверджене</button>
     </div>
 
+    <!-- Calories -->
     <div class="card">
       <div class="head-row">
         <span class="label">Калорії · сьогодні</span>
@@ -344,6 +508,13 @@
         <span class="kcal-of" id="kcalGoal"></span>
       </div>
       <div class="macros" id="macros"></div>
+      <!-- Meal search -->
+      <div class="meal-search-wrap">
+        <input id="mealSearch" type="text" placeholder="Пошук страви з бази…" autocomplete="off" />
+        <div class="meal-results" id="mealResults"></div>
+      </div>
+      <div id="mealSelected" style="display:none"></div>
+      <!-- Manual entry -->
       <div class="add-food">
         <input id="fKcal" type="number" inputmode="numeric" placeholder="ккал" />
         <input id="fP" type="number" inputmode="numeric" placeholder="Б" />
@@ -354,6 +525,26 @@
       <button class="mini" id="kcalReset2">↺ обнулити день</button>
     </div>
 
+    <!-- Manage Meals (collapsible) -->
+    <div class="card">
+      <div class="head-row">
+        <span class="label">База страв (<span id="mealsCount">0</span>)</span>
+        <button class="mini" id="toggleMeals" style="margin-top:0">Показати</button>
+      </div>
+      <div id="mealsContent" style="display:none">
+        <div class="meals-list" id="mealsList"></div>
+        <div class="add-meal-form">
+          <input id="mealName" placeholder="Назва" />
+          <input id="mealKcal" type="number" inputmode="numeric" placeholder="ккал" />
+          <input id="mealPro" type="number" inputmode="numeric" placeholder="Б" />
+          <input id="mealFat" type="number" inputmode="numeric" placeholder="Ж" />
+          <input id="mealCarb" type="number" inputmode="numeric" placeholder="В" />
+          <button id="saveMeal">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks -->
     <div class="card">
       <span class="label">Справи на сьогодні</span>
       <div class="task-add" style="margin-top:12px">
@@ -366,11 +557,10 @@
       </div>
       <div id="taskList"></div>
     </div>
-
     <div id="taskFuture"></div>
   </section>
 
-  <!-- ============ BUDGET ============ -->
+  <!-- ======= BUDGET ======= -->
   <section id="budget" style="display:none">
     <div class="head-row" style="margin-top:14px">
       <h2 class="page" style="margin:0">Бюджет втіх · тиждень</h2>
@@ -378,25 +568,32 @@
     </div>
     <div id="budgetCards"></div>
     <button class="newweek" id="newweek">↺ Почати новий тиждень</button>
-    <div class="foot-note">
-      Не нагорода за хороше — стеля на те, що й так робиш.<br />Бюджет скінчився — не провал. Понеділок обнулить.
-    </div>
+    <div class="foot-note">Не нагорода за хороше — стеля на те, що й так робиш.<br />Понеділок обнулить.</div>
   </section>
 
-  <!-- ============ GOALS ============ -->
+  <!-- ======= GOALS ======= -->
   <section id="goals" style="display:none">
     <h2 class="page">Майлстоуни</h2>
     <div id="goalCards"></div>
     <div class="foot-note">Менші цілі = більше виграних. Це про рух, не про вирок.</div>
   </section>
 
-  <!-- ============ STATS ============ -->
+  <!-- ======= STATS ======= -->
   <section id="stats" style="display:none">
-    <h2 class="page">Останні 14 днів</h2>
-    <div class="card"><div id="statsContent"></div></div>
+    <h2 class="page">Статистика</h2>
+    <div class="stats-tabs">
+      <button class="stab active" data-stab="days">Дні</button>
+      <button class="stab" data-stab="pts">Поінти</button>
+      <button class="stab" data-stab="shop">Покупки</button>
+      <button class="stab" data-stab="tasks">Завдання</button>
+    </div>
+    <div id="statsPane_days" class="card"><div id="statsContent"></div></div>
+    <div id="statsPane_pts" class="card" style="display:none"><div id="ptsLogContent"></div></div>
+    <div id="statsPane_shop" class="card" style="display:none"><div id="shopLogContent"></div></div>
+    <div id="statsPane_tasks" class="card" style="display:none"><div id="tasksLogContent"></div></div>
   </section>
 
-  <!-- ============ SHOP ============ -->
+  <!-- ======= SHOP ======= -->
   <section id="shop" style="display:none">
     <h2 class="page">Магазин</h2>
     <div class="card" style="padding-bottom:8px">
@@ -408,21 +605,22 @@
       <div id="shopRewardItems"></div>
     </div>
     <div id="shopGrandWrap"></div>
-    <div class="foot-note">Витрачай зароблене. Поінти не згоряють — вони чекають.</div>
+    <div class="foot-note">Витрачай зароблене. Поінти не згоряють.</div>
   </section>
 </div>
 
 <script>
-/* ---------- helpers ---------- */
+/* -------- helpers -------- */
 const $ = id => document.getElementById(id);
 const today = () => new Date().toLocaleDateString('en-CA');
 function mondayOf(d){ const x=new Date(d); const day=(x.getDay()+6)%7; x.setHours(0,0,0,0); x.setDate(x.getDate()-day); return x; }
-const fmt = n => Number.isInteger(n)? n : n.toFixed(1);
+const fmt = n => Number.isInteger(n) ? n : n.toFixed(1);
 const mem = {};
 async function sget(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return mem[k]?JSON.parse(mem[k]):null; } }
 async function sset(k,v){ const s=JSON.stringify(v); try{ localStorage.setItem(k,s); }catch(e){ mem[k]=s; } }
+function newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
-/* ---------- Toronto time ---------- */
+/* -------- Toronto time -------- */
 function torontoNow(){
   const parts=new Intl.DateTimeFormat('en-CA',{
     timeZone:'America/Toronto', hourCycle:'h23',
@@ -437,49 +635,41 @@ function torontoNow(){
     hhmmss:`${g('hour')}:${g('minute')}:${g('second')}`
   };
 }
-
 function torontoDayOfYear(){
-  const {date}=torontoNow();
-  const [y,m,d]=date.split('-').map(Number);
+  const {date}=torontoNow(); const [y,m,d]=date.split('-').map(Number);
   return Math.floor((new Date(y,m-1,d)-new Date(y,0,1))/86400000)+1;
 }
 
-/* ---------- Big clock ---------- */
+/* -------- clock -------- */
 function tickClock(){
-  const t=torontoNow();
-  $('clockTime').textContent=t.hhmmss;
+  const t=torontoNow(); $('clockTime').textContent=t.hhmmss;
   const d=new Date(t.date+'T00:00:00');
   $('clockDate').textContent=d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 }
-tickClock();
-setInterval(tickClock,1000);
+tickClock(); setInterval(tickClock,1000);
 
-/* ---------- CONFIG ---------- */
+/* -------- CONFIG -------- */
 const KCAL_GOAL={kcal:2600,p:160,f:70,c:250};
 const PTS_TARGET=500;
 const PTS_STEPS=[1,10,15,20,25];
-
 const BUDGETS=[
   {key:'tiktok',name:'TikTok',      unit:'год',total:7,step:0.5,color:'#E4574E'},
   {key:'dota',  name:'Дота',        unit:'год',total:6,step:1,  color:'#8A7BE6'},
   {key:'cheats',name:'Зриви (їжа)',unit:'шт', total:3,step:1,  color:'#E0A646'},
 ];
-
 const GOALS=[
-  {key:'bench', name:'Пожати 90 кг',             type:'progress',start:72.5, current:72.5, target:90,   unit:'кг',step:2.5, difficulty:'hard'},
-  {key:'weight',name:'Скинути 3 кг',              type:'progress',start:115.7,current:115.7,target:112.7,unit:'кг',step:0.3, difficulty:'normal',down:true},
-  {key:'money', name:'Заробити за місяць',        type:'progress',start:0,   current:0,    target:2400, unit:'$', step:50,  difficulty:'normal'},
-  {key:'photos',name:'Гарні фотки для соцмереж', type:'check',   done:false,                                              difficulty:'easy'},
+  {key:'bench', name:'Пожати 90 кг',            type:'progress',start:72.5, current:72.5, target:90,   unit:'кг',step:2.5, difficulty:'hard'},
+  {key:'weight',name:'Скинути 3 кг',             type:'progress',start:115.7,current:115.7,target:112.7,unit:'кг',step:0.3, difficulty:'normal',down:true},
+  {key:'money', name:'Заробити за місяць',       type:'progress',start:0,   current:0,    target:2400, unit:'$', step:50,  difficulty:'normal'},
+  {key:'photos',name:'Гарні фотки для соцмереж',type:'check',   done:false,                                              difficulty:'easy'},
 ];
-
 const DIFF_COLOR={easy:'#38B89A',normal:'#E0A646',hard:'#E4574E'};
 const DIFF_LABEL={easy:'Легко',normal:'Нормально',hard:'Важко'};
 const DIFF_PTS  ={easy:100,    normal:200,        hard:300};
-
 const SHOP_BUDGET=[
-  {id:'tiktok30',name:'+30 хв TikTok',pts:15, key:'tiktok',bonus:0.5, desc:'додає 0.5 год до бюджету'},
-  {id:'dota1h',  name:'+1 год Дота',  pts:40, key:'dota',  bonus:1,   desc:'додає 1 год до бюджету'},
-  {id:'cheat1',  name:'+1 зрив їжа', pts:35, key:'cheats', bonus:1,   desc:'додає 1 шт до бюджету'},
+  {id:'tiktok30',name:'+30 хв TikTok',pts:15, key:'tiktok',bonus:0.5,desc:'додає 0.5 год до бюджету'},
+  {id:'dota1h',  name:'+1 год Дота',  pts:40, key:'dota',  bonus:1,  desc:'додає 1 год до бюджету'},
+  {id:'cheat1',  name:'+1 зрив їжа', pts:35, key:'cheats', bonus:1,  desc:'додає 1 шт до бюджету'},
 ];
 const SHOP_REWARDS=[
   {id:'gaming_night',name:'Вечір гри без лімітів',pts:200,desc:'весь вечір без обмежень'},
@@ -487,8 +677,19 @@ const SHOP_REWARDS=[
   {id:'buy_smth',    name:'Купити щось собі',       pts:400,desc:'витрать на себе'},
 ];
 const GRAND_REWARD_PTS=1000;
+const RANKS=[
+  {name:'Wood',     lbl:'W',min:0,    next:100,  color:'#C49A6C'},
+  {name:'Bronze',   lbl:'B',min:100,  next:300,  color:'#CD7F32'},
+  {name:'Silver',   lbl:'S',min:300,  next:600,  color:'#9EA8BC'},
+  {name:'Gold',     lbl:'G',min:600,  next:1200, color:'#E0A646'},
+  {name:'Platinum', lbl:'P',min:1200, next:2500, color:'#4FB8CE'},
+  {name:'Diamond',  lbl:'D',min:2500, next:5000, color:'#8A7BE6'},
+  {name:'Champion', lbl:'C',min:5000, next:8000, color:'#E879B9'},
+  {name:'Titan',    lbl:'T',min:8000, next:12000,color:'#E4574E'},
+  {name:'Olympian', lbl:'O',min:12000,next:null, color:'#F5C518'},
+];
 
-/* ---------- QUOTES (~100, anime + movies + TV) ---------- */
+/* -------- QUOTES -------- */
 const QUOTES=[
   {q:"A lesson without pain is meaningless. You can't gain something without sacrificing something else.",src:"Edward Elric · Fullmetal Alchemist"},
   {q:"The world is cruel, but also very beautiful.",src:"Mikasa Ackerman · Attack on Titan"},
@@ -526,7 +727,7 @@ const QUOTES=[
   {q:"Never forget who you want to become.",src:"Killua Zoldyck · Hunter × Hunter"},
   {q:"Once you meet someone, you never really forget them.",src:"Zeniba · Spirited Away"},
   {q:"It's fine now. Why? Because I am here!",src:"All Might · My Hero Academia"},
-  {q:"Don't forget. Always, somewhere, someone is fighting for you. As long as you remember her, you are not alone.",src:"Homura Akemi · Madoka Magica"},
+  {q:"Don't forget. Always, somewhere, someone is fighting for you.",src:"Homura Akemi · Madoka Magica"},
   {q:"There are no regrets. If one can be proud of one's life, one should not wish for another chance.",src:"Saber · Fate/Zero"},
   {q:"If the king doesn't move, then his subjects won't follow.",src:"Lelouch vi Britannia · Code Geass"},
   {q:"I never go back on my word. That's my ninja way.",src:"Naruto Uzumaki · Naruto"},
@@ -541,7 +742,7 @@ const QUOTES=[
   {q:"Why do we fall? So we can learn to pick ourselves up.",src:"Thomas Wayne · Batman Begins"},
   {q:"It's not who I am underneath, but what I do that defines me.",src:"Bruce Wayne · Batman Begins"},
   {q:"Do, or do not. There is no try.",src:"Yoda · Star Wars"},
-  {q:"Fear is the path to the dark side. Fear leads to anger; anger leads to hate; hate leads to suffering.",src:"Yoda · Star Wars"},
+  {q:"Fear is the path to the dark side.",src:"Yoda · Star Wars"},
   {q:"Carpe diem. Seize the day, boys. Make your lives extraordinary.",src:"Mr. Keating · Dead Poets Society"},
   {q:"With great power comes great responsibility.",src:"Ben Parker · Spider-Man"},
   {q:"What we do in life echoes in eternity.",src:"Maximus · Gladiator"},
@@ -556,18 +757,14 @@ const QUOTES=[
   {q:"To infinity and beyond.",src:"Buzz Lightyear · Toy Story"},
   {q:"Just keep swimming.",src:"Dory · Finding Nemo"},
   {q:"Every passing minute is another chance to turn it all around.",src:"Vanilla Sky"},
-  {q:"The stuff that dreams are made of.",src:"Sam Spade · The Maltese Falcon"},
   {q:"May the Force be with you.",src:"Star Wars"},
   {q:"You can't handle the truth!",src:"Col. Jessup · A Few Good Men"},
   {q:"Here's looking at you, kid.",src:"Rick Blaine · Casablanca"},
-  {q:"Of all the gin joints in all the towns in all the world, she walks into mine.",src:"Rick Blaine · Casablanca"},
-  {q:"Toto, I've a feeling we're not in Kansas anymore.",src:"Dorothy · The Wizard of Oz"},
   {q:"My mama always said life was like a box of chocolates. You never know what you're gonna get.",src:"Forrest Gump"},
   {q:"Hasta la vista, baby.",src:"The Terminator · Terminator 2"},
   {q:"You is kind, you is smart, you is important.",src:"Aibileen Clark · The Help"},
   {q:"It takes a great deal of bravery to stand up to our enemies, but just as much to stand up to our friends.",src:"Albus Dumbledore · Harry Potter"},
   {q:"We are who we choose to be.",src:"Green Goblin · Spider-Man"},
-  {q:"Why are you trying so hard to fit in when you were born to stand out?",src:"What a Girl Wants"},
   {q:"Everybody lies.",src:"Dr. House · House M.D."},
   {q:"When you play the game of thrones, you win or you die.",src:"Cersei Lannister · Game of Thrones"},
   {q:"A mind needs books as a sword needs a whetstone, if it is to keep its edge.",src:"Tyrion Lannister · Game of Thrones"},
@@ -579,61 +776,168 @@ const QUOTES=[
   {q:"If you come at the king, you best not miss.",src:"Omar Little · The Wire"},
   {q:"A man's got to have a code.",src:"Omar Little · The Wire"},
   {q:"Every lie we tell incurs a debt to the truth. Sooner or later, that debt is paid.",src:"Valery Legasov · Chernobyl"},
-  {q:"What is the cost of lies? It's not that we'll mistake them for the truth.",src:"Valery Legasov · Chernobyl"},
   {q:"I am the one who knocks.",src:"Walter White · Breaking Bad"},
   {q:"Say my name.",src:"Walter White · Breaking Bad"},
   {q:"A wrong decision is better than indecision.",src:"Tony Soprano · The Sopranos"},
   {q:"We're not free in what we do, because we're not free in what we want.",src:"Dark · Netflix"},
   {q:"The question isn't where, but when.",src:"Jonas Kahnwald · Dark"},
   {q:"You see, but you do not observe.",src:"Sherlock Holmes · Sherlock"},
-  {q:"When you have eliminated the impossible, whatever remains, however improbable, must be the truth.",src:"Sherlock Holmes · Sherlock"},
+  {q:"When you have eliminated the impossible, whatever remains must be the truth.",src:"Sherlock Holmes · Sherlock"},
   {q:"In the land of the blind, the one-eyed man is king.",src:"Tommy Shelby · Peaky Blinders"},
   {q:"I drink and I know things.",src:"Tyrion Lannister · Game of Thrones"},
   {q:"Power is power.",src:"Cersei Lannister · Game of Thrones"},
   {q:"Winter is coming.",src:"House Stark · Game of Thrones"},
   {q:"Friends don't lie.",src:"Eleven · Stranger Things"},
   {q:"Mornings are for coffee and contemplation.",src:"Chief Hopper · Stranger Things"},
-  {q:"People tell you who they are, but we ignore it because we want them to be who we want them to be.",src:"Don Draper · Mad Men"},
+  {q:"People tell you who they are, but we ignore it.",src:"Don Draper · Mad Men"},
   {q:"I love you, but you are not serious people.",src:"Logan Roy · Succession"},
   {q:"You only do two days: the day you go in and the day you come out.",src:"The Wire"},
 ];
 
-/* ---------- Quote window logic ---------- */
 function quoteWindow(){
   const h=torontoNow().hour;
-  if(h>=23||h<9) return 0;
-  if(h<13)       return 1;
-  if(h<16)       return 2;
-  if(h<21)       return 3;
-  return 4;
+  if(h>=23||h<9) return 0; if(h<13) return 1; if(h<16) return 2; if(h<21) return 3; return 4;
 }
-
 function renderQuote(){
-  const idx=(torontoDayOfYear()*5+quoteWindow())%QUOTES.length;
-  const q=QUOTES[idx];
-  $('quoteBlock').innerHTML=
-    `<div class="quote-text">"${q.q}"</div><div class="quote-src">— ${q.src}</div>`;
+  const idx=(torontoDayOfYear()*5+quoteWindow())%QUOTES.length; const q=QUOTES[idx];
+  $('quoteBlock').innerHTML=`<div class="quote-text">"${q.q}"</div><div class="quote-src">— ${q.src}</div>`;
 }
 
-/* ---------- STATE ---------- */
+/* -------- STATE -------- */
 let points={total:0,last:0};
 let cals={date:today(),kcal:0,p:0,f:0,c:0};
 let tasks={date:today(),items:[]};
 let budget={weekStart:null,spent:{},bonus:{}};
 let goals=null;
 let history=[];
+let pending=[];       // [{id,amount,reason,date}]
+let pointsLog=[];     // [{id,amount,reason,date}]
+let spendLog=[];      // [{id,name,cost,date}]
+let tasksLog=[];      // [{id,text,date}]
+let meals=[];         // [{id,name,kcal,p,f,c}]
+let selectedMeal=null, mealMult=1;
+let pendingAmount=0, pendingEditId=null;
 
-/* ---------- NOTIFICATION SNACK ---------- */
+/* -------- SNACK -------- */
 let _notifTimer=null;
 function showNotif(text){
-  const el=$('notifSnack');
-  el.textContent=text;
-  el.classList.add('show');
-  clearTimeout(_notifTimer);
-  _notifTimer=setTimeout(()=>el.classList.remove('show'),2800);
+  const el=$('notifSnack'); el.textContent=text; el.classList.add('show');
+  clearTimeout(_notifTimer); _notifTimer=setTimeout(()=>el.classList.remove('show'),2800);
 }
 
-/* ---------- POINTS ---------- */
+/* -------- RANK -------- */
+function getRank(pts){
+  for(let i=RANKS.length-1;i>=0;i--){ if(pts>=RANKS[i].min) return i; }
+  return 0;
+}
+function renderRank(){
+  const ri=getRank(points.total); const r=RANKS[ri];
+  $('rankHex').style.setProperty('--rcolor',r.color);
+  $('rankLbl').textContent=r.lbl;
+  $('rankName').style.color=r.color;
+  $('rankName').textContent=r.name;
+  if(r.next){
+    const span=r.next-r.min; const prog=Math.max(0,points.total-r.min);
+    const pct=Math.min(1,prog/span);
+    const nextR=RANKS[ri+1];
+    $('rankSub').textContent=`${points.total} pts · ще ${r.next-points.total} до ${nextR.name}`;
+    $('rankFill').style.width=(pct*100)+'%';
+    $('rankFill').style.background=r.color;
+  } else {
+    $('rankSub').textContent=`${points.total} pts · MAX RANK`;
+    $('rankFill').style.width='100%';
+    $('rankFill').style.background=r.color;
+  }
+}
+
+/* -------- PENDING -------- */
+async function addPending(amount, reason){
+  if(!amount||amount<1) return;
+  pending.push({id:newId(), amount, reason:reason||'', date:torontoNow().date});
+  await sset('app_pending', pending);
+  renderPending();
+}
+
+async function confirmPending(id){
+  const idx=pending.findIndex(x=>x.id===id); if(idx<0) return;
+  const item=pending[idx];
+  pending.splice(idx,1);
+  points.total+=item.amount; points.last=item.amount;
+  pointsLog.unshift({id:newId(), amount:item.amount, reason:item.reason, date:torontoNow().date});
+  if(pointsLog.length>300) pointsLog=pointsLog.slice(0,300);
+  await sset('app_pending',pending);
+  await sset('app_points',points);
+  await sset('app_points_log',pointsLog);
+  renderPoints(); renderPending(); renderRank(); renderShop();
+  showNotif(`+${item.amount} pts підтверджено!`);
+}
+
+async function rejectPending(id){
+  pending=pending.filter(x=>x.id!==id);
+  await sset('app_pending',pending); renderPending();
+}
+
+async function savePendingEdit(id){
+  const amt=parseInt($('peAmt_'+id)?.value,10)||0;
+  const rsn=($('peRsn_'+id)?.value||'').trim();
+  if(!amt||amt<1) return;
+  const item=pending.find(x=>x.id===id); if(!item) return;
+  item.amount=amt; item.reason=rsn;
+  pendingEditId=null;
+  await sset('app_pending',pending); renderPending();
+}
+
+function renderPending(){
+  const wrap=$('pendingList'); wrap.innerHTML='';
+  $('pendingCount').textContent=pending.length?`(${pending.length})`:'';
+  if(!pending.length){
+    wrap.innerHTML='<div class="empty-note" style="padding:10px 0 4px">Немає очікуваних поінтів</div>';
+    return;
+  }
+  pending.forEach(item=>{
+    if(item.id===pendingEditId){
+      const row=document.createElement('div'); row.className='pend-edit-row';
+      row.innerHTML=`<input id="peAmt_${item.id}" type="number" value="${item.amount}" style="max-width:62px">
+        <input id="peRsn_${item.id}" type="text" value="${item.reason}" placeholder="причина">
+        <button class="esave">✓</button><button class="ecancel">✕</button>`;
+      row.querySelector('.esave').onclick=()=>savePendingEdit(item.id);
+      row.querySelector('.ecancel').onclick=()=>{ pendingEditId=null; renderPending(); };
+      wrap.appendChild(row);
+    } else {
+      const row=document.createElement('div'); row.className='pending-item';
+      const d=new Date(item.date+'T00:00:00');
+      const dl=d.toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+      row.innerHTML=`<span class="pend-amt">+${item.amount}</span>
+        <span class="pend-rsn">${(item.reason||'без причини').replace(/</g,'&lt;')}</span>
+        <span class="pend-date">${dl}</span>
+        <div class="pend-btns">
+          <button class="pend-ok" title="Підтвердити">✓</button>
+          <button class="pend-edit" title="Редагувати">✎</button>
+          <button class="pend-del" title="Відхилити">✕</button>
+        </div>`;
+      row.querySelector('.pend-ok').onclick=()=>confirmPending(item.id);
+      row.querySelector('.pend-edit').onclick=()=>{ pendingEditId=item.id; renderPending(); };
+      row.querySelector('.pend-del').onclick=()=>rejectPending(item.id);
+      wrap.appendChild(row);
+    }
+  });
+}
+
+async function exportPending(){
+  if(!pending.length){ showNotif('Немає очікуваних поінтів'); return; }
+  const date=new Date().toLocaleDateString('uk-UA');
+  let text=`Очікувані поінти (${date}):\n`;
+  pending.forEach(item=>{
+    const d=new Date(item.date+'T00:00:00').toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+    text+=`• +${item.amount} pts — ${item.reason||'без причини'} (${d})\n`;
+  });
+  text+=`\nСума: ${pending.reduce((s,i)=>s+i.amount,0)} pts`;
+  try{ await navigator.clipboard.writeText(text); showNotif('Скопійовано до буферу'); }
+  catch{ showNotif('Помилка: немає дозволу на буфер'); }
+}
+$('exportPendingBtn').onclick=exportPending;
+
+/* -------- POINTS -------- */
 function renderPoints(){
   $('ptsTotal').textContent=points.total;
   $('ptsTargetLbl').innerHTML=`ціль <b>${PTS_TARGET}</b>`;
@@ -642,20 +946,34 @@ function renderPoints(){
   $('ptsFill').style.background=ratio>=1?'var(--good)':'var(--indigo)';
   const left=Math.max(0,PTS_TARGET-points.total);
   $('ptsToGoal').textContent=left>0?`ще ${left} до цілі`:'ціль досягнута 🔓';
-  $('ptsChips').innerHTML='';
-  PTS_STEPS.forEach(v=>{
-    const b=document.createElement('button'); b.className='pts-block';
-    b.textContent=`+${v}`;
-    b.onclick=async()=>{ points.total+=v; points.last=v; await sset('app_points',points); renderPoints(); renderShop(); };
-    $('ptsChips').appendChild(b);
-  });
   $('ptsUndo').disabled=points.last<=0;
+  const chips=$('ptsChips'); chips.innerHTML='';
+  PTS_STEPS.forEach(v=>{
+    const b=document.createElement('button'); b.className='pts-block'+(pendingAmount===v?' selected':'');
+    b.textContent=`+${v}`;
+    b.onclick=()=>{ pendingAmount=v; renderPoints(); $('ptsReason').focus(); };
+    chips.appendChild(b);
+  });
+  renderRank();
 }
+$('ptsAddBtn').onclick=async()=>{
+  const r=$('ptsReason').value.trim();
+  if(!pendingAmount){ showNotif('Вибери суму поінтів'); return; }
+  await addPending(pendingAmount, r);
+  $('ptsReason').value=''; pendingAmount=0; renderPoints();
+};
+$('ptsReason').addEventListener('keydown',e=>{ if(e.key==='Enter') $('ptsAddBtn').click(); });
 $('ptsUndo').onclick=async()=>{
-  if(points.last>0){ points.total=Math.max(0,points.total-points.last); points.last=0; await sset('app_points',points); renderPoints(); renderShop(); }
+  if(points.last>0){ points.total=Math.max(0,points.total-points.last); points.last=0;
+    await sset('app_points',points); renderPoints(); renderShop(); }
 };
 
-/* ---------- CALORIES ---------- */
+/* -------- GYM -------- */
+$('gymBtn').onclick=async()=>{
+  await addPending(20,'Зал'); showNotif('Тренування записано → +20 pts в очікуванні');
+};
+
+/* -------- CALORIES -------- */
 const MAC=[{k:'p',n:'Білки',c:'#38B89A'},{k:'f',n:'Жири',c:'#E0A646'},{k:'c',n:'Вугл',c:'#4FB8CE'}];
 function renderCals(){
   $('kcalNow').textContent=Math.round(cals.kcal);
@@ -677,13 +995,96 @@ $('addFood').onclick=async()=>{
   ['fKcal','fP','fF','fC'].forEach(id=>$(id).value='');
   await sset('app_cals',cals); renderCals();
 };
-async function resetCals(){ cals={date:today(),kcal:0,p:0,f:0,c:0}; await sset('app_cals',cals); renderCals(); }
-$('kcalReset2').onclick=resetCals;
+$('kcalReset2').onclick=async()=>{ cals={date:today(),kcal:0,p:0,f:0,c:0}; await sset('app_cals',cals); renderCals(); };
 
-/* ---------- TASKS ---------- */
+/* -------- MEAL DB -------- */
+function renderMeals(){
+  $('mealsCount').textContent=meals.length;
+  const list=$('mealsList'); list.innerHTML='';
+  if(!meals.length){ list.innerHTML='<div class="empty-note" style="padding:8px 0">Додай першу страву</div>'; return; }
+  meals.forEach(m=>{
+    const row=document.createElement('div'); row.className='meal-row';
+    row.innerHTML=`<div class="meal-row-name">${m.name.replace(/</g,'&lt;')}</div>
+      <div class="meal-row-meta">${m.kcal} ккал · Б${m.p} Ж${m.f} В${m.c}</div>
+      <button class="meal-del" data-id="${m.id}">×</button>`;
+    row.querySelector('.meal-del').onclick=async()=>{
+      meals=meals.filter(x=>x.id!==m.id);
+      await sset('app_meals',meals); renderMeals();
+    };
+    list.appendChild(row);
+  });
+}
+$('saveMeal').onclick=async()=>{
+  const name=$('mealName').value.trim(); if(!name) return;
+  const m={id:newId(),name,kcal:+$('mealKcal').value||0,p:+$('mealPro').value||0,f:+$('mealFat').value||0,c:+$('mealCarb').value||0};
+  meals.push(m); await sset('app_meals',meals); renderMeals();
+  ['mealName','mealKcal','mealPro','mealFat','mealCarb'].forEach(id=>$(id).value='');
+  showNotif(`${name} збережено`);
+};
+$('toggleMeals').onclick=()=>{
+  const c=$('mealsContent'), showing=c.style.display==='block';
+  c.style.display=showing?'none':'block';
+  $('toggleMeals').textContent=showing?'Показати':'Сховати';
+};
+
+function renderMealSelected(){
+  if(!selectedMeal){ $('mealSelected').style.display='none'; return; }
+  const m=selectedMeal, x=mealMult;
+  const sel=$('mealSelected'); sel.style.display='block';
+  sel.innerHTML=`<div class="meal-sel-name">${m.name.replace(/</g,'&lt;')}</div>
+    <div class="meal-sel-info">${Math.round(m.kcal*x)} ккал · Б${Math.round(m.p*x)} Ж${Math.round(m.f*x)} В${Math.round(m.c*x)}</div>
+    <div class="meal-mult-row">
+      ${[0.5,1,2,3].map(v=>`<button class="meal-mult${v===x?' active':''}" data-v="${v}">×${v}</button>`).join('')}
+    </div>
+    <button class="meal-add-btn" id="addMealLog">Додати до сьогодні</button>`;
+  sel.querySelectorAll('.meal-mult').forEach(b=>b.onclick=()=>{ mealMult=+b.dataset.v; renderMealSelected(); });
+  sel.querySelector('#addMealLog').onclick=async()=>{
+    cals.kcal+=m.kcal*mealMult; cals.p+=m.p*mealMult; cals.f+=m.f*mealMult; cals.c+=m.c*mealMult;
+    await sset('app_cals',cals); renderCals();
+    $('mealSearch').value=''; $('mealResults').innerHTML='';
+    selectedMeal=null; mealMult=1; $('mealSelected').style.display='none';
+    showNotif(`${m.name} ×${mealMult>1?mealMult:1} додано`);
+  };
+}
+
+$('mealSearch').addEventListener('input',()=>{
+  const q=$('mealSearch').value.trim().toLowerCase();
+  const res=$('mealResults'); res.innerHTML='';
+  selectedMeal=null; $('mealSelected').style.display='none';
+  if(!q){ return; }
+  const hits=meals.filter(m=>m.name.toLowerCase().includes(q)).slice(0,5);
+  if(!hits.length){ res.innerHTML='<div class="meal-res-item" style="color:var(--muted)">Не знайдено</div>'; return; }
+  hits.forEach(m=>{
+    const el=document.createElement('div'); el.className='meal-res-item';
+    el.innerHTML=`${m.name.replace(/</g,'&lt;')}<div class="meal-res-meta">${m.kcal} ккал · Б${m.p} Ж${m.f} В${m.c}</div>`;
+    el.onclick=()=>{ selectedMeal=m; mealMult=1; res.innerHTML=''; $('mealSearch').value=m.name; renderMealSelected(); };
+    res.appendChild(el);
+  });
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.meal-search-wrap')&&!e.target.closest('#mealSelected'))
+    $('mealResults').innerHTML='';
+});
+
+/* -------- TASKS -------- */
 function fmtDate(s){
-  const d=new Date(s+'T00:00:00');
-  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  return new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+async function logTaskDone(t){
+  tasksLog.unshift({id:newId(), text:t.text, date:torontoNow().date});
+  if(tasksLog.length>300) tasksLog=tasksLog.slice(0,300);
+  await sset('app_tasks_log',tasksLog);
+}
+
+function makeTaskRow(t, onToggle, onDelete){
+  const todayStr=torontoNow().date;
+  const isOverdue=t.dueDate&&t.dueDate<todayStr;
+  const row=document.createElement('div'); row.className='task'+(t.done?' done':'');
+  const dueLabel=t.dueDate?`<span class="task-due${isOverdue?' task-overdue':''}">${fmtDate(t.dueDate)}${t.dueTime?' · '+t.dueTime:''}</span>`:'';
+  row.innerHTML=`<div class="checkbox">${t.done?'✓':''}</div><div class="ttext">${t.text.replace(/</g,'&lt;')}${dueLabel}</div><button class="tdel">×</button>`;
+  row.querySelector('.checkbox').onclick=onToggle;
+  row.querySelector('.tdel').onclick=onDelete;
+  return row;
 }
 
 function renderTasks(){
@@ -693,45 +1094,41 @@ function renderTasks(){
     .sort((a,b)=>a.dueDate!==b.dueDate?(a.dueDate<b.dueDate?-1:1):((a.dueTime||'')>(b.dueTime||'')?1:-1));
 
   const L=$('taskList'); L.innerHTML='';
-  if(!active.length){
-    L.innerHTML='<div class="empty-note">Порожньо. Додай перше, що треба зробити.</div>';
-  } else {
-    active.forEach(t=>{
-      const idx=tasks.items.indexOf(t);
-      const isOverdue=t.dueDate&&t.dueDate<todayStr;
-      const row=document.createElement('div'); row.className='task'+(t.done?' done':'');
-      const dueLabel=t.dueDate
-        ?`<span class="task-due${isOverdue?' task-overdue':''}">${fmtDate(t.dueDate)}${t.dueTime?' · '+t.dueTime:''}</span>`
-        :'';
-      row.innerHTML=`<div class="checkbox">${t.done?'✓':''}</div><div class="ttext">${t.text.replace(/</g,'&lt;')}${dueLabel}</div><button class="tdel">×</button>`;
-      row.querySelector('.checkbox').onclick=async()=>{ t.done=!t.done; await sset('app_tasks',tasks); renderTasks(); };
-      row.querySelector('.tdel').onclick=async()=>{ tasks.items.splice(idx,1); await sset('app_tasks',tasks); renderTasks(); };
-      L.appendChild(row);
-    });
-  }
+  if(!active.length){ L.innerHTML='<div class="empty-note">Порожньо.</div>'; }
+  else active.forEach(t=>{
+    const row=makeTaskRow(t,
+      async()=>{
+        const wasDone=t.done; t.done=!t.done;
+        if(t.done&&!wasDone) await logTaskDone(t);
+        await sset('app_tasks',tasks); renderTasks();
+      },
+      async()=>{ tasks.items.splice(tasks.items.indexOf(t),1); await sset('app_tasks',tasks); renderTasks(); }
+    );
+    L.appendChild(row);
+  });
 
   const F=$('taskFuture'); F.innerHTML='';
   if(future.length){
     const card=document.createElement('div'); card.className='card';
     card.innerHTML='<span class="label">Заплановано</span>';
     future.forEach(t=>{
-      const idx=tasks.items.indexOf(t);
-      const row=document.createElement('div'); row.className='task'+(t.done?' done':'');
-      row.innerHTML=`<div class="checkbox">${t.done?'✓':''}</div><div class="ttext">${t.text.replace(/</g,'&lt;')}<span class="task-due">${fmtDate(t.dueDate)}${t.dueTime?' · '+t.dueTime:''}</span></div><button class="tdel">×</button>`;
-      row.querySelector('.checkbox').onclick=async()=>{ t.done=!t.done; await sset('app_tasks',tasks); renderTasks(); };
-      row.querySelector('.tdel').onclick=async()=>{ tasks.items.splice(idx,1); await sset('app_tasks',tasks); renderTasks(); };
+      const row=makeTaskRow(t,
+        async()=>{
+          const wasDone=t.done; t.done=!t.done;
+          if(t.done&&!wasDone) await logTaskDone(t);
+          await sset('app_tasks',tasks); renderTasks();
+        },
+        async()=>{ tasks.items.splice(tasks.items.indexOf(t),1); await sset('app_tasks',tasks); renderTasks(); }
+      );
       card.appendChild(row);
     });
     F.appendChild(card);
   }
 }
 
-function newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-
 async function addTask(){
   const v=$('taskInput').value.trim(); if(!v) return;
-  const dd=$('taskDate').value||undefined;
-  const dt=$('taskTime').value||undefined;
+  const dd=$('taskDate').value||undefined, dt=$('taskTime').value||undefined;
   tasks.items.push({id:newId(),text:v,done:false,dueDate:dd,dueTime:dt});
   $('taskInput').value=''; $('taskDate').value=''; $('taskTime').value='';
   await sset('app_tasks',tasks); renderTasks();
@@ -739,21 +1136,16 @@ async function addTask(){
 $('taskAdd').onclick=addTask;
 $('taskInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addTask(); });
 
-/* ---------- BUDGET ---------- */
+/* -------- BUDGET -------- */
 function budgetCap(key){ return (BUDGETS.find(b=>b.key===key)?.total||0)+(budget.bonus[key]||0); }
 function colorFor(r,base){ if(r<=0.18)return'var(--low)'; if(r<=0.45)return'var(--mid)'; return base; }
-
 function renderBudget(){
   const next=mondayOf(new Date()); next.setDate(next.getDate()+7);
   $('budgetReset').innerHTML=`обнулення <b>${Math.ceil((next-new Date())/86400000)} дн</b>`;
   const wrap=$('budgetCards'); wrap.innerHTML='';
   BUDGETS.forEach(b=>{
-    const cap=budgetCap(b.key);
-    const spent=budget.spent[b.key]||0;
-    const left=Math.max(0,cap-spent);
-    const r=cap>0?left/cap:0;
-    const empty=left<=0;
-    const col=colorFor(r,b.color);
+    const cap=budgetCap(b.key),spent=budget.spent[b.key]||0,left=Math.max(0,cap-spent);
+    const r=cap>0?left/cap:0,empty=left<=0,col=colorFor(r,b.color);
     const bonusAmt=budget.bonus[b.key]||0;
     const bonusNote=bonusAmt>0?` <span style="color:var(--good);font-size:10px">+${fmt(bonusAmt)} бонус</span>`:'';
     const c=document.createElement('div'); c.className='card'+(empty?' empty':'');
@@ -769,44 +1161,29 @@ function renderBudget(){
   wrap.querySelectorAll('.spend').forEach(btn=>btn.onclick=()=>spendB(btn.dataset.k,1));
   wrap.querySelectorAll('.undo').forEach(btn=>btn.onclick=()=>spendB(btn.dataset.u,-1));
 }
-
 async function spendB(key,dir){
-  const b=BUDGETS.find(x=>x.key===key);
-  const cap=budgetCap(key);
-  let s=(budget.spent[key]||0)+dir*b.step;
-  s=Math.max(0,Math.min(cap,s));
-  budget.spent[key]=s;
-  await sset('app_budget',budget);
-  renderBudget();
+  const b=BUDGETS.find(x=>x.key===key),cap=budgetCap(key);
+  let s=(budget.spent[key]||0)+dir*b.step; s=Math.max(0,Math.min(cap,s));
+  budget.spent[key]=s; await sset('app_budget',budget); renderBudget();
 }
-
 $('newweek').onclick=async()=>{
   budget={weekStart:mondayOf(new Date()).toISOString(),spent:{},bonus:{}};
   BUDGETS.forEach(b=>{ budget.spent[b.key]=0; budget.bonus[b.key]=0; });
-  await sset('app_budget',budget);
-  renderBudget();
-  renderShop();
+  await sset('app_budget',budget); renderBudget(); renderShop();
 };
 
-/* ---------- GOALS ---------- */
+/* -------- GOALS -------- */
 async function checkMilestone(g){
   if(g.rewarded) return;
   let complete=false;
-  if(g.type==='check'){
-    complete=g.done;
-  } else {
-    const span=Math.abs(g.target-g.start)||1;
-    complete=Math.abs(g.current-g.start)>=span;
-  }
+  if(g.type==='check'){ complete=g.done; }
+  else { const span=Math.abs(g.target-g.start)||1; complete=Math.abs(g.current-g.start)>=span; }
   if(!complete) return;
   g.rewarded=true;
   const reward=DIFF_PTS[g.difficulty||'normal'];
-  points.total+=reward;
-  points.last=reward;
+  await addPending(reward, `Майлстоун: ${g.name}`);
   await sset('app_goals',goals);
-  await sset('app_points',points);
-  renderPoints();
-  showNotif(`🏆 ${g.name} — +${reward} поінтів!`);
+  showNotif(`🏆 ${g.name} — +${reward} pts у очікування!`);
 }
 
 function renderGoals(){
@@ -815,19 +1192,14 @@ function renderGoals(){
     const diff=g.difficulty||'normal';
     const badgeColor=DIFF_COLOR[diff];
     const badgeHTML=`<span class="goal-badge" style="background:${badgeColor}22;color:${badgeColor};border:1px solid ${badgeColor}55">${DIFF_LABEL[diff]}</span>`;
-
-    const c=document.createElement('div');
-    c.className='card'+(g.type==='check'&&g.done?' goal-done':'');
-
+    const c=document.createElement('div'); c.className='card'+(g.type==='check'&&g.done?' goal-done':'');
     if(g.type==='check'){
       c.innerHTML=`<div class="goal-top"><div class="goal-name">${g.name}</div>${badgeHTML}</div>
         <button class="goal-done-btn">${g.done?'✓ Зроблено':'Позначити зробленим'}</button>`;
       c.querySelector('.goal-done-btn').onclick=async()=>{
-        g.done=!g.done;
-        c.className='card'+(g.done?' goal-done':'');
+        g.done=!g.done; c.className='card'+(g.done?' goal-done':'');
         c.querySelector('.goal-done-btn').textContent=g.done?'✓ Зроблено':'Позначити зробленим';
-        await sset('app_goals',goals);
-        if(g.done) await checkMilestone(g);
+        await sset('app_goals',goals); if(g.done) await checkMilestone(g);
       };
     } else {
       const span=Math.abs(g.target-g.start)||1;
@@ -839,59 +1211,47 @@ function renderGoals(){
         </div>
         <div class="bar" style="margin-top:10px"><div class="fill gfill" style="width:0%;background:${col}"></div></div>
         <div class="goal-step"><button data-d="-1">− ${fmt(g.step)}</button><button data-d="1">+ ${fmt(g.step)}</button></div>`;
-
-      // animate bar entrance
       const fillEl=c.querySelector('.gfill');
       requestAnimationFrame(()=>requestAnimationFrame(()=>{ fillEl.style.width=(r*100)+'%'; }));
-
       c.querySelectorAll('.goal-step button').forEach(btn=>btn.onclick=async()=>{
         const oldR=Math.max(0,Math.min(1,Math.abs(g.current-g.start)/span));
         g.current=Math.round((g.current+(+btn.dataset.d)*g.step)*10)/10;
         const newR=Math.max(0,Math.min(1,Math.abs(g.current-g.start)/span));
         const newCol=newR>=1?'var(--good)':'var(--cyan)';
-
         c.querySelector('.gv-cur').textContent=fmt(g.current);
-        fillEl.style.background=newCol;
-        fillEl.style.width=(newR*100)+'%';
-
-        if(newR>oldR){
-          fillEl.classList.remove('glow');
-          void fillEl.offsetWidth; // force reflow to restart animation
-          fillEl.classList.add('glow');
-        }
-
-        await sset('app_goals',goals);
-        await checkMilestone(g);
+        fillEl.style.background=newCol; fillEl.style.width=(newR*100)+'%';
+        if(newR>oldR){ fillEl.classList.remove('glow'); void fillEl.offsetWidth; fillEl.classList.add('glow'); }
+        await sset('app_goals',goals); await checkMilestone(g);
       });
     }
     wrap.appendChild(c);
   });
 }
 
-/* ---------- SHOP ---------- */
+/* -------- SPEND LOG helpers -------- */
+async function appendSpendLog(name,cost){
+  spendLog.unshift({id:newId(),name,cost,date:torontoNow().date});
+  if(spendLog.length>300) spendLog=spendLog.slice(0,300);
+  await sset('app_spend_log',spendLog);
+}
+
+/* -------- SHOP -------- */
 function renderShop(){
   $('shopPtsDisplay').innerHTML=`<b>${points.total}</b> pts`;
-
   const bWrap=$('shopBudgetItems');
   bWrap.innerHTML=`<div class="shop-section">Бюджет втіх</div>`;
   SHOP_BUDGET.forEach(item=>{
     const canBuy=points.total>=item.pts;
     const row=document.createElement('div'); row.className='shop-item';
-    row.innerHTML=`<div class="shop-info">
-      <div class="shop-name">${item.name}</div>
-      <div class="shop-desc">${item.desc}</div>
-    </div>
-    <button class="shop-buy" ${canBuy?'':' disabled'}>${item.pts} pts</button>`;
+    row.innerHTML=`<div class="shop-info"><div class="shop-name">${item.name}</div><div class="shop-desc">${item.desc}</div></div>
+      <button class="shop-buy"${canBuy?'':' disabled'}>${item.pts} pts</button>`;
     row.querySelector('.shop-buy').onclick=async()=>{
       if(points.total<item.pts) return;
       points.total-=item.pts; points.last=0;
       budget.bonus[item.key]=(budget.bonus[item.key]||0)+item.bonus;
-      await sset('app_points',points);
-      await sset('app_budget',budget);
-      renderPoints();
-      renderBudget();
-      renderShop();
-      showNotif(`✓ ${item.name} додано до бюджету`);
+      await sset('app_points',points); await sset('app_budget',budget);
+      await appendSpendLog(item.name,item.pts);
+      renderPoints(); renderBudget(); renderShop(); showNotif(`✓ ${item.name} додано до бюджету`);
     };
     bWrap.appendChild(row);
   });
@@ -901,43 +1261,32 @@ function renderShop(){
   SHOP_REWARDS.forEach(item=>{
     const canBuy=points.total>=item.pts;
     const row=document.createElement('div'); row.className='shop-item';
-    row.innerHTML=`<div class="shop-info">
-      <div class="shop-name">${item.name}</div>
-      <div class="shop-desc">${item.desc}</div>
-    </div>
-    <button class="shop-buy" ${canBuy?'':' disabled'}>${item.pts} pts</button>`;
+    row.innerHTML=`<div class="shop-info"><div class="shop-name">${item.name}</div><div class="shop-desc">${item.desc}</div></div>
+      <button class="shop-buy"${canBuy?'':' disabled'}>${item.pts} pts</button>`;
     row.querySelector('.shop-buy').onclick=async()=>{
       if(points.total<item.pts) return;
       points.total-=item.pts; points.last=0;
-      await sset('app_points',points);
-      renderPoints();
-      renderShop();
-      showNotif(`🎉 ${item.name} — насолоджуйся!`);
+      await sset('app_points',points); await appendSpendLog(item.name,item.pts);
+      renderPoints(); renderShop(); showNotif(`🎉 ${item.name} — насолоджуйся!`);
     };
     rWrap.appendChild(row);
   });
 
-  // grand reward
   const ratio=Math.min(1,points.total/GRAND_REWARD_PTS);
   const canGrand=points.total>=GRAND_REWARD_PTS;
   const gWrap=$('shopGrandWrap'); gWrap.innerHTML='';
   const grand=document.createElement('div'); grand.className='grand-card';
-  grand.innerHTML=`
-    <div class="grand-title">Велика нагорода</div>
+  grand.innerHTML=`<div class="grand-title">Велика нагорода</div>
     <div class="grand-desc">(впиши свою мрію — девайс / поїздка / вільний день без лімітів)</div>
-    <div class="grand-progress-row">
-      <span class="grand-pts-label">прогрес</span>
-      <span class="grand-pts-val">${points.total} / ${GRAND_REWARD_PTS} pts</span>
-    </div>
+    <div class="grand-progress-row"><span class="grand-pts-label">прогрес</span>
+    <span class="grand-pts-val">${points.total} / ${GRAND_REWARD_PTS} pts</span></div>
     <div class="grand-bar"><div class="grand-fill" style="width:0%"></div></div>
-    <button class="grand-buy" ${canGrand?'':'disabled'}>${canGrand?'🎁 Отримати нагороду':'потрібно '+GRAND_REWARD_PTS+' pts'}</button>`;
+    <button class="grand-buy"${canGrand?'':' disabled'}>${canGrand?'🎁 Отримати нагороду':'потрібно '+GRAND_REWARD_PTS+' pts'}</button>`;
   grand.querySelector('.grand-buy').onclick=async()=>{
     if(points.total<GRAND_REWARD_PTS) return;
     points.total-=GRAND_REWARD_PTS; points.last=0;
-    await sset('app_points',points);
-    renderPoints();
-    renderShop();
-    showNotif('🎊 Велика нагорода отримана! Ти заслужив це!');
+    await sset('app_points',points); await appendSpendLog('Велика нагорода',GRAND_REWARD_PTS);
+    renderPoints(); renderShop(); showNotif('🎊 Велика нагорода отримана! Ти заслужив це!');
   };
   gWrap.appendChild(grand);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -945,27 +1294,20 @@ function renderShop(){
   }));
 }
 
-/* ---------- HISTORY ---------- */
+/* -------- HISTORY / STATS -------- */
 async function saveSnapshot(prevCals,prevTasks){
   if(!prevCals.date||prevCals.date===today()) return;
-  const snap={
-    date:prevCals.date,kcal:Math.round(prevCals.kcal),
+  const snap={date:prevCals.date,kcal:Math.round(prevCals.kcal),
     p:Math.round(prevCals.p),f:Math.round(prevCals.f),c:Math.round(prevCals.c),
-    tasksDone:prevTasks.items.filter(x=>x.done).length,
-    tasksTotal:prevTasks.items.length,
-  };
-  history=history.filter(h=>h.date!==snap.date);
-  history.unshift(snap);
+    tasksDone:prevTasks.items.filter(x=>x.done).length,tasksTotal:prevTasks.items.length};
+  history=history.filter(h=>h.date!==snap.date); history.unshift(snap);
   if(history.length>14) history=history.slice(0,14);
   await sset('app_history',history);
 }
 
-function renderStats(){
+function renderStatsDays(){
   const wrap=$('statsContent'); wrap.innerHTML='';
-  if(!history.length){
-    wrap.innerHTML='<div class="empty-note">Статистика з\'явиться після першого повного дня.<br>Приходь завтра!</div>';
-    return;
-  }
+  if(!history.length){ wrap.innerHTML='<div class="empty-note">Статистика з\'явиться після першого повного дня.</div>'; return; }
   history.forEach(h=>{
     const d=new Date(h.date+'T00:00:00');
     const label=d.toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
@@ -973,8 +1315,7 @@ function renderStats(){
     const kcalCol=kcalRatio>=0.9?'var(--good)':kcalRatio>=0.6?'var(--indigo)':'var(--muted)';
     const taskTxt=h.tasksTotal>0?`${h.tasksDone}/${h.tasksTotal}`:'—';
     const row=document.createElement('div'); row.className='stat-row';
-    row.innerHTML=
-      `<span class="stat-date">${label}</span>`+
+    row.innerHTML=`<span class="stat-date">${label}</span>`+
       `<span class="stat-kcal" style="color:${kcalCol}">${h.kcal||0}</span>`+
       `<div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${kcalRatio*100}%;background:${kcalCol}"></div></div>`+
       `<span class="stat-tasks">${taskTxt}</span>`;
@@ -982,41 +1323,89 @@ function renderStats(){
   });
 }
 
-/* ---------- REMINDERS ---------- */
-let reminderQueue=[];
-const sessionReminded=new Set();
-
-function buildReminderQueue(){
-  const {date:todayStr,hhmm:nowHHMM}=torontoNow();
-  reminderQueue=tasks.items.filter(t=>
-    t.dueDate===todayStr&&t.dueTime&&!t.done&&
-    t.remindedAt!==todayStr&&t.dueTime<=nowHHMM&&!sessionReminded.has(t.id)
-  );
-  showNextReminder();
+function renderPtsLog(){
+  const wrap=$('ptsLogContent'); wrap.innerHTML='';
+  if(!pointsLog.length){ wrap.innerHTML='<div class="empty-note">Немає підтверджених поінтів.</div>'; return; }
+  pointsLog.forEach(e=>{
+    const d=new Date(e.date+'T00:00:00').toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+    const row=document.createElement('div'); row.className='log-row';
+    row.innerHTML=`<div class="log-main"><span class="log-val" style="color:var(--good)">+${e.amount}</span>
+      <span class="log-name">${(e.reason||'—').replace(/</g,'&lt;')}</span>
+      <span class="log-date">${d}</span></div>`;
+    wrap.appendChild(row);
+  });
 }
 
+function renderShopLog(){
+  const wrap=$('shopLogContent'); wrap.innerHTML='';
+  if(!spendLog.length){ wrap.innerHTML='<div class="empty-note">Ще нічого не куплено.</div>'; return; }
+  spendLog.forEach(e=>{
+    const d=new Date(e.date+'T00:00:00').toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+    const row=document.createElement('div'); row.className='log-row';
+    row.innerHTML=`<div class="log-main"><span class="log-val" style="color:var(--low)">-${e.cost}</span>
+      <span class="log-name">${e.name.replace(/</g,'&lt;')}</span>
+      <span class="log-date">${d}</span></div>`;
+    wrap.appendChild(row);
+  });
+}
+
+function renderTasksLog(){
+  const wrap=$('tasksLogContent'); wrap.innerHTML='';
+  if(!tasksLog.length){ wrap.innerHTML='<div class="empty-note">Ще жодного завдання не виконано.</div>'; return; }
+  tasksLog.forEach(e=>{
+    const d=new Date(e.date+'T00:00:00').toLocaleDateString('uk-UA',{day:'numeric',month:'short'});
+    const row=document.createElement('div'); row.className='log-row';
+    row.innerHTML=`<div class="log-main"><span class="log-val" style="color:var(--good)">✓</span>
+      <span class="log-name">${e.text.replace(/</g,'&lt;')}</span>
+      <span class="log-date">${d}</span></div>`;
+    wrap.appendChild(row);
+  });
+}
+
+function renderStats(){ renderStatsDays(); }
+
+/* -------- STATS SUB-TABS -------- */
+const STAT_PANES=['days','pts','shop','tasks'];
+const STAT_RENDERS={days:renderStatsDays, pts:renderPtsLog, shop:renderShopLog, tasks:renderTasksLog};
+document.querySelectorAll('.stab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.stab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  STAT_PANES.forEach(t=>{
+    const el=$('statsPane_'+t); if(el) el.style.display=t===b.dataset.stab?'block':'none';
+  });
+  if(STAT_RENDERS[b.dataset.stab]) STAT_RENDERS[b.dataset.stab]();
+});
+
+/* -------- REMINDERS -------- */
+let reminderQueue=[];
+const sessionReminded=new Set();
+function buildReminderQueue(){
+  const {date:todayStr,hhmm:nowHHMM}=torontoNow();
+  reminderQueue=tasks.items.filter(t=>t.dueDate===todayStr&&t.dueTime&&!t.done&&t.remindedAt!==todayStr&&t.dueTime<=nowHHMM&&!sessionReminded.has(t.id));
+  showNextReminder();
+}
 function showNextReminder(){
   if(!reminderQueue.length){ $('toastWrap').style.display='none'; return; }
-  const t=reminderQueue[0];
-  sessionReminded.add(t.id);
+  const t=reminderQueue[0]; sessionReminded.add(t.id);
   $('toastText').textContent=t.text;
   $('toastTime').textContent=`${fmtDate(t.dueDate)} · ${t.dueTime}`;
   $('toastWrap').style.display='block';
 }
-
 async function dismissReminder(markDone){
   if(!reminderQueue.length) return;
-  const t=reminderQueue.shift();
-  const {date:todayStr}=torontoNow();
+  const t=reminderQueue.shift(); const {date:todayStr}=torontoNow();
   const item=tasks.items.find(x=>x.id===t.id);
-  if(item){ item.remindedAt=todayStr; if(markDone) item.done=true; await sset('app_tasks',tasks); renderTasks(); }
+  if(item){
+    item.remindedAt=todayStr;
+    if(markDone){ const wasDone=item.done; item.done=true; if(!wasDone) await logTaskDone(item); }
+    await sset('app_tasks',tasks); renderTasks();
+  }
   showNextReminder();
 }
-
 $('toastDone').onclick=()=>dismissReminder(true);
 $('toastClose').onclick=()=>dismissReminder(false);
 
-/* ---------- NAV ---------- */
+/* -------- NAV -------- */
 const ALL_TABS=['main','budget','goals','stats','shop'];
 document.querySelectorAll('.nav-row button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.nav-row button').forEach(x=>x.classList.remove('active'));
@@ -1024,22 +1413,23 @@ document.querySelectorAll('.nav-row button').forEach(b=>b.onclick=()=>{
   ALL_TABS.forEach(t=>$(t).style.display=t===b.dataset.tab?'block':'none');
 });
 
-/* ---------- INIT ---------- */
+/* -------- INIT -------- */
 (async function(){
   points=await sget('app_points')||{total:0,last:0};
   history=await sget('app_history')||[];
+  pending=await sget('app_pending')||[];
+  pointsLog=await sget('app_points_log')||[];
+  spendLog=await sget('app_spend_log')||[];
+  tasksLog=await sget('app_tasks_log')||[];
+  meals=await sget('app_meals')||[];
 
   const storedCals=await sget('app_cals')||{date:today(),kcal:0,p:0,f:0,c:0};
   const storedTasks=await sget('app_tasks')||{date:today(),items:[]};
   storedTasks.items=storedTasks.items.map(t=>t.id?t:{...t,id:newId()});
-
   if(storedCals.date!==today()) await saveSnapshot(storedCals,storedTasks);
-
   cals=storedCals.date===today()?storedCals:{date:today(),kcal:0,p:0,f:0,c:0};
   if(storedCals.date!==today()) await sset('app_cals',cals);
-
-  tasks=storedTasks;
-  await sset('app_tasks',tasks);
+  tasks=storedTasks; await sset('app_tasks',tasks);
 
   budget=await sget('app_budget')||{weekStart:null,spent:{},bonus:{}};
   if(!budget.bonus) budget.bonus={};
@@ -1055,15 +1445,10 @@ document.querySelectorAll('.nav-row button').forEach(b=>b.onclick=()=>{
   });
 
   goals=await sget('app_goals')||JSON.parse(JSON.stringify(GOALS));
-  // migrate difficulty from defaults for existing saved goals
-  goals.forEach(g=>{
-    if(!g.difficulty){
-      const def=GOALS.find(d=>d.key===g.key);
-      if(def) g.difficulty=def.difficulty||'normal';
-    }
-  });
+  goals.forEach(g=>{ if(!g.difficulty){ const def=GOALS.find(d=>d.key===g.key); if(def) g.difficulty=def.difficulty||'normal'; } });
 
-  renderQuote(); renderPoints(); renderCals(); renderTasks(); renderBudget(); renderGoals(); renderStats(); renderShop();
+  renderQuote(); renderPoints(); renderPending(); renderCals(); renderMeals();
+  renderTasks(); renderBudget(); renderGoals(); renderStats(); renderShop();
   buildReminderQueue();
 })();
 </script>
