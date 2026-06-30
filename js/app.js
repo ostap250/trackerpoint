@@ -1,11 +1,12 @@
 /* ---- Tab navigation ---- */
-const ALL_TABS = ['main', 'gym', 'food', 'budget', 'goals', 'shop', 'stats'];
+const ALL_TABS = ['main', 'gym', 'food', 'budget', 'goals', 'shop', 'stats', 'ranks'];
 
 function switchTab(tabId) {
   document.querySelectorAll('.nav-row button').forEach(x => x.classList.remove('active'));
   const btn = document.querySelector(`.nav-row button[data-tab="${tabId}"]`);
   if (btn) btn.classList.add('active');
   ALL_TABS.forEach(t => $(t).style.display = t === tabId ? 'block' : 'none');
+  if (tabId === 'ranks') renderRanks();
 }
 
 document.querySelectorAll('.nav-row button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
@@ -24,6 +25,7 @@ $('gymHomeBtn').onclick = () => switchTab('gym');
   tasksLog  = await sget('app_tasks_log')  || [];
   meals     = await sget('app_meals')      || [];
   gymData   = await sget('app_gym')        || initGymData();
+  gymImages = await sget('app_gym_images') || {};
 
   /* Migrate: ensure all muscle keys present */
   MUSCLES.forEach(m => {

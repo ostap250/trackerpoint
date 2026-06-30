@@ -510,6 +510,86 @@ h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
 .gym-ex-last{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--good); }
 .gym-prog-rule{ font-family:'JetBrains Mono',monospace; font-size:9px; color:#54607a; text-align:right; }
 
+/* ---- English exercise name subtitle ---- */
+.gym-ex-names{ flex:1; min-width:0; }
+.gym-ex-name-en{
+  display:block; font-family:'JetBrains Mono',monospace;
+  font-size:10px; color:var(--muted); margin-top:2px; letter-spacing:.01em;
+}
+
+/* ---- Exercise image slot (wger API) ---- */
+.gym-img-slot{ margin:8px 0 4px; }
+.gym-img-slot:empty{ display:none; }
+
+.gym-img-wrap{
+  display:flex; align-items:center; gap:10px;
+  background:#0f141c; border:1px solid var(--line); border-radius:10px;
+  padding:8px; cursor:pointer; transition:border-color .15s; user-select:none;
+}
+.gym-img-wrap:hover{ border-color:rgba(138,123,230,.4); }
+
+.gym-ex-thumb{
+  width:72px; height:54px; object-fit:cover; border-radius:6px;
+  flex:none; display:block;
+}
+.gym-img-meta{ flex:1; min-width:0; }
+.gym-img-exname{
+  display:block; font-family:'JetBrains Mono',monospace;
+  font-size:10px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.gym-img-attr{
+  display:block; font-family:'JetBrains Mono',monospace;
+  font-size:9px; color:#54607a; text-decoration:none; margin-top:2px;
+}
+.gym-img-attr:hover{ color:var(--muted); }
+
+/* Expanded state — tap image to toggle */
+.gym-img-expanded .gym-img-wrap{ flex-direction:column; align-items:flex-start; }
+.gym-img-expanded .gym-ex-thumb{ width:100%; height:auto; max-height:260px; object-fit:contain; }
+
+/* YouTube fallback link */
+.gym-yt-link{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted);
+  background:#0f141c; border:1px solid var(--line); border-radius:8px;
+  padding:6px 10px; text-decoration:none; transition:.15s;
+}
+.gym-yt-link:hover{ border-color:var(--low); color:var(--low); }
+
+/* ---- Ранги page ---- */
+.rank-muscle-row{ display:flex; align-items:center; gap:12px; }
+.muscle-rank-hex--lg{ width:46px; height:46px; }
+.muscle-rank-hex--lg .muscle-rank-lbl{ font-size:14px; }
+.rank-muscle-info{ flex:1; min-width:0; }
+.rank-muscle-name{ font-size:15px; font-weight:700; }
+.rank-muscle-meta{
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin-top:2px;
+}
+.rank-muscle-xp{
+  font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin-top:5px;
+}
+.rank-next-info{
+  margin-top:10px; padding:9px 11px;
+  background:rgba(138,123,230,.07); border:1px solid rgba(138,123,230,.2); border-radius:9px;
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); line-height:1.6;
+}
+.rank-next-info.rank-max{
+  background:rgba(245,197,24,.07); border-color:rgba(245,197,24,.22); color:var(--mid);
+  text-align:center;
+}
+
+/* Rank ladder table */
+.rank-ladder{ display:flex; flex-direction:column; }
+.rank-ladder-row{
+  display:flex; align-items:center; gap:12px;
+  padding:9px 4px; border-bottom:1px solid var(--line);
+}
+.rank-ladder-row:last-child{ border-bottom:none; }
+.rank-ladder-name{ font-weight:700; flex:1; font-size:13px; }
+.rank-ladder-levels{
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
+}
+
 @media (prefers-reduced-motion: reduce){
   .fill,.mfill,.stat-bar-fill,.rank-fill,.grand-fill,.muscle-rank-fill{ transition:none; }
   *{ transition:none!important; animation:none!important; }

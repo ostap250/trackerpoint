@@ -8,4 +8,5 @@ let mealMult      = 1;
 let pendingAmount  = 0;
 let pendingEditId  = null;
 let gymData;          // loaded from app_gym
+let gymImages = {};   // loaded from app_gym_images (wger URL cache)
 let activeDay     = 'A'; // currently selected workout day
