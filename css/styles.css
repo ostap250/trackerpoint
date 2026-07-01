@@ -612,6 +612,134 @@ h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
 .rank-ladder-levels{
   font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
 }
+/* compact per-muscle rank ladder in Ранги page */
+.rank-ladder--compact .rank-ladder-row{ padding:6px 4px; }
+.rank-ladder-current{ background:rgba(138,123,230,.07); border-radius:7px; }
+.rank-ladder-curr-badge{
+  font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--indigo);
+  white-space:nowrap;
+}
+
+/* ---- Gym — bodyweight input ---- */
+.gym-bw-row{
+  display:flex; align-items:center; gap:8px;
+  margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+}
+.gym-bw-label{
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); flex:1;
+}
+.gym-bw-input{
+  width:68px; background:#0f141c; border:1px solid var(--line); color:var(--txt);
+  font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700;
+  padding:7px 8px; border-radius:9px; text-align:center;
+}
+.gym-bw-unit{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+
+/* muscle cell rank pct text */
+.muscle-rank-pct{
+  font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted); margin-top:4px;
+}
+
+/* ---- Gym — exercise edit controls (swap / remove) ---- */
+.gym-ex-controls{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.gym-swap-btn{
+  background:transparent; border:1px solid var(--line); color:var(--muted);
+  font-family:'JetBrains Mono',monospace; font-size:10px; padding:5px 9px;
+  border-radius:7px; cursor:pointer; transition:.15s; white-space:nowrap;
+}
+.gym-swap-btn:hover{ border-color:var(--indigo); color:var(--indigo); }
+.gym-del-btn{
+  background:transparent; border:1px solid transparent; color:#54607a;
+  font-family:'JetBrains Mono',monospace; font-size:10px; padding:5px 9px;
+  border-radius:7px; cursor:pointer; transition:.15s;
+}
+.gym-del-btn:hover{ border-color:var(--low); color:var(--low); }
+
+/* ---- Gym — add exercise section ---- */
+.gym-add-section{
+  margin-top:12px; padding-top:10px; border-top:1px dashed rgba(138,123,230,.25);
+}
+.gym-add-ex-btn{
+  width:100%; background:transparent; border:1px dashed rgba(138,123,230,.3);
+  color:var(--indigo); font-family:'JetBrains Mono',monospace; font-size:11px;
+  padding:8px 14px; border-radius:9px; cursor:pointer; transition:.15s;
+}
+.gym-add-ex-btn:hover{ background:rgba(138,123,230,.07); }
+.gym-add-list{ margin-top:8px; }
+.gym-add-item{
+  display:flex; align-items:center; gap:8px; padding:9px 6px;
+  cursor:pointer; border-bottom:1px solid var(--line);
+  transition:.1s; border-radius:4px;
+}
+.gym-add-item:last-child{ border-bottom:none; }
+.gym-add-item:hover{ background:rgba(138,123,230,.07); }
+.gym-add-item-names{ flex:1; min-width:0; font-size:13px; }
+.gym-add-muscle{ font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; flex:none; }
+.gym-reset-prog-btn{
+  display:block; width:100%; margin-top:8px;
+  background:transparent; border:1px solid var(--line); color:#54607a;
+  font-family:'JetBrains Mono',monospace; font-size:10px; padding:7px; border-radius:8px; cursor:pointer;
+  transition:.15s;
+}
+.gym-reset-prog-btn:hover{ color:var(--muted); border-color:var(--muted); }
+
+/* ---- Goals — empty slot & add form ---- */
+.goal-empty-slot{
+  cursor:pointer; border-style:dashed; text-align:center;
+  padding:22px 16px; transition:background .15s;
+}
+.goal-empty-slot:hover{ background:rgba(138,123,230,.05); }
+.goal-slot-prompt{ font-size:15px; font-weight:600; color:var(--muted); }
+.goal-slot-sub{
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:#54607a; margin-top:4px;
+}
+.goal-slot-del{
+  background:none; border:none; color:var(--low); font-size:17px;
+  cursor:pointer; padding:0 0 0 6px; flex:none; line-height:1;
+}
+.goal-form-input{
+  width:100%; background:#0f141c; border:1px solid var(--line); color:var(--txt);
+  font-family:'Sora',sans-serif; font-size:13px; padding:9px 11px;
+  border-radius:9px; margin-bottom:8px; display:block;
+}
+.goal-form-input::placeholder{ color:#54607a; }
+.goal-form-row{ display:flex; gap:6px; margin-bottom:8px; }
+.goal-form-row .goal-form-input{ margin-bottom:0; }
+.goal-form-lbl{
+  font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted);
+  margin-bottom:4px; margin-top:6px; text-transform:uppercase; letter-spacing:.1em;
+}
+.goal-form-type-row{ display:flex; gap:6px; margin-bottom:8px; }
+.goal-type-btn{
+  flex:1; background:var(--panel); border:1px solid var(--line); color:var(--muted);
+  font-family:'JetBrains Mono',monospace; font-size:11px; padding:8px;
+  border-radius:9px; cursor:pointer; transition:.15s;
+}
+.goal-type-btn.active{ border-color:var(--indigo); color:var(--indigo); background:rgba(138,123,230,.1); }
+.goal-diff-row{ display:flex; gap:6px; }
+.goal-diff-btn{
+  flex:1; background:transparent; border:1px solid var(--line);
+  font-family:'JetBrains Mono',monospace; font-size:11px; padding:8px;
+  border-radius:9px; cursor:pointer; transition:background .15s;
+}
+.goal-suggestions{ display:flex; flex-wrap:wrap; gap:5px; margin-top:4px; }
+.goal-sugg-btn{
+  background:rgba(138,123,230,.08); border:1px solid rgba(138,123,230,.2); color:var(--muted);
+  font-family:'JetBrains Mono',monospace; font-size:10px; padding:5px 9px;
+  border-radius:7px; cursor:pointer; transition:.15s;
+}
+.goal-sugg-btn:hover{ background:rgba(138,123,230,.18); color:var(--txt); }
+.goal-form-save{
+  flex:1; background:var(--indigo); border:none; color:#11131c;
+  font-family:'Sora',sans-serif; font-size:13px; font-weight:700;
+  padding:10px; border-radius:10px; cursor:pointer; transition:.1s;
+}
+.goal-form-save:active{ transform:scale(.96); }
+.goal-form-cancel{
+  background:transparent; border:1px solid var(--line); color:var(--muted);
+  font-family:'JetBrains Mono',monospace; font-size:11px; padding:10px 13px;
+  border-radius:10px; cursor:pointer;
+}
 
 @media (prefers-reduced-motion: reduce){
   .fill,.mfill,.stat-bar-fill,.rank-fill,.grand-fill,.muscle-rank-fill{ transition:none; }

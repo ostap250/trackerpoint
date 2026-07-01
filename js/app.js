@@ -28,10 +28,12 @@ $('gymHomeBtn').onclick = () => switchTab('gym');
   meals     = await sget('app_meals')      || [];
   gymData   = await sget('app_gym')        || initGymData();
   gymImages = await sget('app_gym_images') || {};
+  gymProgram = await sget('app_gym_program') || null;
+  bodyWeight = (await sget('app_bw')) || 70;
 
   /* Migrate: ensure all muscle keys present */
   MUSCLES.forEach(m => {
-    if (!gymData.muscles[m.key]) gymData.muscles[m.key] = { level:1, xp:0 };
+    if (!gymData.muscles[m.key]) gymData.muscles[m.key] = {};
   });
   if (!gymData.workoutLog) gymData.workoutLog = [];
 
@@ -59,14 +61,10 @@ $('gymHomeBtn').onclick = () => switchTab('gym');
     if (budget.bonus[b.key] == null) budget.bonus[b.key] = 0;
   });
 
-  /* Goals — backfill difficulty if missing from saved state */
-  goals = await sget('app_goals') || JSON.parse(JSON.stringify(GOALS));
-  goals.forEach(g => {
-    if (!g.difficulty) {
-      const def = GOALS.find(d => d.key === g.key);
-      if (def) g.difficulty = def.difficulty || 'normal';
-    }
-  });
+  /* Goals — user-defined; start empty for new users */
+  goals = await sget('app_goals') || [];
+  goals = goals.filter(g => g != null); // compact any nulls from old data
+  goals.forEach(g => { if (!g.difficulty) g.difficulty = 'normal'; });
 
   /* Initial render */
   renderQuote();

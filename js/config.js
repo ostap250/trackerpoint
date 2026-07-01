@@ -3,15 +3,16 @@ const PTS_TARGET = 500;
 const PTS_STEPS  = [1, 10, 15, 20, 25];
 
 const BUDGETS = [
-  { key:'tiktok', name:'TikTok',        unit:'год', total:7, step:0.5, color:'#E4574E' },
-  { key:'dota',   name:'Дота',          unit:'год', total:6, step:1,   color:'#8A7BE6' },
-  { key:'cheats', name:'Зриви (їжа)', unit:'шт',  total:3, step:1,   color:'#E0A646' },
+  { key:'tiktok', name:'Соцмережі',      unit:'год', total:7, step:0.5, color:'#E4574E' },
+  { key:'dota',   name:'Ігри',           unit:'год', total:6, step:1,   color:'#8A7BE6' },
+  { key:'cheats', name:'Порушення плану',unit:'шт',  total:3, step:1,   color:'#E0A646' },
 ];
 
-const GOALS = [
+/* Example goals — shown as suggestions when user creates a new goal */
+const EXAMPLE_GOALS = [
   { key:'bench',  name:'Пожати 90 кг',             type:'progress', start:72.5,  current:72.5,  target:90,    unit:'кг', step:2.5, difficulty:'hard'   },
-  { key:'weight', name:'Скинути 3 кг',              type:'progress', start:115.7, current:115.7, target:112.7, unit:'кг', step:0.3, difficulty:'normal', down:true },
-  { key:'money',  name:'Заробити за місяць',        type:'progress', start:0,     current:0,     target:2400,  unit:'$',  step:50,  difficulty:'normal'  },
+  { key:'weight', name:'Скинути 3 кг',              type:'progress', start:115.7, current:115.7, target:112.7, unit:'кг', step:0.3, difficulty:'normal' },
+  { key:'money',  name:'Заробити за місяць',        type:'progress', start:0,     current:0,     target:2400,  unit:'$',  step:50,  difficulty:'normal' },
   { key:'photos', name:'Гарні фотки для соцмереж', type:'check',    done:false,                               difficulty:'easy'   },
 ];
 
@@ -20,9 +21,9 @@ const DIFF_LABEL = { easy:'Легко',   normal:'Нормально', hard:'В�
 const DIFF_PTS   = { easy:100,       normal:200,          hard:300     };
 
 const SHOP_BUDGET = [
-  { id:'tiktok30', name:'+30 хв TikTok', pts:15, key:'tiktok', bonus:0.5, desc:'додає 0.5 год до бюджету' },
-  { id:'dota1h',   name:'+1 год Дота',   pts:40, key:'dota',   bonus:1,   desc:'додає 1 год до бюджету'   },
-  { id:'cheat1',   name:'+1 зрив їжа',  pts:35, key:'cheats',  bonus:1,   desc:'додає 1 шт до бюджету'   },
+  { id:'tiktok30', name:'+30 хв Соцмережі',   pts:15, key:'tiktok', bonus:0.5, desc:'додає 0.5 год до бюджету' },
+  { id:'dota1h',   name:'+1 год Ігри',         pts:40, key:'dota',   bonus:1,   desc:'додає 1 год до бюджету'   },
+  { id:'cheat1',   name:'+1 Порушення плану',  pts:35, key:'cheats', bonus:1,   desc:'додає 1 шт до бюджету'    },
 ];
 
 const SHOP_REWARDS = [
@@ -33,6 +34,7 @@ const SHOP_REWARDS = [
 
 const GRAND_REWARD_PTS = 1000;
 
+/* Points-balance rank ladder (Головна page) */
 const RANKS = [
   { name:'Wood',     lbl:'W', min:0,     next:100,  color:'#C49A6C' },
   { name:'Bronze',   lbl:'B', min:100,   next:300,  color:'#CD7F32' },
@@ -44,6 +46,111 @@ const RANKS = [
   { name:'Titan',    lbl:'T', min:8000,  next:12000,color:'#E4574E' },
   { name:'Olympian', lbl:'O', min:12000, next:null, color:'#F5C518' },
 ];
+
+/* ---- Gym muscle-rank system (Зал/Ранги pages) ---- */
+
+const MUSCLE_RANK_TIERS = [
+  { name:'Wood',     lbl:'W', color:'#C49A6C' },
+  { name:'Bronze',   lbl:'B', color:'#CD7F32' },
+  { name:'Silver',   lbl:'S', color:'#9EA8BC' },
+  { name:'Gold',     lbl:'G', color:'#E0A646' },
+  { name:'Platinum', lbl:'P', color:'#4FB8CE' },
+  { name:'Diamond',  lbl:'D', color:'#8A7BE6' },
+  { name:'Champion', lbl:'C', color:'#E879B9' },
+  { name:'Titan',    lbl:'T', color:'#E4574E' },
+  { name:'Olympian', lbl:'O', color:'#F5C518' },
+];
+
+/*
+ * Rank thresholds by muscle's key lift.
+ * mode: 'bw'   → value = bestWeight / bodyWeight (ratio)
+ *       'kg'   → value = bestWeight in kg
+ *       'reps' → value = bestReps (used as seconds for core)
+ * tiers[i] = min value to achieve MUSCLE_RANK_TIERS[i].
+ * Tune these constants freely.
+ */
+const MUSCLE_LIFT_CONFIG = {
+  chest:     { exIds:['bench'],                      mode:'bw',   liftName:'Жим лежачи',                  unit:'×БВ',
+               tiers:[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25] },
+  back:      { exIds:['b_row'],                      mode:'bw',   liftName:'Тяга штанги',                  unit:'×БВ',
+               tiers:[0, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 2.0] },
+  legs:      { exIds:['squat'],                      mode:'bw',   liftName:'Присідання',                   unit:'×БВ',
+               tiers:[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5] },
+  shoulders: { exIds:['lat_rA','lat_rB','lat_rC'],   mode:'kg',   liftName:'Розведення (гантеля, кожна)',  unit:'кг',
+               tiers:[0, 6, 10, 14, 18, 22, 27, 32, 38] },
+  arms:      { exIds:['bi_curl'],                    mode:'kg',   liftName:'Біцепс (загальна вага)',        unit:'кг',
+               tiers:[0, 15, 22.5, 30, 40, 52.5, 65, 80, 100] },
+  core:      { exIds:['core_ex'],                    mode:'reps', liftName:'Планка',                       unit:'с',
+               tiers:[0, 20, 40, 60, 90, 120, 180, 240, 300] },
+};
+
+const MUSCLES = [
+  { key:'chest',     name:'Груди',  color:'#E4574E' },
+  { key:'back',      name:'Спина',  color:'#4FB8CE' },
+  { key:'legs',      name:'Ноги',   color:'#38B89A' },
+  { key:'shoulders', name:'Плечі',  color:'#8A7BE6' },
+  { key:'arms',      name:'Руки',   color:'#E879B9' },
+  { key:'core',      name:'Корпус', color:'#E0A646' },
+];
+
+/* Default workout program (days A/B/C) */
+const GYM_DAYS = [
+  {
+    id: 'A', name: 'День A', subtitle: 'Full Body · Сила', optional: false,
+    exercises: [
+      { id:'squat',   name:'Присідання',               nameEn:'Squat',                  muscle:'legs',      sets:3, reps:'5',    bw:false },
+      { id:'bench',   name:'Жим лежачи',               nameEn:'Bench press',            muscle:'chest',     sets:3, reps:'5',    bw:false, note:'+2.5 кг коли всі підходи виконано з чистою технікою' },
+      { id:'b_row',   name:'Тяга штанги в нахилі',    nameEn:'Barbell row',            muscle:'back',      sets:4, reps:'6',    bw:false, note:'Лямки.' },
+      { id:'lat_pd',  name:'Тяга верхнього блоку',    nameEn:'Lat pulldown',           muscle:'back',      sets:3, reps:'10',   bw:false },
+      { id:'lat_rA',  name:'Розведення гантелей',      nameEn:'Lateral raise',          muscle:'shoulders', sets:3, reps:'15',   bw:false },
+      { id:'tri_pd',  name:'Трицепс на блоці',         nameEn:'Triceps pushdown',       muscle:'arms',      sets:3, reps:'12',   bw:false },
+    ],
+  },
+  {
+    id: 'B', name: 'День B', subtitle: 'Full Body · Гіпертрофія', optional: false,
+    exercises: [
+      { id:'rdl',     name:'Румунська тяга',           nameEn:'Romanian deadlift',      muscle:'legs',      sets:3, reps:'8',    bw:false, note:'Лямки.' },
+      { id:'inc_db',  name:'Жим гантелей похилий',    nameEn:'Incline dumbbell press', muscle:'chest',     sets:4, reps:'8-10', bw:false },
+      { id:'db_row',  name:'Тяга гантелі (одна рука)',nameEn:'One-arm dumbbell row',   muscle:'back',      sets:3, reps:'10',   bw:false, note:'На сторону. Лямки.' },
+      { id:'leg_pr',  name:'Жим ногами',               nameEn:'Leg press',              muscle:'legs',      sets:3, reps:'12',   bw:false },
+      { id:'lat_rB',  name:'Розведення гантелей',      nameEn:'Lateral raise',          muscle:'shoulders', sets:3, reps:'15',   bw:false },
+      { id:'bi_curl', name:'Згинання біцепс',          nameEn:'Biceps curl',            muscle:'arms',      sets:3, reps:'12',   bw:false },
+    ],
+  },
+  {
+    id: 'C', name: 'День C', subtitle: 'Бонус — опціонально', optional: true,
+    exercises: [
+      { id:'pullup',  name:'Підтягування / з допомогою', nameEn:'Pull-ups',             muscle:'back',      sets:3, reps:'max',  bw:true,  bwBase:15 },
+      { id:'cable_x', name:'Зведення на блоці',          nameEn:'Cable crossover',      muscle:'chest',     sets:3, reps:'15',   bw:false },
+      { id:'lat_rC',  name:'Розведення гантелей',        nameEn:'Lateral raise',        muscle:'shoulders', sets:3, reps:'20',   bw:false },
+      { id:'lunges',  name:'Випади ходьбою',             nameEn:'Walking lunges',       muscle:'legs',      sets:3, reps:'12',   bw:false },
+      { id:'bi_tri',  name:'Суперсет біцепс + трицепс', nameEn:'Biceps curl',          muscle:'arms',      sets:3, reps:'15',   bw:false },
+      { id:'core_ex', name:'Планка + підйом ніг',        nameEn:'Plank',                muscle:'core',      sets:3, reps:'—',    bw:true,  bwBase:25 },
+    ],
+  },
+];
+
+/* One swap alternative per exercise id */
+const EXERCISE_ALTERNATIVES = {
+  bench:   { id:'inc_db',  name:'Жим похилий гантелями',   nameEn:'Incline dumbbell press', muscle:'chest',     sets:4, reps:'8-10', bw:false },
+  b_row:   { id:'lat_pd',  name:'Тяга верхнього блоку',     nameEn:'Lat pulldown',           muscle:'back',      sets:3, reps:'10',   bw:false },
+  squat:   { id:'leg_pr',  name:'Жим ногами',               nameEn:'Leg press',              muscle:'legs',      sets:3, reps:'12',   bw:false },
+  rdl:     { id:'lunges',  name:'Випади ходьбою',            nameEn:'Walking lunges',         muscle:'legs',      sets:3, reps:'12',   bw:false },
+  inc_db:  { id:'bench',   name:'Жим лежачи',               nameEn:'Bench press',            muscle:'chest',     sets:3, reps:'5',    bw:false },
+  db_row:  { id:'b_row',   name:'Тяга штанги в нахилі',     nameEn:'Barbell row',            muscle:'back',      sets:4, reps:'6',    bw:false, note:'Лямки.' },
+  leg_pr:  { id:'squat',   name:'Присідання',               nameEn:'Squat',                  muscle:'legs',      sets:3, reps:'5',    bw:false },
+  lat_pd:  { id:'pullup',  name:'Підтягування',             nameEn:'Pull-ups',               muscle:'back',      sets:3, reps:'max',  bw:true, bwBase:15 },
+  lat_rA:  { id:'cable_x', name:'Зведення на блоці',        nameEn:'Cable crossover',        muscle:'chest',     sets:3, reps:'15',   bw:false },
+  lat_rB:  { id:'cable_x', name:'Зведення на блоці',        nameEn:'Cable crossover',        muscle:'chest',     sets:3, reps:'15',   bw:false },
+  lat_rC:  { id:'cable_x', name:'Зведення на блоці',        nameEn:'Cable crossover',        muscle:'chest',     sets:3, reps:'15',   bw:false },
+  tri_pd:  { id:'bi_tri',  name:'Суперсет біцепс+трицепс', nameEn:'Biceps curl',            muscle:'arms',      sets:3, reps:'15',   bw:false },
+  bi_curl: { id:'tri_pd',  name:'Трицепс на блоці',         nameEn:'Triceps pushdown',       muscle:'arms',      sets:3, reps:'12',   bw:false },
+  pullup:  { id:'lat_pd',  name:'Тяга верхнього блоку',     nameEn:'Lat pulldown',           muscle:'back',      sets:3, reps:'10',   bw:false },
+  cable_x: { id:'lat_rA',  name:'Розведення гантелей',      nameEn:'Lateral raise',          muscle:'shoulders', sets:3, reps:'15',   bw:false },
+  lunges:  { id:'rdl',     name:'Румунська тяга',           nameEn:'Romanian deadlift',      muscle:'legs',      sets:3, reps:'8',    bw:false, note:'Лямки.' },
+  bi_tri:  { id:'bi_curl', name:'Згинання біцепс',          nameEn:'Biceps curl',            muscle:'arms',      sets:3, reps:'12',   bw:false },
+  core_ex: { id:'lunges',  name:'Випади ходьбою',           nameEn:'Walking lunges',         muscle:'legs',      sets:3, reps:'12',   bw:false },
+};
 
 const QUOTES = [
   {q:"A lesson without pain is meaningless. You can't gain something without sacrificing something else.",src:"Edward Elric · Fullmetal Alchemist"},
