@@ -247,9 +247,11 @@ async function logExercise(exId) {
 
   if (newRankInfo.rank.name !== prevRankName) {
     showNotif(`⬆ ${mInfo.name} → ${newRankInfo.rank.name}!`);
+    narratorSay('rank_up');
   } else {
     const weightStr = ex.bw ? '' : `${weight} кг × `;
     showNotif(`✓ ${ex.name} — ${weightStr}${reps} × ${sets} підх`);
+    narratorSay('log_gym');
   }
 
   renderGym();

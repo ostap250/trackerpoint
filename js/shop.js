@@ -31,6 +31,7 @@ function renderShop() {
       renderBudget();
       renderShop();
       showNotif(`✓ ${item.name} додано до бюджету`);
+      narratorSay('points_spent');
     };
     bWrap.appendChild(row);
   });
@@ -56,6 +57,7 @@ function renderShop() {
       renderPoints();
       renderShop();
       showNotif(`🎉 ${item.name} — насолоджуйся!`);
+      narratorSay('points_spent');
     };
     rWrap.appendChild(row);
   });
@@ -86,6 +88,7 @@ function renderShop() {
     renderPoints();
     renderShop();
     showNotif('🎊 Велика нагорода отримана! Ти заслужив це!');
+    narratorSay('points_spent');
   };
   gWrap.appendChild(grand);
   requestAnimationFrame(() => requestAnimationFrame(() => {

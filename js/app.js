@@ -79,4 +79,5 @@ $('gymHomeBtn').onclick = () => switchTab('gym');
   renderShop();
   renderGym();
   buildReminderQueue();
+  await narratorInit();
 })();

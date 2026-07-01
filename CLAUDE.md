@@ -3,7 +3,7 @@
 ## What this is
 A personal habitpoints tracker. Single static site, deployed on GitHub Pages.
 Plain HTML/CSS/JS, NO build step, NO framework, NO npm. Data in localStorage.
-Files: index.html + css/styles.css + js/*.js (13 modules).
+Files: index.html + css/styles.css + js/*.js (14 modules).
 
 ## Hard rules (do not break)
 - NEVER add a bundler, framework, or build step. Must stay deployable as static
@@ -30,6 +30,7 @@ index.html (HTML only) → css/styles.css → js modules in load order:
   stats.js   — history snapshot, Дні/Поінти/Покупки/Завдання sub-tabs
   shop.js    — shop, spend log, grand reward
   gym.js     — workout program, per-muscle lift-based rank system, editable program
+  narrator.js — scripted Stanley Parable-style commentary; narratorSay(trigger), narratorInit()
   app.js     — tab navigation (switchTab), async INIT
 
 ## Pages / navigation
@@ -38,7 +39,7 @@ Bottom fixed nav bar (Instagram-style, safe-area aware) with 7 items + inline SV
 Ранги is an 8th section (#ranks) reachable via "Таблиця рангів →" button in the Зал muscle
 panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 
-- Головна: clock, quote, gym nav card, points+pending, today's tasks
+- Головна: narrator toggle (ON/OFF, top-right), clock, quote, gym nav card, points+pending, today's tasks
 - Зал: warmup notes, constraints, muscle panel (with bodyweight input) + Ранги link,
   Day A/B/C selector, exercise logging with swap/remove/add controls
 - Їжа: calorie tracker + macro bars + food database
@@ -78,6 +79,20 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 - Day B: Full Body / Hypertrophy — RDL, Incline DB Press, DB Row, Leg Press, Lateral Raise, Biceps
 - Day C: Bonus (optional) — Pull-ups, Cable Crossover, Lateral Raise, Lunges, Bi+Tri, Core
 - Constraints: NO overhead pressing; warmup = 5 min cardio + band ext rotations 2×15 + face pulls 2×15.
+
+## Narrator feature (narrator.js + app_narrator, app_narrator_last)
+- Scripted commentary in The Stanley Parable style: dry, witty, self-aware British voice.
+- 9 trigger groups: app_open, idle (≥2 days away), log_gym, rank_up, points_gained,
+  points_spent, budget_exceeded, goal_completed, task_completed. ~7 lines each.
+- narratorSay(trigger) picks a random non-repeated line per session (session dedup via Set).
+  After all lines in a group are exhausted, the set resets.
+- Display: #narratorBanner — fixed, positioned above the bottom nav bar,
+  amber left-border, 5.5 s auto-dismiss, manual close button.
+- Toggle ON/OFF button at top of Home (#narratorToggleRow), persisted in app_narrator (default true).
+- app_narrator_last tracks last visit date; ≥2 day gap fires 'idle' instead of 'app_open'.
+- narratorInit() called at end of app.js INIT; hooks in points.js, shop.js, budget.js,
+  goals.js, tasks.js, gym.js each call narratorSay() on the matching event.
+- No API calls, no AI, no build step. Fully scripted static.
 
 ## Workflow
 - After changes test on the live GitHub Pages URL (not file://) then commit and push.

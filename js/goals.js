@@ -12,6 +12,7 @@ async function checkMilestone(g) {
   await addPending(DIFF_PTS[g.difficulty || 'normal'], `Майлстоун: ${g.name}`);
   await sset('app_goals', goals);
   showNotif(`🏆 ${g.name} — +${DIFF_PTS[g.difficulty || 'normal']} pts у очікування!`);
+  narratorSay('goal_completed');
 }
 
 function renderGoals() {

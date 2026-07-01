@@ -741,6 +741,62 @@ h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
   border-radius:10px; cursor:pointer;
 }
 
+/* ============================
+   NARRATOR BANNER
+   ============================ */
+
+#narratorBanner{
+  position:fixed;
+  bottom:calc(74px + env(safe-area-inset-bottom));
+  left:0; right:0;
+  max-width:480px; margin:0 auto;
+  z-index:280; padding:0 14px;
+  opacity:0; transform:translateY(8px);
+  transition:opacity .28s, transform .28s;
+  pointer-events:none;
+}
+#narratorBanner.show{
+  opacity:1; transform:translateY(0);
+  pointer-events:all;
+}
+.narrator-banner-inner{
+  display:flex; align-items:center; gap:8px;
+  background:var(--panel-2);
+  border:1px solid rgba(224,166,70,.3);
+  border-left:3px solid rgba(224,166,70,.65);
+  border-radius:12px; padding:10px 12px;
+  box-shadow:0 4px 24px rgba(0,0,0,.55);
+}
+.narrator-label{
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:.15em; text-transform:uppercase;
+  color:#E0A646; flex:none; white-space:nowrap;
+}
+.narrator-sep{ color:var(--line); flex:none; }
+.narrator-line{
+  font-family:'JetBrains Mono',monospace; font-size:11px;
+  color:var(--muted); font-style:italic; flex:1; line-height:1.55;
+}
+.narrator-close{
+  flex:none; background:none; border:none; color:#54607a;
+  font-size:17px; cursor:pointer; padding:0 0 0 6px; line-height:1;
+}
+.narrator-close:hover{ color:var(--muted); }
+
+/* Narrator toggle row (top of Home) */
+.narrator-toggle-row{
+  display:flex; justify-content:flex-end;
+  padding:2px 0 0; min-height:24px;
+}
+.narrator-toggle-btn{
+  display:flex; align-items:center; gap:5px;
+  background:transparent; border:1px solid var(--line); color:var(--muted);
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  padding:5px 10px; border-radius:8px; cursor:pointer; transition:.15s;
+}
+.narrator-toggle-btn:hover{ border-color:rgba(224,166,70,.5); color:#E0A646; }
+.narrator-toggle-btn.narrator-on{ border-color:rgba(224,166,70,.4); color:#E0A646; }
+
 @media (prefers-reduced-motion: reduce){
   .fill,.mfill,.stat-bar-fill,.rank-fill,.grand-fill,.muscle-rank-fill{ transition:none; }
   *{ transition:none!important; animation:none!important; }

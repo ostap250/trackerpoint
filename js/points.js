@@ -75,6 +75,7 @@ async function confirmPending(id) {
   renderPending();
   renderShop();
   showNotif(`+${item.amount} pts підтверджено!`);
+  narratorSay('points_gained');
 }
 
 async function rejectPending(id) {

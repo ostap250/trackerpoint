@@ -42,7 +42,7 @@ function renderTasks() {
         async () => {
           const wasDone = t.done;
           t.done = !t.done;
-          if (t.done && !wasDone) await logTaskDone(t);
+          if (t.done && !wasDone) { await logTaskDone(t); narratorSay('task_completed'); }
           await sset('app_tasks', tasks);
           renderTasks();
         },
@@ -67,7 +67,7 @@ function renderTasks() {
         async () => {
           const wasDone = t.done;
           t.done = !t.done;
-          if (t.done && !wasDone) await logTaskDone(t);
+          if (t.done && !wasDone) { await logTaskDone(t); narratorSay('task_completed'); }
           await sset('app_tasks', tasks);
           renderTasks();
         },

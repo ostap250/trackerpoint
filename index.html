@@ -25,10 +25,23 @@
 </div>
 <div id="notifSnack"></div>
 
+<!-- Narrator banner (Stanley Parable-style scripted commentary) -->
+<div id="narratorBanner" class="narrator-banner" role="status" aria-live="polite">
+  <div class="narrator-banner-inner">
+    <span class="narrator-label">Narrator</span>
+    <span class="narrator-sep">·</span>
+    <span class="narrator-line" id="narratorLine"></span>
+    <button class="narrator-close" id="narratorClose" aria-label="Dismiss">×</button>
+  </div>
+</div>
+
 <div class="wrap">
 
   <!-- ======= HOME ======= -->
   <section id="main">
+    <!-- Narrator toggle -->
+    <div class="narrator-toggle-row" id="narratorToggleRow"></div>
+
     <!-- Clock -->
     <div class="card clock-card">
       <div class="clock-time" id="clockTime">--:--:--</div>
@@ -307,6 +320,7 @@ Then commit and push.">+</button>
 <script src="js/stats.js"></script>
 <script src="js/shop.js"></script>
 <script src="js/gym.js"></script>
+<script src="js/narrator.js"></script>
 <script src="js/app.js"></script>
 
 </body>
