@@ -20,7 +20,7 @@ index.html (HTML only) → css/styles.css → js modules in load order:
                MUSCLE_RANK_TIERS, MUSCLE_LIFT_CONFIG, GYM_DAYS, EXERCISE_ALTERNATIVES, …)
   storage.js — sget/sset localStorage + helpers (today, fmt, torontoNow, …)
   state.js   — global mutable state declarations (let points, cals, tasks, …,
-               gymData, gymProgram, bodyWeight, narratorMode, activeDay)
+               gymData, gymProgram, bodyWeight, narratorMode, profileName, activeDay)
   ui.js      — showNotif, clock tick, renderQuote
   points.js  — points balance, rank badge, pending list
   food.js    — calorie logging, meal database, search/portion picker
@@ -39,14 +39,14 @@ Bottom fixed nav bar (Instagram-style, safe-area aware) with 7 items + inline SV
 Ранги is an 8th section (#ranks) reachable via "Таблиця рангів →" button in the Зал muscle
 panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 
-- Головна: narrator toggle (ON/OFF, top-right), clock, quote, gym nav card, points+pending, today's tasks
+- Головна: clock, quote (+ spin button), gym nav card, points+pending, today's tasks
 - Зал: warmup notes, constraints, muscle panel (with bodyweight input) + Ранги link,
   Day A/B/C selector, exercise logging with swap/remove/add controls
 - Їжа: calorie tracker + macro bars + food database
 - Бюджет: weekly indulgence caps — Соцмережі / Ігри / Порушення плану
 - Цілі: user-defined goal slots (up to 4), empty slots prompt "Яка ваша ціль?"
 - Магазин: spend points on budget boosts / rewards
-- Статистика: Дні / Поінти / Покупки / Завдання sub-tabs
+- Статистика: Дні / Поінти / Покупки / Завдання sub-tabs + Narrator settings card (mode + name change)
 - Ранги (sub-page): per-muscle best-lift rank + % to next rank + per-muscle rank ladder
 
 ## Core concepts
@@ -81,18 +81,24 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 - Day C: Bonus (optional) — Pull-ups, Cable Crossover, Lateral Raise, Lunges, Bi+Tri, Core
 - Constraints: NO overhead pressing; warmup = 5 min cardio + band ext rotations 2×15 + face pulls 2×15.
 
-## Narrator feature (narrator.js + app_narrator, app_narrator_last)
-- Scripted commentary in The Stanley Parable style: dry, witty, self-aware British voice.
-- 3 modes stored in app_narrator: 'intensive' (all events), 'moderate' (notable only),
-  'off'. Default: 'moderate'. Old boolean values migrate gracefully.
+## Narrator feature (narrator.js + app_narrator, app_narrator_last, app_profile_name)
+- Scripted commentary in The Stanley Parable style: dry, theatrical, condescending for routine
+  actions; sincerely proud for real achievements (rank_up, goal_completed, points_threshold).
+- Onboarding modal (#onboardingModal) shown on first visit (when app_profile_name is null).
+  User enters name → saved to app_profile_name. Narrator always calls them 'Stanley' anyway,
+  occasionally referencing the real name sarcastically. profileName global in state.js.
+- 3 modes in app_narrator: 'intensive' (all events), 'moderate' (notable only), 'off'.
+  Default: 'moderate'. Old boolean values migrate gracefully.
 - Moderate fires only: idle, rank_up, goal_completed, budget_exceeded, points_threshold.
 - 12 trigger groups, ~10-12 lines each: app_open, idle (≥2 days away), log_gym, rank_up,
   points_gained, points_spent, budget_exceeded, goal_completed, task_completed,
   log_food, points_threshold (every 100 pts crossed), spin_button_used.
-- narratorSay(trigger) picks a random non-repeated line per session; resets when exhausted.
+- Lines use {stanley} and {name} placeholders resolved by _n() at display time.
+- narratorSay(trigger) picks random non-repeated line per session; resets when exhausted.
 - Display: #narratorBanner — fixed above bottom nav, amber left-border, 5.5 s auto-dismiss,
   manual close. Lines queue (never overlap).
-- 3-button mode selector at top of Home (#narratorToggleRow), persisted in app_narrator.
+- Mode selector + name change UI rendered in Stats page (#narratorSettingsContent) by
+  renderNarratorSettings() — NOT on Home page.
 - app_narrator_last tracks last visit; ≥2 day gap fires 'idle' instead of 'app_open'.
 - narratorInit() called last in app.js INIT; hooks in points.js, shop.js, budget.js,
   goals.js, tasks.js, gym.js, food.js each call narratorSay() on matching events.

@@ -39,8 +39,6 @@
 
   <!-- ======= HOME ======= -->
   <section id="main">
-    <!-- Narrator toggle -->
-    <div class="narrator-toggle-row" id="narratorToggleRow"></div>
 
     <!-- Clock -->
     <div class="card clock-card">
@@ -237,7 +235,33 @@ Then commit and push.">+</button>
     <div id="statsPane_pts"   class="card" style="display:none"><div id="ptsLogContent"></div></div>
     <div id="statsPane_shop"  class="card" style="display:none"><div id="shopLogContent"></div></div>
     <div id="statsPane_tasks" class="card" style="display:none"><div id="tasksLogContent"></div></div>
+
+    <!-- Narrator settings (mode + name) -->
+    <div class="card" style="margin-top:8px">
+      <span class="label">Narrator</span>
+      <div id="narratorSettingsContent" style="margin-top:10px"></div>
+    </div>
   </section>
+</div>
+
+<!-- Onboarding modal — shown only on first visit -->
+<div id="onboardingModal" class="onboarding-overlay" style="display:none" role="dialog" aria-modal="true">
+  <div class="onboarding-box">
+    <div class="onboarding-tag">Narrator Initialisation</div>
+    <div class="onboarding-text">Ah. A new arrival.
+
+Before we begin this little story, I find myself in an unusual position: I don't know what to call you. The previous user never introduced themselves. They simply appeared, used the app, and vanished. Very rude.
+
+You may type your name below. I shall acknowledge it, file it away somewhere, and then — in all likelihood — call you Stanley anyway.
+
+Nothing personal.</div>
+    <div class="onboarding-input-row">
+      <input id="onboardingName" class="onboarding-name-input" type="text"
+             placeholder="Ваше ім'я..." maxlength="32" autocomplete="off" />
+      <button id="onboardingContinue" class="onboarding-continue-btn">Продовжити →</button>
+      <button id="onboardingSkip" class="onboarding-skip-btn">Я — Стенлі</button>
+    </div>
+  </div>
 </div>
 
 <!-- Bottom navigation (Instagram/TikTok-style, safe-area aware) -->
