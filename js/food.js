@@ -33,6 +33,7 @@ $('addFood').onclick = async () => {
   ['fKcal','fP','fF','fC'].forEach(id => $(id).value = '');
   await sset('app_cals', cals);
   renderCals();
+  narratorSay('log_food');
 };
 
 $('kcalReset2').onclick = async () => {

@@ -11,5 +11,5 @@ let gymData;          // loaded from app_gym
 let gymImages = {};   // loaded from app_gym_images (wger URL cache)
 let gymProgram = null;// loaded from app_gym_program (custom day exercise lists)
 let bodyWeight = 70;  // loaded from app_bw (user's bodyweight in kg)
-let narratorEnabled = true; // overridden by narrator.js narratorInit()
+let narratorMode = 'moderate'; // 'intensive'|'moderate'|'off' — set by narrator.js
 let activeDay  = 'A'; // currently selected workout day

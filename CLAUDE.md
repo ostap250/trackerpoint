@@ -20,7 +20,7 @@ index.html (HTML only) → css/styles.css → js modules in load order:
                MUSCLE_RANK_TIERS, MUSCLE_LIFT_CONFIG, GYM_DAYS, EXERCISE_ALTERNATIVES, …)
   storage.js — sget/sset localStorage + helpers (today, fmt, torontoNow, …)
   state.js   — global mutable state declarations (let points, cals, tasks, …,
-               gymData, gymProgram, bodyWeight, activeDay)
+               gymData, gymProgram, bodyWeight, narratorMode, activeDay)
   ui.js      — showNotif, clock tick, renderQuote
   points.js  — points balance, rank badge, pending list
   food.js    — calorie logging, meal database, search/portion picker
@@ -56,7 +56,8 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
   Bonus slots bought in shop. Keys stay: tiktok / dota / cheats.
 - Goals: up to 4 user-defined milestones. Empty slots show add-form with EXAMPLE_GOALS
   suggestions. Each goal awards pts once on completion (easy=100/normal=200/hard=300).
-- Quotes: 100 cult quotes, rotate by Toronto time windows 09/13/16/21/23, deterministic.
+- Quotes: ~100 curated quotes (Machiavelli, stoics, films, TV, anime), rotate by Toronto
+  time windows 09/13/16/21/23, deterministic. Spin button gives random quote with 1h cooldown.
 
 ## Gym / rank system (gym.js + config.js + app_gym, app_gym_program, app_bw)
 - 6 muscle groups: Chest, Back, Legs, Shoulders, Arms, Core.
@@ -82,17 +83,28 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 
 ## Narrator feature (narrator.js + app_narrator, app_narrator_last)
 - Scripted commentary in The Stanley Parable style: dry, witty, self-aware British voice.
-- 9 trigger groups: app_open, idle (≥2 days away), log_gym, rank_up, points_gained,
-  points_spent, budget_exceeded, goal_completed, task_completed. ~7 lines each.
-- narratorSay(trigger) picks a random non-repeated line per session (session dedup via Set).
-  After all lines in a group are exhausted, the set resets.
-- Display: #narratorBanner — fixed, positioned above the bottom nav bar,
-  amber left-border, 5.5 s auto-dismiss, manual close button.
-- Toggle ON/OFF button at top of Home (#narratorToggleRow), persisted in app_narrator (default true).
-- app_narrator_last tracks last visit date; ≥2 day gap fires 'idle' instead of 'app_open'.
-- narratorInit() called at end of app.js INIT; hooks in points.js, shop.js, budget.js,
-  goals.js, tasks.js, gym.js each call narratorSay() on the matching event.
+- 3 modes stored in app_narrator: 'intensive' (all events), 'moderate' (notable only),
+  'off'. Default: 'moderate'. Old boolean values migrate gracefully.
+- Moderate fires only: idle, rank_up, goal_completed, budget_exceeded, points_threshold.
+- 12 trigger groups, ~10-12 lines each: app_open, idle (≥2 days away), log_gym, rank_up,
+  points_gained, points_spent, budget_exceeded, goal_completed, task_completed,
+  log_food, points_threshold (every 100 pts crossed), spin_button_used.
+- narratorSay(trigger) picks a random non-repeated line per session; resets when exhausted.
+- Display: #narratorBanner — fixed above bottom nav, amber left-border, 5.5 s auto-dismiss,
+  manual close. Lines queue (never overlap).
+- 3-button mode selector at top of Home (#narratorToggleRow), persisted in app_narrator.
+- app_narrator_last tracks last visit; ≥2 day gap fires 'idle' instead of 'app_open'.
+- narratorInit() called last in app.js INIT; hooks in points.js, shop.js, budget.js,
+  goals.js, tasks.js, gym.js, food.js each call narratorSay() on matching events.
 - No API calls, no AI, no build step. Fully scripted static.
+
+## Quote spin button (ui.js + app_quote_spin)
+- Daily quote logic unchanged (deterministic per Toronto time window).
+- Small "🎲 Крутнути" button in the quote block; picks a random quote ≠ current daily.
+- 1-hour cooldown persisted in app_quote_spin (epoch ms of expiry); live countdown shown.
+- Spun quote is visual/temporary only — not persisted, resets on next page load.
+- Tap fires narrator 'spin_button_used' trigger if narrator is active.
+- initSpin() called from app.js INIT before renderQuote().
 
 ## Workflow
 - After changes test on the live GitHub Pages URL (not file://) then commit and push.

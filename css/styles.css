@@ -742,6 +742,21 @@ h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
 }
 
 /* ============================
+   QUOTE SPIN BUTTON
+   ============================ */
+
+.spin-row{
+  display:flex; justify-content:flex-end; margin-top:9px;
+}
+.spin-btn{
+  background:transparent; border:1px solid var(--line); color:var(--muted);
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  padding:4px 10px; border-radius:8px; cursor:pointer; transition:.15s;
+}
+.spin-btn:hover:not(:disabled){ border-color:var(--indigo); color:var(--indigo); }
+.spin-btn:disabled{ opacity:.45; cursor:default; }
+
+/* ============================
    NARRATOR BANNER
    ============================ */
 
@@ -783,19 +798,21 @@ h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
 }
 .narrator-close:hover{ color:var(--muted); }
 
-/* Narrator toggle row (top of Home) */
+/* Narrator mode row (top of Home) */
 .narrator-toggle-row{
-  display:flex; justify-content:flex-end;
+  display:flex; justify-content:flex-end; gap:4px;
   padding:2px 0 0; min-height:24px;
 }
-.narrator-toggle-btn{
-  display:flex; align-items:center; gap:5px;
+.narrator-mode-btn{
   background:transparent; border:1px solid var(--line); color:var(--muted);
-  font-family:'JetBrains Mono',monospace; font-size:10px;
-  padding:5px 10px; border-radius:8px; cursor:pointer; transition:.15s;
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  padding:4px 8px; border-radius:8px; cursor:pointer; transition:.15s;
+  white-space:nowrap;
 }
-.narrator-toggle-btn:hover{ border-color:rgba(224,166,70,.5); color:#E0A646; }
-.narrator-toggle-btn.narrator-on{ border-color:rgba(224,166,70,.4); color:#E0A646; }
+.narrator-mode-btn:hover{ border-color:rgba(224,166,70,.4); color:#E0A646; }
+.narrator-mode-btn.narrator-mode-active{
+  border-color:rgba(224,166,70,.65); color:#E0A646;
+}
 
 @media (prefers-reduced-motion: reduce){
   .fill,.mfill,.stat-bar-fill,.rank-fill,.grand-fill,.muscle-rank-fill{ transition:none; }

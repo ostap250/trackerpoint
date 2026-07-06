@@ -67,6 +67,7 @@ $('gymHomeBtn').onclick = () => switchTab('gym');
   goals.forEach(g => { if (!g.difficulty) g.difficulty = 'normal'; });
 
   /* Initial render */
+  await initSpin();
   renderQuote();
   renderPoints();
   renderPending();
