@@ -114,10 +114,11 @@ function renderMealSelected() {
     renderMealSelected();
   });
   sel.querySelector('#addMealLog').onclick = async () => {
-    cals.kcal += m.kcal * mealMult;
-    cals.p    += m.p    * mealMult;
-    cals.f    += m.f    * mealMult;
-    cals.c    += m.c    * mealMult;
+    const _mult = mealMult;   // capture before reset
+    cals.kcal += m.kcal * _mult;
+    cals.p    += m.p    * _mult;
+    cals.f    += m.f    * _mult;
+    cals.c    += m.c    * _mult;
     await sset('app_cals', cals);
     renderCals();
     $('mealSearch').value = '';
@@ -125,7 +126,14 @@ function renderMealSelected() {
     selectedMeal = null;
     mealMult = 1;
     $('mealSelected').style.display = 'none';
-    showNotif(`${m.name} ×${mealMult > 1 ? mealMult : 1} додано`);
+    showNotif(`${m.name}${_mult > 1 ? ' ×' + _mult : ''} додано`);
+    /* Fire the same context-aware food narrator trigger as the manual form */
+    const _hr  = torontoNow().hour;
+    const _ctx = { kcal_delta: Math.round(cals.kcal - KCAL_GOAL.kcal) };
+    if (cals.kcal > KCAL_GOAL.kcal)   narratorSay('log_food_over',    _ctx);
+    else if (_hr < 11)                  narratorSay('log_food_morning', _ctx);
+    else if (_hr >= 19)                 narratorSay('log_food_evening', _ctx);
+    else                                narratorSay('log_food',         _ctx);
   };
 }
 

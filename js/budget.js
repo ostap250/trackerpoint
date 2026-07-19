@@ -61,7 +61,14 @@ async function spendB(key, dir) {
   budget.spent[key] = s;
   await sset('app_budget', budget);
   renderBudget();
-  if (dir > 0 && Math.max(0, cap - s) <= 0) narratorSay('budget_exceeded');
+  if (dir > 0) {
+    const leftAfter = Math.max(0, cap - s);
+    if (leftAfter <= 0) {
+      narratorSay('budget_exceeded');
+    } else {
+      narratorSay('budget_spent', { amount: b.step, left: leftAfter, unit: b.unit });
+    }
+  }
 }
 
 $('newweek').onclick = async () => {

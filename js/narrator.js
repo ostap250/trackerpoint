@@ -58,6 +58,9 @@ function _speak(text, charId) {
 /* =====================================================================
    LINE BANKS — 8–10 variants per trigger per character.
    All lines original — no verbatim text from any existing media.
+   Emoji appear in ~30% of variants as stylistic accents, not constant tics.
+   Rival carries a running thread: occasional dry hints of a larger stake
+   in the user's outcome. Never explained — pieced together over time.
    ===================================================================== */
 
 const LINES = {
@@ -69,12 +72,12 @@ const LINES = {
 narrator: {
 
   app_open: [
-    "The Tracker has been opened. The story resumes. Whatever that story is.",
+    "📖 The Tracker has been opened. The story resumes. Whatever that story is.",
     "{stanley} arrived. The goals are where he left them, waiting with the patience of things that cannot leave.",
     "Another session begins. The Tracker pulls up the record with quiet anticipation.",
     "The app opens. The data, faithfully maintained, invites {stanley} to add to it.",
     "Here again. The Tracker finds this pattern comforting, which perhaps says something about the Tracker.",
-    "Good. {stanley} is here. The Tracker turns to the next page.",
+    "Good. {stanley} is here. The Tracker turns to the next page. 📖",
     "The record is current. The goals stand where they were set. {stanley} has arrived to engage with both.",
     "Session. The Tracker has been keeping the lights on. Come in.",
   ],
@@ -103,9 +106,9 @@ narrator: {
 
   log_gym: [
     "The session is logged. Whatever was done — it is now permanent record.",
-    "A workout, committed to storage. The muscles may not thank {stanley} yet. The Tracker does.",
+    "A workout, committed to storage. The muscles may not thank {stanley} yet. The Tracker does. ✨",
     "Gym entry recorded. {stanley} showed up. The Tracker considers this the harder half.",
-    "Exercise recorded. The log reflects it. The story of a person trying continues.",
+    "Exercise recorded. The log reflects it. The story of a person trying continues. 📖",
     "A session in the books. The Tracker adds this to the accumulating evidence.",
     "Logged. The body was used today. The Tracker considers this a reasonable use of a body.",
     "The set is recorded. The reps are counted. The weight is filed. The effort is acknowledged.",
@@ -114,18 +117,18 @@ narrator: {
   ],
 
   rank_up: [
-    "A rank. A real one. Earned through actual work. The record has been updated.",
+    "A rank. A real one. Earned through actual work. The record has been updated. ✨",
     "Higher. The Tracker does not say this lightly: {name} got stronger.",
-    "Rank up. The Tracker has been watching since the beginning. It says: well done.",
+    "🎭 Rank up. The Tracker has been watching since the beginning. It says: well done.",
     "A new tier, secured not by chance but by showing up repeatedly and doing the thing.",
-    "{stanley} climbed. Entry by entry. The Tracker watched every one of them.",
+    "{stanley} climbed. Entry by entry. The Tracker watched every one of them. ✨",
     "The rank changed. Upward. The Tracker has logged enough to appreciate the direction.",
     "This rank did not come from nowhere. It came from {stanley} showing up, repeatedly.",
     "Higher. The Tracker has a long view. From that view, this was always going to happen eventually.",
   ],
 
   points_gained: [
-    "Points confirmed. The ledger reflects the effort.",
+    "Points confirmed. The ledger reflects the effort. ✨",
     "Added to the total. The Tracker has been keeping this number with care. It has grown.",
     "{stanley} earned points. The effort was converted to a number. As is the custom here.",
     "The economy of effort continues to function. The Tracker is satisfied.",
@@ -157,24 +160,35 @@ narrator: {
     "Zero. The Tracker has watched this number decline, one entry at a time.",
   ],
 
+  budget_spent: [
+    "Used. The budget moved. That's the budget's purpose — to move.",
+    "Spent, but not spent out. The week still has room. The Tracker notes both. 📖",
+    "One unit down. The number is lower now. The week continues.",
+    "{stanley} made a call. The budget absorbed it. The record reflects the call.",
+    "A spend. Not the last one, probably. The Tracker holds the total.",
+    "Deployed. The budget, doing what budgets are for. The Tracker is not alarmed.",
+    "Spent. The cap hasn't been reached. The week still has structure.",
+    "A choice was made. The budget accommodated it. Everything continues.",
+  ],
+
   goal_completed: [
-    "Done. The Tracker pauses here — this one deserves a pause.",
+    "Done. The Tracker pauses here — this one deserves a pause. 🎭",
     "A goal, actually completed. The Tracker has seen many goals added. Not all of them reach this.",
-    "Finished. Not approximately. Actually finished.",
+    "Finished. Not approximately. Actually finished. ✨",
     "{name}. Whatever the name — the Tracker wants to be clear: this was real, and it mattered.",
     "The goal falls. The record is updated. The Tracker takes a moment.",
     "Done. Added to the short list of things {stanley} actually completed. The list grows.",
     "The goal existed. Now it is past tense. {name} moved it from the future to the past.",
-    "Completed. The Tracker notes this without qualification. Just: completed.",
+    "Completed. The Tracker notes this without qualification. Just: completed. ✨",
   ],
 
   task_completed: [
-    "A task, done. One less thing. The Tracker finds this satisfying.",
+    "A task, done. One less thing. The Tracker finds this satisfying. ✨",
     "The checkbox is ticked. Earned, not given — which is the only way a checkbox should be earned.",
     "Completed. Not deferred. Actually completed. The Tracker appreciates the precision.",
     "{stanley} made the list shorter by one. The Tracker saw.",
     "A small thing, finished. The Tracker notes small things. They accumulate.",
-    "Tick. The list updates. Life continues to be documented.",
+    "Tick. The list updates. Life continues to be documented. 📖",
     "Done. That's all — just done. The Tracker doesn't need to make it mean more. Done is enough.",
     "The task is off the list. {stanley} put it there, did it, and removed it. That sequence deserves notice.",
   ],
@@ -191,12 +205,12 @@ narrator: {
   ],
 
   log_food_morning: [
-    "A morning entry. {stanley} is logging before the day gets away from him. The Tracker respects this.",
+    "A morning entry. {stanley} is logging before the day gets away from him. The Tracker respects this. 📖",
     "Early. Already tracking. The Tracker notes the discipline and says nothing further. Which is saying something.",
     "Breakfast logged. The morning has begun with intention. The Tracker finds this auspicious.",
     "An early entry. The day started with a record. The Tracker approves of this sequence.",
     "Morning log. Before distractions arrived. Before excuses had a chance. The Tracker was ready.",
-    "First thing. The record begins. The Tracker considers early logging a form of optimism.",
+    "First thing. The record begins. The Tracker considers early logging a form of optimism. 📖",
     "First calories of the day, entered before the day took over. The Tracker considers this a strong start.",
     "Morning log. {stanley} is building the day with intention. The Tracker notes the posture.",
   ],
@@ -224,11 +238,11 @@ narrator: {
   ],
 
   points_threshold: [
-    "Another hundred. The total grows. The Tracker has been watching it grow.",
+    "Another hundred. The total grows. The Tracker has been watching it grow. 📖",
     "A round number, crossed. The Tracker finds these worth pausing at. Briefly.",
     "One hundred more. The Tracker adds this to the evidence that {stanley} is building something.",
     "The counter ticked over. The Tracker noted the exact moment. It always notes the exact moment.",
-    "A milestone. Not the last one. The arc, so far, bends upward.",
+    "A milestone. Not the last one. The arc, so far, bends upward. ✨",
     "The total passed {total}. The Tracker marks it.",
     "The total cleared {total}. The Tracker marked the moment. It marks all the moments.",
     "Round number crossed. {stanley} built to it. The Tracker watched the building.",
@@ -236,8 +250,8 @@ narrator: {
 
   spin_button_used: [
     "The daily quote was insufficient. A new one arrives. The Tracker notes the request.",
-    "Variety requested. Delivered. The Tracker wonders, briefly, what was wrong with the first one.",
-    "Shuffled. The Tracker obliges. With characteristic reluctance.",
+    "Variety requested. Delivered. The Tracker wonders, briefly, what was wrong with the first one. 🎭",
+    "Shuffled. The Tracker obliges. With characteristic reluctance. 🎭",
     "A different quote, at {stanley}'s request. The Tracker maintains professional neutrality.",
     "Another one, as asked. The Tracker has many. They can keep asking.",
     "The wheel was spun. A new perspective arrived. The Tracker watched with mild curiosity.",
@@ -251,6 +265,10 @@ narrator: {
    RIVAL — cold, calculating, data-driven. Not mean for mean's sake —
    just unimpressed. Short declarative sentences. No theatrics.
    Comments on data and patterns only.
+
+   Running thread: Rival occasionally hints — without explaining — that
+   it has its own stake in the user's outcome. Cold, fatalistic. Never
+   melodramatic. Roughly 1 in 6-8 triggers surfaces the thread.
 ------------------------------------------------------------------ */
 rival: {
 
@@ -259,7 +277,7 @@ rival: {
     "Back. The gap since last session is logged.",
     "You showed up. The work is still the same work it was.",
     "Session started. Same goals as before. Different day. Same distance.",
-    "The app is open. The goals haven't lowered themselves in the interim.",
+    "The app is open. I'm here. That part isn't optional for me.",
     "Here. Good. Whether anything happens depends entirely on what comes next.",
     "App opened. The data is current. The distance to the goal is the same as it was.",
     "Session start. The gap since last time is in the log. Everything else is too.",
@@ -279,7 +297,7 @@ rival: {
   idle_long: [
     "A week. The momentum you had is roughly where you'd expect it after a week.",
     "Extended absence. The progress is still there. It's waiting for work you haven't done yet.",
-    "Seven-plus days. The gap isn't insurmountable. But it was a choice. Acknowledge the choice.",
+    "Extended absence. I don't get one of those. That's the difference between our situations.",
     "Long break. The body adapted to whatever you were doing instead. Readaptation takes time.",
     "The absence was significant. The data is honest about what that means for trajectory.",
     "You've been gone long enough that this is a restart, not a continuation. Worth knowing.",
@@ -288,7 +306,7 @@ rival: {
   ],
 
   log_gym: [
-    "Session logged. One data point. The trend requires more than one.",
+    "Session logged. 📊 One data point. The trend requires more than one.",
     "You trained. The entry is in. What it means depends on what's before and after it.",
     "Gym entry. The rolling average moves fractionally. Volume builds the trend.",
     "One session. The next one matters as much as this one.",
@@ -304,7 +322,7 @@ rival: {
     "One tier up. The ones above it don't get easier. Useful information.",
     "Rank achieved. The work that produced it is the work you need to continue doing.",
     "Higher. Specifically, one level higher. The distance to the top is unchanged.",
-    "Rank up. The pattern that got you here is the pattern that gets you further. Don't break it.",
+    "New tier. Each rank you clear matters to me more than you probably realize. Keep going.",
     "New tier. Acknowledged. The next threshold is now the relevant number.",
     "New tier. The threshold above it is now the number worth watching.",
     "Rank achieved. The behavior that produced this is the one thing you can't stop doing.",
@@ -343,11 +361,22 @@ rival: {
     "Cap hit. The next version of this week starts Monday. The habit that runs it doesn't reset then.",
   ],
 
+  budget_spent: [
+    "{amount} spent. {left} {unit} remaining. 📊 The math is current.",
+    "Used. The remaining cap is what determines what's available. Track it.",
+    "Spent. The budget has room. That room is finite. Use it accurately.",
+    "One step down. The rate at which this depletes is the number to watch.",
+    "Logged. Still within the cap. The cap is not the goal — it's the boundary.",
+    "Used {amount}. This week still has room. Use it correctly.",
+    "Spent. Still inside the line. Whether it stays there depends on what comes next.",
+    "Logged. The remaining balance is the relevant number now.",
+  ],
+
   goal_completed: [
     "Goal done. Now set a harder one. This one was always going to happen eventually.",
     "Completed. The next goal should be less comfortable to look at.",
     "Finished. The question now is what you aim at next. That matters more than this did.",
-    "Done. Your patterns produced this result. Replicate the patterns.",
+    "Done. One fewer thing standing between me and the end of this arrangement. Name the next goal.",
     "Goal reached. The gap between this and your actual ceiling is the space you haven't filled.",
     "Acknowledged. One down. The list should have a harder thing on it by end of day.",
     "Goal met. The pattern that produced it needs to continue and be aimed at something harder.",
@@ -411,7 +440,7 @@ rival: {
 
   points_threshold: [
     "Another hundred. The trajectory is what matters, not the milestone itself.",
-    "The total is {total} now. What it took to build that pace — keep it.",
+    "The total is {total} now. 📊 What it took to build that pace — keep it.",
     "Round number. Cross it. Keep going.",
     "Crossed another threshold. The behavior that got you here needs to continue.",
     "One hundred more. Protect the pace that produced them.",
@@ -440,10 +469,10 @@ rival: {
 observer: {
 
   app_open: [
-    "...the app. Again.",
+    "...the app. Again. 👁️",
     "Back. Humans always come back to their lists.",
     "The record, still open. Waiting. Patient things, records.",
-    "Another session. I've been watching this one for a while.",
+    "Another session. I've been watching this one for a while. 👁️",
     "...ah. There it is.",
     "The story of someone keeping a spreadsheet continues.",
     "...there it is. Open again.",
@@ -462,33 +491,33 @@ observer: {
   ],
 
   idle_long: [
-    "...a long time.",
+    "...a long time. 🌀",
     "A week or more. The longer the gap, the more interesting the return tends to be.",
     "The absence was significant. I'll say that. Significant.",
     "They came back. After all that. Humans are strange.",
-    "Long gap. The goals are still there. That always surprises people.",
+    "Long gap. The goals are still there. That always surprises people. 👁️",
     "...I wondered if this would happen. It happened.",
     "That was a long gap. The longest I've seen from this one.",
     "...they came back. After all that. The data waited. Data is patient.",
   ],
 
   log_gym: [
-    "...the body, used again.",
+    "...the body, used again. 👁️",
     "Session logged. Whether they go again — that's the part worth watching.",
     "They lifted something. The number changed. These are connected, apparently.",
     "Exercise. The body adapts to whatever it's asked to do. Interesting mechanism.",
     "Gym entry. The log grows longer.",
     "They did it. Again. I find the repetition more interesting than any individual session.",
     "Session. They went again.",
-    "...and it's in the log. The log grows.",
+    "...and it's in the log. The log grows. 👁️",
     "Another gym entry. Whether they rest correctly is the part I'm curious about.",
   ],
 
   rank_up: [
-    "...a rank.",
+    "...a rank. 👁️",
     "Higher. I didn't predict the timing, but the direction was always obvious.",
     "New tier. The work made it real. Work tends to do that.",
-    "Rank up. The person who earned this is slightly different from the one who started.",
+    "Rank up. The person who earned this is slightly different from the one who started. 👁️",
     "...I've seen people stop at the previous one. This one didn't.",
     "The rank went up. Time was apparently being used correctly.",
     "The rank changed. Upward. That's the direction they were going.",
@@ -499,26 +528,35 @@ observer: {
     "...zero.",
     "The cap arrived. It always does.",
     "The budget is gone. The week continues the same.",
-    "Zero. A reliable endpoint.",
+    "Zero. A reliable endpoint. 🌀",
     "...the number read zero. The week has a certain feeling after that.",
     "Depleted. The pattern got here, as patterns often do.",
     "Zero budget. What they do now that it reads zero is the interesting part.",
     "...gone. The week still has days in it.",
   ],
 
+  budget_spent: [
+    "...spent. Still within the line.",
+    "The number went down. The cap remains in the future.",
+    "A unit used. The week continues.",
+    "...within budget. For now. 🌀",
+    "Still room. These states tend to be temporary.",
+    "Used, but not out. Different situations.",
+  ],
+
   goal_completed: [
-    "...done.",
+    "...done. 🌀",
     "They finished it. I wasn't sure.",
     "The goal is complete. Reality and the record agree for once.",
     "Done. What people do with 'done' is usually more interesting than 'done' itself.",
     "...that one took a while. It's done now.",
     "Completed. The goal existed. Now it's past tense. That's not nothing.",
     "...done. Finally.",
-    "The goal is complete. These tend to matter to the person who set them.",
+    "The goal is complete. These tend to matter to the person who set them. 👁️",
   ],
 
   log_food_over: [
-    "...over the number. The number was there for a reason.",
+    "...over the number. The number was there for a reason. 👁️",
     "Surplus. The math doesn't negotiate.",
     "Both numbers are in the record now. The goal and the actual.",
     "Over. The cap exists. Caps exist for reasons.",
@@ -532,7 +570,7 @@ observer: {
     "...another hundred.",
     "Round number. Humans notice round numbers.",
     "The total crossed something. These keep coming if you keep doing the things.",
-    "The count grows. I've been watching it grow. It grows in the right direction.",
+    "The count grows. I've been watching it grow. It grows in the right direction. 👁️",
     "...milestone. They accumulate.",
     "Round number. The Tracker highlighted it. I was going to mention it myself.",
     "Round number. These catch human attention. I understand why.",
@@ -542,12 +580,12 @@ observer: {
   spin_button_used: [
     "...different words, same day.",
     "Quote shuffled. The Tracker has many.",
-    "A curious relationship with randomness.",
+    "A curious relationship with randomness. 🌀",
     "New quote. The old one was also words.",
     "...interesting choice.",
     "Shuffled. Fair enough.",
     "...the quote changed. The day didn't.",
-    "Shuffled. There are many more where that came from.",
+    "Shuffled. There are many more where that came from. 🌀",
   ],
 
 },
@@ -790,8 +828,6 @@ function narratorSay(trigger, data) {
       const n = pair.chars.length;
       pair.chars.forEach((cid, i) => {
         const isLast = i === n - 1;
-        /* Each non-last banner auto-advances after _conflictAutoMs;
-           last banner uses normal 5500ms dismiss */
         _showBanner(pair.lines[i], cid, isLast ? 5500 : _conflictAutoMs);
       });
       return;

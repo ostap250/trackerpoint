@@ -18,13 +18,35 @@ function fmtDate(s) {
 
 /* localStorage with in-memory fallback */
 const _mem = {};
+let _storageUnavailable = false;
+
 async function sget(k) {
   try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }
   catch(e) { return _mem[k] ? JSON.parse(_mem[k]) : null; }
 }
 async function sset(k, v) {
   const s = JSON.stringify(v);
-  try { localStorage.setItem(k, s); } catch(e) { _mem[k] = s; }
+  try {
+    localStorage.setItem(k, s);
+    _storageUnavailable = false;
+  } catch(e) {
+    _mem[k] = s;
+    if (!_storageUnavailable) {
+      _storageUnavailable = true;
+      console.error('[Tracker] localStorage write failed — data will not persist across sessions.', e);
+      /* Show a persistent warning banner so the bug is visible to the user */
+      const existing = document.getElementById('storageWarnBanner');
+      if (!existing) {
+        const warn = document.createElement('div');
+        warn.id = 'storageWarnBanner';
+        warn.style.cssText =
+          'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c0392b;color:#fff;' +
+          'font-family:monospace;font-size:12px;padding:8px 14px;text-align:center;';
+        warn.textContent = '⚠ Дані не зберігаються — сховище недоступне (приватний режим?)';
+        document.body.appendChild(warn);
+      }
+    }
+  }
 }
 
 /* Toronto time */
