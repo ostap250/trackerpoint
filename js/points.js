@@ -67,7 +67,7 @@ async function confirmPending(id) {
   const prevHundred = Math.floor(points.total / 100);
   points.total += item.amount;
   points.last   = item.amount;
-  if (Math.floor(points.total / 100) > prevHundred) narratorSay('points_threshold');
+  if (Math.floor(points.total / 100) > prevHundred) narratorSay('points_threshold', { total: points.total });
   pointsLog.unshift({ id:newId(), amount:item.amount, reason:item.reason, date:torontoNow().date });
   if (pointsLog.length > 300) pointsLog = pointsLog.slice(0, 300);
   await sset('app_pending',    pending);

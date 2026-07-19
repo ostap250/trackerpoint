@@ -33,7 +33,13 @@ $('addFood').onclick = async () => {
   ['fKcal','fP','fF','fC'].forEach(id => $(id).value = '');
   await sset('app_cals', cals);
   renderCals();
-  narratorSay('log_food');
+  /* Context-aware trigger: pass calorie delta so templates can inject it */
+  const _hr  = torontoNow().hour;
+  const _ctx = { kcal_delta: Math.round(cals.kcal - KCAL_GOAL.kcal) };
+  if (cals.kcal > KCAL_GOAL.kcal)   narratorSay('log_food_over',    _ctx);
+  else if (_hr < 11)                  narratorSay('log_food_morning', _ctx);
+  else if (_hr >= 19)                 narratorSay('log_food_evening', _ctx);
+  else                                narratorSay('log_food',         _ctx);
 };
 
 $('kcalReset2').onclick = async () => {

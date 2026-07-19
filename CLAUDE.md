@@ -20,7 +20,7 @@ index.html (HTML only) → css/styles.css → js modules in load order:
                MUSCLE_RANK_TIERS, MUSCLE_LIFT_CONFIG, GYM_DAYS, EXERCISE_ALTERNATIVES, …)
   storage.js — sget/sset localStorage + helpers (today, fmt, torontoNow, …)
   state.js   — global mutable state declarations (let points, cals, tasks, …,
-               gymData, gymProgram, bodyWeight, narratorMode, profileName, activeDay)
+               gymData, gymProgram, bodyWeight, profileName, activeDay)
   ui.js      — showNotif, clock tick, renderQuote
   points.js  — points balance, rank badge, pending list
   food.js    — calorie logging, meal database, search/portion picker
@@ -81,28 +81,35 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 - Day C: Bonus (optional) — Pull-ups, Cable Crossover, Lateral Raise, Lunges, Bi+Tri, Core
 - Constraints: NO overhead pressing; warmup = 5 min cardio + band ext rotations 2×15 + face pulls 2×15.
 
-## Narrator feature (narrator.js + app_narrator, app_narrator_last, app_profile_name)
-- Scripted commentary in The Stanley Parable style: dry, theatrical, condescending for routine
-  actions; sincerely proud for real achievements (rank_up, goal_completed, points_threshold).
-- Onboarding modal (#onboardingModal) shown on first visit (when app_profile_name is null).
-  User enters name → saved to app_profile_name. Narrator always calls them 'Stanley' anyway,
-  occasionally referencing the real name sarcastically. profileName global in state.js.
-- 3 modes in app_narrator: 'intensive' (all events), 'moderate' (notable only), 'off'.
-  Default: 'moderate'. Old boolean values migrate gracefully.
-- Moderate fires only: idle, rank_up, goal_completed, budget_exceeded, points_threshold.
-- 12 trigger groups, ~10-12 lines each: app_open, idle (≥2 days away), log_gym, rank_up,
-  points_gained, points_spent, budget_exceeded, goal_completed, task_completed,
-  log_food, points_threshold (every 100 pts crossed), spin_button_used.
-- Lines use {stanley} and {name} placeholders resolved by _n() at display time.
-- narratorSay(trigger) picks random non-repeated line per session; resets when exhausted.
-- Display: #narratorBanner — fixed above bottom nav, amber left-border, 5.5 s auto-dismiss,
-  manual close. Lines queue (never overlap).
-- Mode selector + name change UI rendered in Stats page (#narratorSettingsContent) by
-  renderNarratorSettings() — NOT on Home page.
-- app_narrator_last tracks last visit; ≥2 day gap fires 'idle' instead of 'app_open'.
-- narratorInit() called last in app.js INIT; hooks in points.js, shop.js, budget.js,
-  goals.js, tasks.js, gym.js, food.js each call narratorSay() on matching events.
-- No API calls, no AI, no build step. Fully scripted static.
+## Narrator feature (narrator.js + app_narrator_last, app_profile_name, app_narrator_chars,
+##                   app_narrator_freq, app_narrator_conflict, app_narrator_voice)
+- Three-character commentary layer. Narrator is always-on; Rival and Observer toggleable.
+- Characters (all lines entirely original — copyright-safe):
+    narrator  — dry, theatrical, self-aware; treats habits like an ongoing story
+    rival     — cold, calculating, data-driven contempt; points out uncomfortable patterns
+    observer  — detached, amused one-liners; finds humans entertaining, not important
+- Conflict mode: pairs of characters react back-to-back to same event (contradicting tones).
+  CONFLICTS object defines pairs per trigger. Enabled via app_narrator_conflict (default on).
+- Frequency modes (app_narrator_freq): minimal (notable events only), normal (one random char
+  per event), relentless (all enabled chars per event). Default: normal.
+- 13 trigger groups, 6 lines per char:
+    app_open, idle (2–6 days), idle_long (7+ days), log_gym, rank_up, points_gained,
+    points_spent, budget_exceeded, goal_completed, task_completed,
+    log_food (midday), log_food_morning (<11h), log_food_evening (≥19h),
+    log_food_over (kcal > KCAL_GOAL), points_threshold, spin_button_used.
+  Observer responds to a subset (notable events only).
+- narratorSay(trigger, data) — data object injects numbers into templates:
+    {kcal_delta}, {total} etc. via _t() resolver. Also {stanley}/{name}.
+- food.js computes context trigger + passes { kcal_delta } data.
+- points.js passes { total } to points_threshold.
+- Banner (#narratorBanner) changes border/label color per character. Label id=narratorCharLabel.
+- TTS: Web Speech API, per-character rate/pitch. app_narrator_voice bool, default false.
+- Settings card in Stats page (#narratorSettingsContent): character toggles, frequency,
+  conflict mode, voice, name change. Rendered by renderNarratorSettings().
+- Onboarding modal (#onboardingModal) on first visit; narrator intro, name capture.
+- app_narrator_last: ≥7 days → idle_long, 2–6 days → idle, else app_open.
+- narratorInit() called last in app.js INIT; hooks throughout call narratorSay().
+- No external API, no AI, no build step. Fully scripted static.
 
 ## Quote spin button (ui.js + app_quote_spin)
 - Daily quote logic unchanged (deterministic per Toronto time window).
