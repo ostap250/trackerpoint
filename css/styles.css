@@ -865,6 +865,42 @@ h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
 .nset-voice-btn:hover{ border-color:rgba(224,166,70,.5); color:#E0A646; }
 .nset-voice-btn.nset-voice-on{ border-color:rgba(224,166,70,.65); color:#E0A646; background:rgba(224,166,70,.07); }
 
+/* Character name rename (Rival / Observer) */
+.nset-char-names{ margin-top:8px; display:flex; flex-direction:column; gap:5px; }
+.nset-name-row{ display:flex; align-items:center; gap:6px; }
+.nset-name-dot{ font-size:9px; flex-shrink:0; }
+.nset-name-input{
+  flex:1; background:#0f141c; border:1px solid var(--line);
+  border-radius:7px; color:var(--txt);
+  font-family:'JetBrains Mono',monospace; font-size:11px;
+  padding:5px 8px; min-width:0;
+}
+.nset-name-input:focus{ outline:none; border-color:var(--indigo); }
+.nset-name-save{
+  background:transparent; border:1px solid var(--line); color:var(--muted);
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  padding:5px 9px; border-radius:7px; cursor:pointer; transition:.15s; flex-shrink:0;
+}
+.nset-name-save:hover{ border-color:var(--indigo); color:var(--indigo); }
+
+/* Conflict auto-advance timer */
+.nset-timer-row{
+  display:flex; align-items:center; gap:7px; margin-top:8px; flex-wrap:wrap;
+}
+.nset-timer-label{
+  font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted);
+}
+.nset-timer-input{
+  width:46px; background:#0f141c; border:1px solid var(--line);
+  border-radius:7px; color:var(--txt);
+  font-family:'JetBrains Mono',monospace; font-size:11px;
+  padding:4px 6px; text-align:center;
+}
+.nset-timer-input:focus{ outline:none; border-color:var(--indigo); }
+.nset-timer-unit{
+  font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted);
+}
+
 /* Narrator mode row (top of Home) */
 .narrator-toggle-row{
   display:flex; justify-content:flex-end; gap:4px;

@@ -81,34 +81,36 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 - Day C: Bonus (optional) — Pull-ups, Cable Crossover, Lateral Raise, Lunges, Bi+Tri, Core
 - Constraints: NO overhead pressing; warmup = 5 min cardio + band ext rotations 2×15 + face pulls 2×15.
 
-## Narrator feature (narrator.js + app_narrator_last, app_profile_name, app_narrator_chars,
-##                   app_narrator_freq, app_narrator_conflict, app_narrator_voice)
-- Three-character commentary layer. Narrator is always-on; Rival and Observer toggleable.
+## Narrator feature (narrator.js)
+localStorage keys: app_narrator_last, app_profile_name, app_narrator_chars,
+  app_narrator_freq, app_narrator_conflict, app_narrator_conflict_ms,
+  app_narrator_voice, app_narrator_labels
+- Three-character commentary layer. Narrator always-on (locked 🔒); Rival and Observer toggleable.
 - Characters (all lines entirely original — copyright-safe):
     narrator  — dry, theatrical, self-aware; treats habits like an ongoing story
-    rival     — cold, calculating, data-driven contempt; points out uncomfortable patterns
+    rival     — cold, calculating, data-driven; points out patterns, not the person
     observer  — detached, amused one-liners; finds humans entertaining, not important
-- Conflict mode: pairs of characters react back-to-back to same event (contradicting tones).
-  CONFLICTS object defines pairs per trigger. Enabled via app_narrator_conflict (default on).
-- Frequency modes (app_narrator_freq): minimal (notable events only), normal (one random char
-  per event), relentless (all enabled chars per event). Default: normal.
-- 13 trigger groups, 6 lines per char:
+- Conflict mode: 2 or 3-char sequences react back-to-back to same event.
+  CONFLICTS object: pairs + triples per trigger. Triples: Observer reacts to the exchange.
+  All chars in the sequence must be enabled (p.chars.every(c => _chars[c])).
+  app_narrator_conflict bool (default on). Timer: app_narrator_conflict_ms ms (default 3000).
+- Pacing: conflict non-last banners auto-advance after _conflictAutoMs; last uses 5500ms.
+  Manual dismiss always available. Queue items carry { line, charId, timeoutMs }.
+- Frequency (app_narrator_freq): minimal / normal / relentless. Default: normal.
+  Relentless queues all enabled chars per event. Minimal gates on _MINIMAL_SET.
+- 16 trigger groups, 8–9 lines per narrator/rival, 8–9 lines per observer subset:
     app_open, idle (2–6 days), idle_long (7+ days), log_gym, rank_up, points_gained,
     points_spent, budget_exceeded, goal_completed, task_completed,
-    log_food (midday), log_food_morning (<11h), log_food_evening (≥19h),
-    log_food_over (kcal > KCAL_GOAL), points_threshold, spin_button_used.
-  Observer responds to a subset (notable events only).
-- narratorSay(trigger, data) — data object injects numbers into templates:
-    {kcal_delta}, {total} etc. via _t() resolver. Also {stanley}/{name}.
-- food.js computes context trigger + passes { kcal_delta } data.
-- points.js passes { total } to points_threshold.
-- Banner (#narratorBanner) changes border/label color per character. Label id=narratorCharLabel.
-- TTS: Web Speech API, per-character rate/pitch. app_narrator_voice bool, default false.
-- Settings card in Stats page (#narratorSettingsContent): character toggles, frequency,
-  conflict mode, voice, name change. Rendered by renderNarratorSettings().
-- Onboarding modal (#onboardingModal) on first visit; narrator intro, name capture.
-- app_narrator_last: ≥7 days → idle_long, 2–6 days → idle, else app_open.
-- narratorInit() called last in app.js INIT; hooks throughout call narratorSay().
+    log_food / log_food_morning / log_food_evening / log_food_over,
+    points_threshold, spin_button_used.
+- Conflict triples on: rank_up, goal_completed, idle_long, points_threshold (2 triples each).
+- Observer TTS volume: 0.7 (VOICE_CFG.observer.volume = 0.7). Others default 0.92.
+  _speak() reads cfg.volume ?? 0.92. TTS provider swappable via _speak().
+- CHAR_LABELS mutable let; loaded from app_narrator_labels; only rival/observer editable.
+- Settings (Stats page, renderNarratorSettings()): 🔒 Narrator pill, Rival/Observer toggle
+  + name inputs, frequency buttons, conflict toggle + timer input, voice toggle, user name.
+- Onboarding modal (#onboardingModal) on first visit; name captured → app_profile_name.
+- narratorInit() called last in INIT; hooks in points.js, shop.js, food.js etc.
 - No external API, no AI, no build step. Fully scripted static.
 
 ## Quote spin button (ui.js + app_quote_spin)

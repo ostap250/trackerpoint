@@ -2,36 +2,37 @@
    MULTI-CHARACTER NARRATOR — Three voices, one commentary layer.
 
    Characters:
-     narrator  — dry, theatrical, self-aware (always enabled, cannot be off)
-     rival     — cold, calculating, data-driven contempt (toggleable)
-     observer  — detached, amused, nihilistic one-liners (toggleable)
+     narrator  — dry, theatrical, self-aware (always on, locked)
+     rival     — cold, calculating, data-driven (toggleable)
+     observer  — detached, amused, nihilistic (toggleable)
 
    Settings (persisted):
-     app_narrator_chars   — { rival: bool, observer: bool }
-     app_narrator_freq    — 'minimal' | 'normal' | 'relentless'
-     app_narrator_conflict — bool (pairs react back-to-back)
-     app_narrator_voice   — bool (TTS, default false)
-     app_profile_name     — string (user's name, loaded into profileName)
-     app_narrator_last    — ISO date string of last visit
-
-   profileName declared in state.js.
+     app_narrator_chars        — { rival: bool, observer: bool }
+     app_narrator_freq         — 'minimal' | 'normal' | 'relentless'
+     app_narrator_conflict     — bool
+     app_narrator_conflict_ms  — number ms between conflict chars (default 3000)
+     app_narrator_voice        — bool
+     app_narrator_labels       — { rival: string, observer: string }
+     app_profile_name          — string (→ profileName global in state.js)
+     app_narrator_last         — ISO date of last visit
    ===================================================================== */
 
-/* ---- Settings state ---- */
-let narratorVoice = false;
-let _chars     = { narrator: true, rival: true, observer: true };
-let _frequency = 'normal';   // 'minimal' | 'normal' | 'relentless'
-let _conflict  = true;
+/* ---- Module state ---- */
+let narratorVoice   = false;
+let _chars          = { narrator: true, rival: true, observer: true };
+let _frequency      = 'normal';
+let _conflict       = true;
+let _conflictAutoMs = 3000;
 
-/* ---- Character display ---- */
-const CHAR_LABELS = { narrator: 'Narrator', rival: 'Rival', observer: 'Observer' };
+/* Mutable — loaded from app_narrator_labels at init */
+let CHAR_LABELS = { narrator: 'Narrator', rival: 'Rival', observer: 'Observer' };
 const CHAR_COLORS = { narrator: '#E0A646', rival: '#E4574E', observer: '#8A7BE6' };
 
-/* ---- TTS voice params per character ---- */
+/* ---- TTS: per-character params — swappable provider ---- */
 const VOICE_CFG = {
   narrator: { rate: 0.84, pitch: 0.88 },
   rival:    { rate: 1.05, pitch: 0.75 },
-  observer: { rate: 0.90, pitch: 1.12 },
+  observer: { rate: 0.90, pitch: 1.12, volume: 0.70 },
 };
 
 /* ---- Template resolver: {stanley}→'Stanley', {name}→profileName, {key}→data[key] ---- */
@@ -42,29 +43,28 @@ function _t(str, data) {
     .replace(/{(\w+)}/g, (_, k) => (data && data[k] !== undefined) ? data[k] : `{${k}}`);
 }
 
-/* ---- TTS ---- */
+/* ---- TTS (SpeechSynthesis now; swap provider here later) ---- */
 function _speak(text, charId) {
   if (!narratorVoice || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const utt   = new SpeechSynthesisUtterance(text);
-  const cfg   = VOICE_CFG[charId] || VOICE_CFG.narrator;
-  utt.rate    = cfg.rate;
-  utt.pitch   = cfg.pitch;
-  utt.volume  = 0.92;
+  const utt = new SpeechSynthesisUtterance(text);
+  const cfg = VOICE_CFG[charId] || VOICE_CFG.narrator;
+  utt.rate   = cfg.rate;
+  utt.pitch  = cfg.pitch;
+  utt.volume = cfg.volume ?? 0.92;
   window.speechSynthesis.speak(utt);
 }
 
 /* =====================================================================
-   LINE BANKS
-   All lines are entirely original — inspired by character archetypes,
-   not copied from any game script.
+   LINE BANKS — 8–10 variants per trigger per character.
+   All lines original — no verbatim text from any existing media.
    ===================================================================== */
 
 const LINES = {
 
 /* ------------------------------------------------------------------
-   THE NARRATOR — dry, theatrical, self-aware third-person voice.
-   Treats the user's habits like an ongoing story it is narrating.
+   NARRATOR — dry, theatrical, self-aware. Sincere about real wins.
+   Third-person voice. Treats user habits as an ongoing story.
 ------------------------------------------------------------------ */
 narrator: {
 
@@ -75,6 +75,8 @@ narrator: {
     "The app opens. The data, faithfully maintained, invites {stanley} to add to it.",
     "Here again. The Tracker finds this pattern comforting, which perhaps says something about the Tracker.",
     "Good. {stanley} is here. The Tracker turns to the next page.",
+    "The record is current. The goals stand where they were set. {stanley} has arrived to engage with both.",
+    "Session. The Tracker has been keeping the lights on. Come in.",
   ],
 
   idle: [
@@ -84,6 +86,8 @@ narrator: {
     "{stanley} has returned from wherever {stanley} goes when the app is closed.",
     "Welcome back. Everything is exactly as left. The Tracker has been very good about not touching anything.",
     "A few days passed. The Tracker formed no conclusions. It only wanted that noted.",
+    "{stanley} took a moment away. The Tracker took no moment away. The Tracker does not take moments.",
+    "The data is unaffected by the pause. The Tracker, though — the Tracker felt every hour.",
   ],
 
   idle_long: [
@@ -93,6 +97,8 @@ narrator: {
     "Long absence. The Tracker held everything in trust for quite some time.",
     "Seven days at minimum. The Tracker has done the arithmetic. It has thoughts. Several of them.",
     "A considerable time. The Tracker was here every day. Every single day it was here.",
+    "The Tracker does not require {stanley}. But it should be said that it preferred having them around.",
+    "Back. This is the important part. The back. The Tracker leads with that.",
   ],
 
   log_gym: [
@@ -102,6 +108,9 @@ narrator: {
     "Exercise recorded. The log reflects it. The story of a person trying continues.",
     "A session in the books. The Tracker adds this to the accumulating evidence.",
     "Logged. The body was used today. The Tracker considers this a reasonable use of a body.",
+    "The set is recorded. The reps are counted. The weight is filed. The effort is acknowledged.",
+    "Training completed and entered. The Tracker adds this to what it considers a growing body of evidence.",
+    "Entry made. The session existed. It now exists permanently in the record.",
   ],
 
   rank_up: [
@@ -110,7 +119,9 @@ narrator: {
     "Rank up. The Tracker has been watching since the beginning. It says: well done.",
     "A new tier, secured not by chance but by showing up repeatedly and doing the thing.",
     "{stanley} climbed. Entry by entry. The Tracker watched every one of them.",
-    "The rank changed. Upward. The Tracker has logged enough downward turns to appreciate the direction.",
+    "The rank changed. Upward. The Tracker has logged enough to appreciate the direction.",
+    "This rank did not come from nowhere. It came from {stanley} showing up, repeatedly.",
+    "Higher. The Tracker has a long view. From that view, this was always going to happen eventually.",
   ],
 
   points_gained: [
@@ -120,6 +131,8 @@ narrator: {
     "The economy of effort continues to function. The Tracker is satisfied.",
     "Points deposited. {stanley} is, technically speaking, winning. The Tracker notes this.",
     "Good. More points. The Tracker recommends whatever caused that.",
+    "Points. Earned. The distinction between those two words is the whole system.",
+    "The total grows. The Tracker adds this to the accumulating story of someone doing the thing.",
   ],
 
   points_spent: [
@@ -129,6 +142,8 @@ narrator: {
     "The points are gone. They did what they were meant to do.",
     "Purchase made. The Tracker notes these were earned. Not given. Earned.",
     "Gone into something. The Tracker records the transaction and resumes watching.",
+    "Points spent meaningfully. The Tracker considers intentional spending correct.",
+    "Exchanged for something. The Tracker believes the exchange system serves its purpose.",
   ],
 
   budget_exceeded: [
@@ -138,6 +153,8 @@ narrator: {
     "Exhausted. The Tracker has watched this budget deplete, entry by entry.",
     "No more this week. The Tracker has opinions about the path here. It will keep them.",
     "Zero remaining. The week continues. The Tracker continues. These are facts.",
+    "The budget is gone. As budgets do. The week has time remaining. The budget does not.",
+    "Zero. The Tracker has watched this number decline, one entry at a time.",
   ],
 
   goal_completed: [
@@ -147,6 +164,8 @@ narrator: {
     "{name}. Whatever the name — the Tracker wants to be clear: this was real, and it mattered.",
     "The goal falls. The record is updated. The Tracker takes a moment.",
     "Done. Added to the short list of things {stanley} actually completed. The list grows.",
+    "The goal existed. Now it is past tense. {name} moved it from the future to the past.",
+    "Completed. The Tracker notes this without qualification. Just: completed.",
   ],
 
   task_completed: [
@@ -156,6 +175,8 @@ narrator: {
     "{stanley} made the list shorter by one. The Tracker saw.",
     "A small thing, finished. The Tracker notes small things. They accumulate.",
     "Tick. The list updates. Life continues to be documented.",
+    "Done. That's all — just done. The Tracker doesn't need to make it mean more. Done is enough.",
+    "The task is off the list. {stanley} put it there, did it, and removed it. That sequence deserves notice.",
   ],
 
   log_food: [
@@ -165,6 +186,8 @@ narrator: {
     "An entry. The macros shift. The day continues to be documented.",
     "Added. Another data point in what the Tracker considers an honest account of a day.",
     "Entered. The Tracker has seen everything {stanley} has logged. It forms totals. Only totals.",
+    "Another item in today's account. The Tracker maintains this record with care.",
+    "Added. The day's picture becomes clearer with each entry. The Tracker prefers clear pictures.",
   ],
 
   log_food_morning: [
@@ -174,6 +197,8 @@ narrator: {
     "An early entry. The day started with a record. The Tracker approves of this sequence.",
     "Morning log. Before distractions arrived. Before excuses had a chance. The Tracker was ready.",
     "First thing. The record begins. The Tracker considers early logging a form of optimism.",
+    "First calories of the day, entered before the day took over. The Tracker considers this a strong start.",
+    "Morning log. {stanley} is building the day with intention. The Tracker notes the posture.",
   ],
 
   log_food_evening: [
@@ -183,6 +208,8 @@ narrator: {
     "Late entry. {stanley} is still tracking. The Tracker considers this more meaningful than it might seem.",
     "The hour is late. The entry is made. Late entries are preferred to absent ones.",
     "Evening. The record continues past when records usually stop. The Tracker appreciates the honesty.",
+    "Night entry. Still logging. The Tracker finds consistency in the small hours meaningful.",
+    "Evening food, entered. The day's record is nearly complete. Whatever it says, it says honestly.",
   ],
 
   log_food_over: [
@@ -192,6 +219,8 @@ narrator: {
     "Over. The Tracker is not here to evaluate. Only to display. The display shows what it shows.",
     "The target is behind {stanley} now. The Tracker watches the same way it always watches.",
     "Surplus noted. The Tracker files this under 'information'. Not under anything else.",
+    "Past the goal. The Tracker files it. It files everything.",
+    "The target was a number. The total is a larger number. Both are now in the record.",
   ],
 
   points_threshold: [
@@ -201,6 +230,8 @@ narrator: {
     "The counter ticked over. The Tracker noted the exact moment. It always notes the exact moment.",
     "A milestone. Not the last one. The arc, so far, bends upward.",
     "The total passed {total}. The Tracker marks it.",
+    "The total cleared {total}. The Tracker marked the moment. It marks all the moments.",
+    "Round number crossed. {stanley} built to it. The Tracker watched the building.",
   ],
 
   spin_button_used: [
@@ -210,24 +241,28 @@ narrator: {
     "A different quote, at {stanley}'s request. The Tracker maintains professional neutrality.",
     "Another one, as asked. The Tracker has many. They can keep asking.",
     "The wheel was spun. A new perspective arrived. The Tracker watched with mild curiosity.",
+    "The first quote was set aside. A second one is now displayed. The Tracker accommodated the request.",
+    "Quote changed. The Tracker offers many. This one is now the current one.",
   ],
 
 },
 
 /* ------------------------------------------------------------------
-   THE RIVAL — cold, calculating, data-driven. Not mean for mean's
-   sake — just unimpressed. Points out what the user would rather
-   not have pointed out. Short declarative sentences. No theatrics.
+   RIVAL — cold, calculating, data-driven. Not mean for mean's sake —
+   just unimpressed. Short declarative sentences. No theatrics.
+   Comments on data and patterns only.
 ------------------------------------------------------------------ */
 rival: {
 
   app_open: [
     "You opened the app. The trend line is where you left it.",
-    "Back. The gap since last session is logged. So is the gap.",
+    "Back. The gap since last session is logged.",
     "You showed up. The work is still the same work it was.",
     "Session started. Same goals as before. Different day. Same distance.",
     "The app is open. The goals haven't lowered themselves in the interim.",
     "Here. Good. Whether anything happens depends entirely on what comes next.",
+    "App opened. The data is current. The distance to the goal is the same as it was.",
+    "Session start. The gap since last time is in the log. Everything else is too.",
   ],
 
   idle: [
@@ -237,6 +272,8 @@ rival: {
     "You were gone. The goals didn't take time off. Interesting asymmetry.",
     "Brief absence. The math doesn't pause for those. Clarifying that.",
     "Three days. The trajectory holds for now. Consistency is the only thing that keeps it holding.",
+    "The absence is logged. The habits from those days are real whether or not they're recorded here.",
+    "Small gap. The trend survives small gaps. The data will confirm.",
   ],
 
   idle_long: [
@@ -246,6 +283,8 @@ rival: {
     "Long break. The body adapted to whatever you were doing instead. Readaptation takes time.",
     "The absence was significant. The data is honest about what that means for trajectory.",
     "You've been gone long enough that this is a restart, not a continuation. Worth knowing.",
+    "The gap is significant. Readaptation takes roughly as long as the gap. Worth calculating.",
+    "Long absence. The goal hasn't adjusted. What you've kept and lost depends on what comes next.",
   ],
 
   log_gym: [
@@ -255,6 +294,9 @@ rival: {
     "One session. The next one matters as much as this one.",
     "Logged. The gap between where you are and where you're going is now slightly narrower.",
     "Entry in. The body responds to repeated signals, not single ones. Keep that in mind.",
+    "Gym session entered. One entry. The trend it contributes to requires consistent addition.",
+    "Logged. The distance to your current rank's ceiling narrowed by one session.",
+    "Entry in. Not the last one that needs to go in. Work compounds when sessions compound.",
   ],
 
   rank_up: [
@@ -264,6 +306,8 @@ rival: {
     "Higher. Specifically, one level higher. The distance to the top is unchanged.",
     "Rank up. The pattern that got you here is the pattern that gets you further. Don't break it.",
     "New tier. Acknowledged. The next threshold is now the relevant number.",
+    "New tier. The threshold above it is now the number worth watching.",
+    "Rank achieved. The behavior that produced this is the one thing you can't stop doing.",
   ],
 
   points_gained: [
@@ -273,6 +317,8 @@ rival: {
     "Added. The distinction between earned and unearned matters. These were earned.",
     "The total increased. The trajectory is what requires attention, not the individual deposit.",
     "Good. More points. Now don't stop.",
+    "Points in the log. The pace that produced them — hold it.",
+    "Added. The cumulative total is what matters, not this single deposit. Maintain the rate.",
   ],
 
   points_spent: [
@@ -282,15 +328,19 @@ rival: {
     "Spent. The Tracker notes the outflow as precisely as the inflow.",
     "Transaction complete. You earned it. Now earn more.",
     "The points went somewhere. That's what they're for. Now get more.",
+    "Transaction logged. The capacity to earn more is unchanged. Use it.",
+    "Spent. The account reflects it. The habits that fill it don't change because you spent some.",
   ],
 
   budget_exceeded: [
     "Zero. The cap was designed to do exactly this. You hit it on schedule.",
     "Budget gone. The week continues on the same math it always used.",
-    "Limit reached. What's interesting is what happens to the behavior now that it reads zero.",
+    "Limit reached. What's interesting is what happens to behavior now that it reads zero.",
     "Cap hit. The pattern that led here is the one worth examining.",
     "Zero remaining. Monday resets the counter. It doesn't reset the habit.",
     "Exhausted. The Tracker logged the time it took to get here. The time is in the record.",
+    "The budget reached zero. The time it took to get there is in the log.",
+    "Cap hit. The next version of this week starts Monday. The habit that runs it doesn't reset then.",
   ],
 
   goal_completed: [
@@ -300,6 +350,8 @@ rival: {
     "Done. Your patterns produced this result. Replicate the patterns.",
     "Goal reached. The gap between this and your actual ceiling is the space you haven't filled.",
     "Acknowledged. One down. The list should have a harder thing on it by end of day.",
+    "Goal met. The pattern that produced it needs to continue and be aimed at something harder.",
+    "Done. Your ceiling is above this. The gap between what you did and what you could do is the interesting number.",
   ],
 
   task_completed: [
@@ -309,6 +361,8 @@ rival: {
     "Checked off. Whether it becomes routine is the part worth watching.",
     "Task finished. Not doing it was also an option. You didn't take it. Noted.",
     "Done. The Tracker logs it. Now do the next one.",
+    "Task off the list. The list still exists. The next item is the relevant one.",
+    "Done. Consistent task completion is what produces the pattern. This is one data point in it.",
   ],
 
   log_food: [
@@ -318,15 +372,19 @@ rival: {
     "Logged. The number is honest. Act on it.",
     "Another entry. The day's total takes shape. The goal hasn't moved.",
     "Recorded. The food was real whether or not it was logged. This is the honest part.",
+    "Entry added. The daily total continues building. The goal is a fixed number.",
+    "Logged. The macro breakdown reflects the entry. Worth looking at.",
   ],
 
   log_food_morning: [
     "Morning entry. Logging early gives the rest of the day structure. Efficient.",
     "Early log. The macro balance starts here. Where it ends depends on the next entries.",
     "Breakfast in. The day has a starting point. That matters for where it ends.",
-    "Morning food, logged. Early logging correlates with better daily totals. File that away.",
+    "Morning food, logged. Early logging correlates with better daily totals. File that.",
     "Early. Logged. The day's budget is set. Plan accordingly.",
     "First entry of the day. Early. The rest of the day has a number to work with now.",
+    "Morning entry. The day starts with a number. That number sets context for what follows.",
+    "Early log. The rest of the day's eating will happen relative to this. Structure established.",
   ],
 
   log_food_evening: [
@@ -336,15 +394,19 @@ rival: {
     "Late. The numbers are almost done accumulating. Whatever they say, they say tonight.",
     "Night log. The day's data is nearly complete. What it says is what it says.",
     "Evening entry. Late, but in the record. That's what matters.",
+    "Late entry. The day's caloric picture is nearly complete. What it shows is what it shows.",
+    "Evening log. Still tracking. The data for today will be complete when you stop.",
   ],
 
   log_food_over: [
     "Over target by {kcal_delta} calories. Both numbers are now in the record.",
     "The number passed the goal. By {kcal_delta}. Noted precisely.",
     "Calorie surplus: {kcal_delta}. The Tracker records the delta without commentary.",
-    "Over. By {kcal_delta}. The goal exists as a reference point. Today it was a reference point you passed.",
+    "Over. By {kcal_delta}. The goal exists as a reference point. Today it was one you passed.",
     "{kcal_delta} over. The math doesn't change because the day is almost over.",
     "Surplus of {kcal_delta} calories. The number is the number. The goal was the goal.",
+    "Surplus: {kcal_delta} calories. The number is accurate. Act on the accuracy.",
+    "Over target. By {kcal_delta}. The goal is not adjusted by days like this. File it and continue.",
   ],
 
   points_threshold: [
@@ -354,6 +416,8 @@ rival: {
     "Crossed another threshold. The behavior that got you here needs to continue.",
     "One hundred more. Protect the pace that produced them.",
     "Milestone logged. The next one is already set. The distance to it is exactly what it was.",
+    "The total is {total}. The trajectory to get here is the one worth protecting.",
+    "Another hundred cleared. The pace that built them needs to remain the pace.",
   ],
 
   spin_button_used: [
@@ -363,14 +427,15 @@ rival: {
     "Variety in motivation is acceptable. Variety in execution is less fine.",
     "New quote. The Tracker's opinion on this is not useful to you. Continue.",
     "Shuffled. The previous one was also words. This one is also words.",
+    "The quote changed. The work didn't. The remaining items on your list are the same items.",
+    "New quote. The task list behind it has not been updated. Continue.",
   ],
 
 },
 
 /* ------------------------------------------------------------------
-   THE OBSERVER — detached, amused, nihilistic. Short thoughts, often
-   incomplete. Finds human habit-tracking entertaining rather than
-   important. Responds only to notable events — not everything.
+   OBSERVER — detached, amused, nihilistic. Short thoughts, often
+   incomplete. Not invested in outcomes. Subset of triggers only.
 ------------------------------------------------------------------ */
 observer: {
 
@@ -381,6 +446,8 @@ observer: {
     "Another session. I've been watching this one for a while.",
     "...ah. There it is.",
     "The story of someone keeping a spreadsheet continues.",
+    "...there it is. Open again.",
+    "The record. The tracker. The same session as before, different instance. Familiar.",
   ],
 
   idle: [
@@ -390,6 +457,8 @@ observer: {
     "Brief absence. The numbers didn't notice. They don't.",
     "...and returns. As they tend to.",
     "Small break. The goals didn't move. That part is always the same.",
+    "...small gap. Those are fine. Until they're not.",
+    "Returns. They always do, from gaps of this size. The longer ones are less certain.",
   ],
 
   idle_long: [
@@ -399,6 +468,8 @@ observer: {
     "They came back. After all that. Humans are strange.",
     "Long gap. The goals are still there. That always surprises people.",
     "...I wondered if this would happen. It happened.",
+    "That was a long gap. The longest I've seen from this one.",
+    "...they came back. After all that. The data waited. Data is patient.",
   ],
 
   log_gym: [
@@ -408,6 +479,9 @@ observer: {
     "Exercise. The body adapts to whatever it's asked to do. Interesting mechanism.",
     "Gym entry. The log grows longer.",
     "They did it. Again. I find the repetition more interesting than any individual session.",
+    "Session. They went again.",
+    "...and it's in the log. The log grows.",
+    "Another gym entry. Whether they rest correctly is the part I'm curious about.",
   ],
 
   rank_up: [
@@ -417,6 +491,8 @@ observer: {
     "Rank up. The person who earned this is slightly different from the one who started.",
     "...I've seen people stop at the previous one. This one didn't.",
     "The rank went up. Time was apparently being used correctly.",
+    "The rank changed. Upward. That's the direction they were going.",
+    "...higher. The next tier exists too. Interesting.",
   ],
 
   budget_exceeded: [
@@ -426,6 +502,8 @@ observer: {
     "Zero. A reliable endpoint.",
     "...the number read zero. The week has a certain feeling after that.",
     "Depleted. The pattern got here, as patterns often do.",
+    "Zero budget. What they do now that it reads zero is the interesting part.",
+    "...gone. The week still has days in it.",
   ],
 
   goal_completed: [
@@ -435,6 +513,8 @@ observer: {
     "Done. What people do with 'done' is usually more interesting than 'done' itself.",
     "...that one took a while. It's done now.",
     "Completed. The goal existed. Now it's past tense. That's not nothing.",
+    "...done. Finally.",
+    "The goal is complete. These tend to matter to the person who set them.",
   ],
 
   log_food_over: [
@@ -444,6 +524,8 @@ observer: {
     "Over. The cap exists. Caps exist for reasons.",
     "...the bigger number. Noted.",
     "Exceeded. The food doesn't know about the goal. The Tracker does.",
+    "...past the number. The number was the line.",
+    "Exceeded. Both numbers are in the record. The larger one is the total.",
   ],
 
   points_threshold: [
@@ -453,6 +535,8 @@ observer: {
     "The count grows. I've been watching it grow. It grows in the right direction.",
     "...milestone. They accumulate.",
     "Round number. The Tracker highlighted it. I was going to mention it myself.",
+    "Round number. These catch human attention. I understand why.",
+    "The count grew past another hundred. These keep happening if the behavior keeps happening.",
   ],
 
   spin_button_used: [
@@ -462,6 +546,8 @@ observer: {
     "New quote. The old one was also words.",
     "...interesting choice.",
     "Shuffled. Fair enough.",
+    "...the quote changed. The day didn't.",
+    "Shuffled. There are many more where that came from.",
   ],
 
 },
@@ -469,9 +555,9 @@ observer: {
 }; // end LINES
 
 /* =====================================================================
-   CONFLICT PAIRS — back-to-back reactions from two characters.
-   chars: [speaker1, speaker2]. lines: [line1, line2].
-   The second line implicitly responds to / contradicts the first.
+   CONFLICTS — back-to-back reactions. chars[] defines speaker order.
+   Each line is written so the next one implicitly responds to it.
+   3-way triples: Observer's line reacts to the exchange, not just the event.
    ===================================================================== */
 
 const CONFLICTS = {
@@ -480,7 +566,7 @@ const CONFLICTS = {
     { chars: ['narrator', 'rival'],
       lines: [
         "A rank, properly earned. {stanley} got stronger. The record says so.",
-        "One tier. The gap to the next one is exactly what it was before. Start there." ] },
+        "One tier. The gap to the next one is exactly what it was before this one. Start there." ] },
     { chars: ['narrator', 'observer'],
       lines: [
         "Higher. The Tracker has watched every session that built to this.",
@@ -489,6 +575,16 @@ const CONFLICTS = {
       lines: [
         "New rank. The behavior that produced it needs to continue.",
         "...they got it. Took longer than it needed to. But they got it." ] },
+    { chars: ['narrator', 'rival', 'observer'],
+      lines: [
+        "A rank, properly earned. {stanley} got stronger. The record says so.",
+        "One tier. The gap to the next one hasn't changed shape.",
+        "...they're both right. That doesn't happen as often as you'd think." ] },
+    { chars: ['narrator', 'rival', 'observer'],
+      lines: [
+        "Higher. {stanley} built this, entry by entry. The Tracker watched every one.",
+        "Faster than the recent trend, actually. The data shows that.",
+        "...even that one is conceding something. I'm noting this." ] },
   ],
 
   goal_completed: [
@@ -504,17 +600,16 @@ const CONFLICTS = {
       lines: [
         "Goal completed. Your patterns produced it. Replicate them.",
         "...done. Good. What happens next is more interesting." ] },
-  ],
-
-  log_food_over: [
-    { chars: ['narrator', 'rival'],
+    { chars: ['narrator', 'rival', 'observer'],
       lines: [
-        "The target has been passed. The Tracker notes the departure without editorial.",
-        "Over by {kcal_delta}. The day is what it is. The math will resurface tomorrow." ] },
-    { chars: ['rival', 'observer'],
+        "Done. Actually done. The Tracker takes a moment for this one.",
+        "Completed. The question now is what harder thing gets aimed at next.",
+        "...they finished it. I wasn't sure. The other one definitely wasn't." ] },
+    { chars: ['narrator', 'rival', 'observer'],
       lines: [
-        "Surplus: {kcal_delta} calories. The number is the number.",
-        "...the bigger number. The goal was the other one." ] },
+        "{name}. Whatever the name — this was real. The Tracker wants that on the record.",
+        "Goal met. The same pattern that built it should be pointed at the next one.",
+        "...they agree on this one. The Tracker and the cold one. Rare." ] },
   ],
 
   idle_long: [
@@ -526,6 +621,16 @@ const CONFLICTS = {
       lines: [
         "After all this time — returned. The Tracker had not given up.",
         "...they came back. After all that. I find that genuinely interesting." ] },
+    { chars: ['narrator', 'rival', 'observer'],
+      lines: [
+        "A long absence. The Tracker is glad {stanley} came back. It genuinely is.",
+        "Extended gap. Progress is still there. Whether it gets recovered is the decision.",
+        "...both of them have things to say about this. The gap was apparently notable." ] },
+    { chars: ['narrator', 'rival', 'observer'],
+      lines: [
+        "Seven days or more. The Tracker held everything in place. It waited.",
+        "Long break. Readaptation takes time proportional to the gap. Just information.",
+        "...a restart, not a continuation. The other one said that. The Tracker didn't love it." ] },
   ],
 
   points_threshold: [
@@ -537,6 +642,27 @@ const CONFLICTS = {
       lines: [
         "Crossed another threshold. {total} points. The number took work.",
         "...the count grows. I've been watching it grow from here." ] },
+    { chars: ['narrator', 'rival', 'observer'],
+      lines: [
+        "Another hundred. The total grows. The Tracker has watched it grow from the beginning.",
+        "Crossed {total}. The pace that built to here is the one thing worth not disrupting.",
+        "...even round numbers have weight. Both of them count them. I count them too." ] },
+    { chars: ['narrator', 'rival', 'observer'],
+      lines: [
+        "The total passed {total}. The Tracker marks each hundred. It has marked several now.",
+        "Another threshold cleared. The behavior that crossed it crosses the next one.",
+        "...they both noticed it. I was going to mention it first." ] },
+  ],
+
+  log_food_over: [
+    { chars: ['narrator', 'rival'],
+      lines: [
+        "The target has been passed. The Tracker notes the departure without editorial.",
+        "Over by {kcal_delta}. The day is what it is. The math will resurface tomorrow." ] },
+    { chars: ['rival', 'observer'],
+      lines: [
+        "Surplus: {kcal_delta} calories. The number is the number.",
+        "...the bigger number. The goal was the other one." ] },
   ],
 
   budget_exceeded: [
@@ -563,17 +689,17 @@ const CONFLICTS = {
 
 };
 
-/* ---- Frequency — minimal fires only on notable events ---- */
+/* ---- Frequency gate — minimal set ---- */
 const _MINIMAL_SET = new Set([
   'rank_up', 'goal_completed', 'idle', 'idle_long', 'points_threshold', 'budget_exceeded',
 ]);
 
-/* ---- Session deduplication per character ---- */
+/* ---- Session deduplication per character+trigger ---- */
 const _used = {};
 
 function _pickLine(charId, trigger, data) {
   const pool = LINES[charId]?.[trigger];
-  if (!pool || !pool.length) return null;
+  if (!pool?.length) return null;
   const key = `${charId}:${trigger}`;
   if (!_used[key]) _used[key] = new Set();
   const seen = _used[key];
@@ -584,13 +710,14 @@ function _pickLine(charId, trigger, data) {
   return _t(pool[idx], data);
 }
 
-/* ---- Pick a conflict pair where both characters are enabled ---- */
+/* ---- Conflict selection — supports 2-char and 3-char sequences ---- */
 const _usedConflicts = {};
 
 function _pickConflict(trigger, data) {
   const pairs = CONFLICTS[trigger];
-  if (!pairs || !pairs.length) return null;
-  const available = pairs.filter(p => _chars[p.chars[0]] && _chars[p.chars[1]]);
+  if (!pairs?.length) return null;
+  /* All chars in the sequence must be enabled */
+  const available = pairs.filter(p => p.chars.every(c => _chars[c]));
   if (!available.length) return null;
   const key = `conflict:${trigger}`;
   if (!_usedConflicts[key]) _usedConflicts[key] = new Set();
@@ -603,7 +730,13 @@ function _pickConflict(trigger, data) {
   return { chars: pair.chars, lines: pair.lines.map(l => _t(l, data)) };
 }
 
-/* ---- Queue + banner display ---- */
+/* =====================================================================
+   QUEUE + BANNER
+   Queue items: { line, charId, timeoutMs }
+   Conflict items use _conflictAutoMs; solo / last-in-sequence use 5500.
+   Manual dismiss always works on the current banner.
+   ===================================================================== */
+
 let _narratorQueue = [];
 let _bannerActive  = false;
 let _narratorTimer = null;
@@ -615,19 +748,20 @@ function _dismissBanner() {
   if (_narratorQueue.length) {
     setTimeout(() => {
       const next = _narratorQueue.shift();
-      _showBanner(next.line, next.charId);
+      _showBanner(next.line, next.charId, next.timeoutMs);
     }, 320);
   }
 }
 
-function _showBanner(line, charId) {
+function _showBanner(line, charId, timeoutMs) {
+  if (timeoutMs == null) timeoutMs = 5500;
   const banner  = $('narratorBanner');
   const lineEl  = $('narratorLine');
   const labelEl = $('narratorCharLabel');
   if (!banner || !lineEl) return;
 
   if (_bannerActive) {
-    _narratorQueue.push({ line, charId });
+    _narratorQueue.push({ line, charId, timeoutMs });
     return;
   }
 
@@ -639,7 +773,7 @@ function _showBanner(line, charId) {
   banner.classList.add('show', `char-${charId}`);
 
   clearTimeout(_narratorTimer);
-  _narratorTimer = setTimeout(_dismissBanner, 5500);
+  _narratorTimer = setTimeout(_dismissBanner, timeoutMs);
   _speak(line, charId);
 }
 
@@ -647,33 +781,36 @@ function _showBanner(line, charId) {
 function narratorSay(trigger, data) {
   data = data || {};
 
-  /* Frequency gate */
   if (_frequency === 'minimal' && !_MINIMAL_SET.has(trigger)) return;
 
-  /* Conflict mode: try to fire a two-character pair */
+  /* Conflict mode: fire a 2 or 3-char sequence */
   if (_conflict && CONFLICTS[trigger]) {
     const pair = _pickConflict(trigger, data);
     if (pair) {
-      _showBanner(pair.lines[0], pair.chars[0]);
-      setTimeout(() => _showBanner(pair.lines[1], pair.chars[1]), 1100);
+      const n = pair.chars.length;
+      pair.chars.forEach((cid, i) => {
+        const isLast = i === n - 1;
+        /* Each non-last banner auto-advances after _conflictAutoMs;
+           last banner uses normal 5500ms dismiss */
+        _showBanner(pair.lines[i], cid, isLast ? 5500 : _conflictAutoMs);
+      });
       return;
     }
   }
 
-  /* Relentless: all enabled characters speak back-to-back */
+  /* Relentless: all enabled characters, queued naturally */
   if (_frequency === 'relentless') {
-    const speaking = Object.keys(_chars)
-      .filter(c => _chars[c] && LINES[c]?.[trigger]);
-    speaking.forEach((cid, i) => {
-      const line = _pickLine(cid, trigger, data);
-      if (line) setTimeout(() => _showBanner(line, cid), i * 1100);
-    });
+    Object.keys(_chars)
+      .filter(c => _chars[c] && LINES[c]?.[trigger])
+      .forEach(cid => {
+        const line = _pickLine(cid, trigger, data);
+        if (line) _showBanner(line, cid);
+      });
     return;
   }
 
-  /* Normal: one random enabled character speaks */
-  const eligible = Object.keys(_chars)
-    .filter(c => _chars[c] && LINES[c]?.[trigger]);
+  /* Normal: one random enabled character */
+  const eligible = Object.keys(_chars).filter(c => _chars[c] && LINES[c]?.[trigger]);
   if (!eligible.length) return;
   const cid  = eligible[Math.floor(Math.random() * eligible.length)];
   const line = _pickLine(cid, trigger, data);
@@ -698,16 +835,16 @@ function renderNarratorSettings() {
   const charRow = document.createElement('div');
   charRow.className = 'nset-char-row';
 
-  /* Narrator is always on — show as locked */
+  /* Narrator: always on — lock icon */
   const narratorPill = document.createElement('div');
   narratorPill.className = 'nset-char-pill nset-char-locked';
   narratorPill.style.borderColor = CHAR_COLORS.narrator;
   narratorPill.style.color       = CHAR_COLORS.narrator;
-  narratorPill.textContent       = 'Narrator ●';
-  narratorPill.title             = 'Завжди активний';
+  narratorPill.innerHTML         = '🔒 Narrator';
+  narratorPill.title             = 'Narrator завжди активний';
   charRow.appendChild(narratorPill);
 
-  /* Toggleable characters */
+  /* Rival / Observer toggles (use current CHAR_LABELS for display) */
   ['rival', 'observer'].forEach(cid => {
     const btn = document.createElement('button');
     const on  = _chars[cid];
@@ -722,6 +859,36 @@ function renderNarratorSettings() {
     charRow.appendChild(btn);
   });
   charSection.appendChild(charRow);
+
+  /* Character name inputs (Rival + Observer only; Narrator locked) */
+  const nameBlock = document.createElement('div');
+  nameBlock.className = 'nset-char-names';
+  ['rival', 'observer'].forEach(cid => {
+    const row = document.createElement('div');
+    row.className = 'nset-name-row';
+    const safeVal    = (CHAR_LABELS[cid] || '').replace(/"/g, '&quot;');
+    const placeholder = cid === 'rival' ? 'Rival' : 'Observer';
+    row.innerHTML =
+      `<span class="nset-name-dot" style="color:${CHAR_COLORS[cid]}">●</span>` +
+      `<input id="nset_label_${cid}" type="text" maxlength="20" ` +
+        `value="${safeVal}" placeholder="${placeholder}" class="nset-name-input">` +
+      `<button id="nset_label_save_${cid}" class="nset-name-save">OK</button>`;
+    nameBlock.appendChild(row);
+  });
+  charSection.appendChild(nameBlock);
+
+  /* Wire name-save buttons */
+  ['rival', 'observer'].forEach(cid => {
+    const saveBtn = $(`nset_label_save_${cid}`);
+    if (!saveBtn) return;
+    saveBtn.onclick = async () => {
+      const inp = $(`nset_label_${cid}`);
+      const val = inp ? inp.value.trim() : '';
+      CHAR_LABELS[cid] = val || (cid === 'rival' ? 'Rival' : 'Observer');
+      await sset('app_narrator_labels', { rival: CHAR_LABELS.rival, observer: CHAR_LABELS.observer });
+      renderNarratorSettings();
+    };
+  });
 
   /* ---- Frequency ---- */
   const freqSection = _mkSection('Частота');
@@ -756,6 +923,29 @@ function renderNarratorSettings() {
   };
   conflictSection.appendChild(conflictBtn);
 
+  /* Conflict auto-advance timer (shown only when conflict is on) */
+  if (_conflict) {
+    const timerRow = document.createElement('div');
+    timerRow.className = 'nset-timer-row';
+    const secs = Math.round(_conflictAutoMs / 1000);
+    timerRow.innerHTML =
+      `<span class="nset-timer-label">Пауза між репліками</span>` +
+      `<input id="nset_conflict_ms" type="number" min="1" max="8" ` +
+        `value="${secs}" class="nset-timer-input">` +
+      `<span class="nset-timer-unit">с</span>`;
+    conflictSection.appendChild(timerRow);
+
+    const timerInput = $('nset_conflict_ms');
+    if (timerInput) {
+      timerInput.onchange = async () => {
+        const v = Math.max(1, Math.min(8, parseInt(timerInput.value) || 3));
+        timerInput.value = v;
+        _conflictAutoMs  = v * 1000;
+        await sset('app_narrator_conflict_ms', _conflictAutoMs);
+      };
+    }
+  }
+
   /* ---- Voice (TTS) ---- */
   const voiceSection = _mkSection('Голос (TTS)');
   cont.appendChild(voiceSection);
@@ -782,7 +972,7 @@ function renderNarratorSettings() {
     voiceSection.appendChild(note);
   }
 
-  /* ---- Name ---- */
+  /* ---- User name ---- */
   const nameSection = _mkSection("Ваше ім'я");
   cont.appendChild(nameSection);
 
@@ -790,20 +980,23 @@ function renderNarratorSettings() {
   const nameWrap = document.createElement('div');
   nameWrap.className = 'narrator-name-row';
   nameWrap.innerHTML =
-    `<div class="narrator-name-input-row">
-       <input id="narratorNameInput" type="text" maxlength="32"
-              value="${displayVal.replace(/"/g, '&quot;')}" placeholder="Ваше ім'я...">
-       <button id="narratorNameSave" class="narrator-name-save-btn">Зберегти</button>
-     </div>
-     <div class="narrator-name-note">Narrator call you Stanley anyway.</div>`;
+    `<div class="narrator-name-input-row">` +
+      `<input id="narratorNameInput" type="text" maxlength="32" ` +
+        `value="${displayVal.replace(/"/g, '&quot;')}" placeholder="Ваше ім'я...">` +
+      `<button id="narratorNameSave" class="narrator-name-save-btn">Зберегти</button>` +
+    `</div>` +
+    `<div class="narrator-name-note">Narrator call you Stanley anyway.</div>`;
   nameSection.appendChild(nameWrap);
 
-  $('narratorNameSave').onclick = async () => {
-    const val = $('narratorNameInput').value.trim();
-    profileName = val || 'Stanley';
-    await sset('app_profile_name', profileName);
-    renderNarratorSettings();
-  };
+  const nameSaveBtn = $('narratorNameSave');
+  if (nameSaveBtn) {
+    nameSaveBtn.onclick = async () => {
+      const val = $('narratorNameInput')?.value.trim();
+      profileName = val || 'Stanley';
+      await sset('app_profile_name', profileName);
+      renderNarratorSettings();
+    };
+  }
 }
 
 function _mkSection(label) {
@@ -832,8 +1025,9 @@ async function showOnboarding() {
     const isReal = rawInput.trim() && rawInput.trim().toLowerCase() !== 'stanley';
     if (isReal) {
       setTimeout(() =>
-        _showBanner(_t('{name}. Charming. I\'ve filed it. I\'ll still be calling you Stanley — but noted.', {}),
-        'narrator'), 200);
+        _showBanner(
+          _t("{name}. Charming. I've filed it. I'll still be calling you Stanley — but noted.", {}),
+          'narrator'), 200);
     } else {
       setTimeout(() => narratorSay('app_open'), 200);
     }
@@ -854,24 +1048,41 @@ async function narratorInit() {
 
   const storedChars = await sget('app_narrator_chars') || {};
   _chars = {
-    narrator: true,                             // always on
-    rival:    storedChars.rival    !== false,   // default on
-    observer: storedChars.observer !== false,   // default on
+    narrator: true,
+    rival:    storedChars.rival    !== false,
+    observer: storedChars.observer !== false,
   };
 
   const storedFreq = await sget('app_narrator_freq');
   _frequency = ['minimal','normal','relentless'].includes(storedFreq) ? storedFreq : 'normal';
 
   const storedConflict = await sget('app_narrator_conflict');
-  _conflict = storedConflict !== false; // default on
+  _conflict = storedConflict !== false;
 
-  /* Wire close button */
+  const storedConflictMs = await sget('app_narrator_conflict_ms');
+  if (typeof storedConflictMs === 'number' && storedConflictMs >= 1000) {
+    _conflictAutoMs = storedConflictMs;
+  }
+
+  const storedLabels = await sget('app_narrator_labels') || {};
+  CHAR_LABELS = {
+    narrator: 'Narrator',
+    rival:    (typeof storedLabels.rival    === 'string' && storedLabels.rival.trim())
+                ? storedLabels.rival.trim()    : 'Rival',
+    observer: (typeof storedLabels.observer === 'string' && storedLabels.observer.trim())
+                ? storedLabels.observer.trim() : 'Observer',
+  };
+
+  /* Close button — hard-stop all queued content */
   const closeBtn = $('narratorClose');
   if (closeBtn) {
     closeBtn.onclick = () => {
       clearTimeout(_narratorTimer);
+      _narratorTimer = null;
       _narratorQueue = [];
-      _dismissBanner();
+      _bannerActive  = false;
+      const banner = $('narratorBanner');
+      if (banner) banner.classList.remove('show', 'char-narrator', 'char-rival', 'char-observer');
       window.speechSynthesis && window.speechSynthesis.cancel();
     };
   }
