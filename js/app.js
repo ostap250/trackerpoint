@@ -8,6 +8,11 @@ function switchTab(tabId) {
   const btn = document.querySelector(`.bnav-item[data-tab="${navTabId}"]`);
   if (btn) btn.classList.add('active');
   ALL_TABS.forEach(t => $(t).style.display = t === tabId ? 'block' : 'none');
+  /* smooth entry animation (respects prefers-reduced-motion via CSS) */
+  const sec = $(tabId);
+  sec.classList.remove('tab-anim');
+  void sec.offsetWidth;
+  sec.classList.add('tab-anim');
   if (tabId === 'ranks') renderRanks();
 }
 

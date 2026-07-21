@@ -85,7 +85,8 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
   Customisations saved in app_gym_program = { A:[…], B:[…], C:[…] }.
   EXERCISE_ALTERNATIVES in config.js defines one swap option per exercise.
   "↺ Відновити початкову програму" resets a day to GYM_DAYS defaults.
-- Body diagram: TODO for etap 2.
+- Body diagram (etap 2, done): renderBodyDiagram() in gym.js — original stylised SVG
+  front/back figures, regions filled with current rank color; tap → rank caption.
 
 ## Workout program defaults (GYM_DAYS in config.js)
 - Day A: Full Body / Strength — Squat, Bench, Barbell Row, Lat Pulldown, Lateral Raise, Triceps

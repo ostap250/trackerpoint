@@ -545,13 +545,90 @@ function renderGym() {
     showNotif('Записано → +20 pts у очікуванні');
   };
 
-  /* Body diagram placeholder (etap 2) */
-  const bodyCard = document.createElement('div');
-  bodyCard.className = 'card';
-  bodyCard.style.cssText = 'text-align:center;opacity:.45;';
-  bodyCard.innerHTML = `<div class="label">Схема тіла</div>
-    <div style="padding:24px 0;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">🚧 Etap 2 — в розробці</div>`;
-  wrap.appendChild(bodyCard);
+  /* Body diagram (etap 2) — regions colored by current muscle rank */
+  wrap.appendChild(renderBodyDiagram());
+}
+
+/* ---- Body diagram: stylised front/back figures, fill = rank color ---- */
+
+function renderBodyDiagram() {
+  const rank = {};
+  MUSCLES.forEach(m => { rank[m.key] = getMuscleRankInfo(m.key); });
+  const c = k => rank[k].rank.color;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  /* base silhouette shapes for one figure, offset by ox */
+  const base = ox => `
+    <circle class="bd-base" cx="${ox+55}" cy="14" r="9"/>
+    <rect class="bd-base" x="${ox+51}" y="21" width="8" height="8" rx="2"/>
+    <path class="bd-base" d="M${ox+35},30 L${ox+75},30 L${ox+71},84 L${ox+39},84 Z"/>
+    <rect class="bd-base" x="${ox+25}" y="31" width="9" height="50" rx="4.5"/>
+    <rect class="bd-base" x="${ox+76}" y="31" width="9" height="50" rx="4.5"/>
+    <rect class="bd-base" x="${ox+40}" y="84" width="13" height="94" rx="6"/>
+    <rect class="bd-base" x="${ox+57}" y="84" width="13" height="94" rx="6"/>`;
+
+  card.innerHTML = `
+    <div class="label">Схема тіла</div>
+    <div class="bd-wrap">
+      <svg class="bd-svg" viewBox="0 0 220 196" xmlns="http://www.w3.org/2000/svg">
+        ${base(0)}
+        ${base(110)}
+
+        <!-- FRONT -->
+        <circle class="bd-m" data-m="shoulders" cx="32" cy="34" r="6.5" fill="${c('shoulders')}"/>
+        <circle class="bd-m" data-m="shoulders" cx="78" cy="34" r="6.5" fill="${c('shoulders')}"/>
+        <rect class="bd-m" data-m="chest" x="41" y="33" width="13.5" height="13" rx="3" fill="${c('chest')}"/>
+        <rect class="bd-m" data-m="chest" x="55.5" y="33" width="13.5" height="13" rx="3" fill="${c('chest')}"/>
+        <rect class="bd-m" data-m="core" x="46" y="48" width="18" height="28" rx="4" fill="${c('core')}"/>
+        <ellipse class="bd-m" data-m="arms" cx="29.5" cy="50" rx="4.5" ry="10" fill="${c('arms')}"/>
+        <ellipse class="bd-m" data-m="arms" cx="80.5" cy="50" rx="4.5" ry="10" fill="${c('arms')}"/>
+        <rect class="bd-m" data-m="legs" x="42" y="88" width="10.5" height="40" rx="5" fill="${c('legs')}"/>
+        <rect class="bd-m" data-m="legs" x="57.5" y="88" width="10.5" height="40" rx="5" fill="${c('legs')}"/>
+        <text class="bd-fig-lbl" x="55" y="192">СПЕРЕДУ</text>
+
+        <!-- BACK -->
+        <circle class="bd-m" data-m="shoulders" cx="142" cy="34" r="6.5" fill="${c('shoulders')}"/>
+        <circle class="bd-m" data-m="shoulders" cx="188" cy="34" r="6.5" fill="${c('shoulders')}"/>
+        <path class="bd-m" data-m="back" d="M151,31 L179,31 L165,52 Z" fill="${c('back')}"/>
+        <path class="bd-m" data-m="back" d="M149,42 L160,48 L158,68 L147,60 Z" fill="${c('back')}"/>
+        <path class="bd-m" data-m="back" d="M181,42 L170,48 L172,68 L183,60 Z" fill="${c('back')}"/>
+        <rect class="bd-m" data-m="core" x="158" y="60" width="14" height="14" rx="3" fill="${c('core')}"/>
+        <ellipse class="bd-m" data-m="arms" cx="139.5" cy="50" rx="4.5" ry="10" fill="${c('arms')}"/>
+        <ellipse class="bd-m" data-m="arms" cx="190.5" cy="50" rx="4.5" ry="10" fill="${c('arms')}"/>
+        <ellipse class="bd-m" data-m="legs" cx="158.5" cy="88" rx="8" ry="6.5" fill="${c('legs')}"/>
+        <ellipse class="bd-m" data-m="legs" cx="171.5" cy="88" rx="8" ry="6.5" fill="${c('legs')}"/>
+        <rect class="bd-m" data-m="legs" x="152" y="97" width="10.5" height="32" rx="5" fill="${c('legs')}"/>
+        <rect class="bd-m" data-m="legs" x="167.5" y="97" width="10.5" height="32" rx="5" fill="${c('legs')}"/>
+        <ellipse class="bd-m" data-m="legs" cx="156.5" cy="146" rx="5.5" ry="13" fill="${c('legs')}"/>
+        <ellipse class="bd-m" data-m="legs" cx="173.5" cy="146" rx="5.5" ry="13" fill="${c('legs')}"/>
+        <text class="bd-fig-lbl" x="165" y="192">ЗЗАДУ</text>
+      </svg>
+    </div>
+    <div class="bd-caption" id="bdCaption">Тапни на м'яз — побачиш ранг</div>
+    <div class="bd-legend">
+      ${MUSCLES.map(m => `<span class="bd-legend-item">
+        <span class="bd-legend-dot" style="background:${c(m.key)}"></span>${m.name}
+      </span>`).join('')}
+    </div>`;
+
+  /* tap a region → highlight all its shapes + show rank caption */
+  card.querySelector('.bd-svg').addEventListener('click', e => {
+    const shape = e.target.closest('.bd-m');
+    if (!shape) return;
+    const key   = shape.dataset.m;
+    const m     = MUSCLES.find(x => x.key === key);
+    const info  = rank[key];
+    card.querySelectorAll('.bd-m').forEach(s =>
+      s.classList.toggle('bd-sel', s.dataset.m === key));
+    const cap = card.querySelector('#bdCaption');
+    cap.textContent = `${m.name} — ${info.rank.name}` +
+      (info.nextRank ? ` · ${info.pct}% → ${info.nextRank.name}` : ' · ★ MAX');
+    cap.style.color = info.rank.color;
+  });
+
+  return card;
 }
 
 /* ---- Ранги page render ---- */

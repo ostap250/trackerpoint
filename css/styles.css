@@ -46,6 +46,37 @@ body{
 h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
   font-family:'JetBrains Mono',monospace; color:var(--indigo); margin:14px 2px 2px; }
 
+/* Tab switch animation */
+@keyframes tabIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+section.tab-anim{ animation:tabIn .28s cubic-bezier(.2,.8,.2,1); }
+
+/* Smooth interactive elements */
+button{ transition:transform .12s ease, filter .15s ease, background .2s ease, color .2s ease, border-color .2s ease; }
+button:active{ filter:brightness(1.15); }
+
+/* Body diagram (Зал) */
+.bd-wrap{ display:flex; justify-content:center; margin-top:12px; }
+.bd-svg{ width:100%; max-width:330px; height:auto; display:block; }
+.bd-base{ fill:#222b38; }
+.bd-m{ cursor:pointer; opacity:.92; transition:opacity .25s ease, filter .25s ease; }
+.bd-m:hover{ opacity:1; filter:brightness(1.25); }
+.bd-m.bd-sel{ opacity:1; filter:brightness(1.4) drop-shadow(0 0 5px rgba(255,255,255,.35)); }
+.bd-fig-lbl{ fill:#54607a; font-size:8px; font-family:'JetBrains Mono',monospace; letter-spacing:.12em; text-anchor:middle; }
+.bd-caption{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px;
+  color:var(--muted); margin-top:10px; min-height:16px; transition:color .3s ease; }
+.bd-legend{ display:flex; flex-wrap:wrap; justify-content:center; gap:6px 12px; margin-top:10px; }
+.bd-legend-item{ display:flex; align-items:center; gap:5px; font-family:'JetBrains Mono',monospace;
+  font-size:10px; color:var(--muted); }
+.bd-legend-dot{ width:9px; height:9px; border-radius:50%; flex:none; }
+
+/* Reduced motion — kill all animation/transitions */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important;
+  }
+}
+
 .card{
   background:linear-gradient(180deg,var(--panel-2),var(--panel));
   border:1px solid var(--line); border-radius:16px; padding:16px; margin-top:14px;
@@ -227,10 +258,10 @@ h2.page{ font-size:13px; letter-spacing:.18em; text-transform:uppercase;
 .meal-row-name{ flex:1; font-size:13px; font-weight:600; }
 .meal-row-meta{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); }
 .meal-del{ background:none; border:none; color:var(--low); font-size:17px; cursor:pointer; padding:0 4px; }
-.add-meal-form{ display:grid; grid-template-columns:1fr repeat(4,.5fr) auto; gap:5px; margin-top:10px; }
-.add-meal-form input{ background:#0f141c; border:1px solid var(--line); color:var(--txt);
+.add-meal-form{ display:grid; grid-template-columns:repeat(4,1fr) auto; gap:5px; margin-top:10px; }
+.add-meal-form input{ min-width:0; background:#0f141c; border:1px solid var(--line); color:var(--txt);
   font-family:'JetBrains Mono',monospace; font-size:11px; padding:8px 5px; border-radius:8px; text-align:center; }
-.add-meal-form input:first-child{ text-align:left; padding-left:9px; }
+.add-meal-form input:first-child{ grid-column:1 / -1; text-align:left; padding-left:9px; font-size:13px; }
 .add-meal-form input::placeholder{ color:#54607a; }
 .add-meal-form button{ background:var(--good); border:none; color:#0e1117; font-weight:700;
   font-size:13px; border-radius:8px; padding:0 10px; cursor:pointer; }
