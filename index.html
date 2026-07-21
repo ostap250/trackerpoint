@@ -8,7 +8,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Tracker" />
+  <link rel="stylesheet" href="css/fonts.css" />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
 </head>
 <body>
 
@@ -158,27 +161,7 @@
           <input id="mealPro"  type="number" inputmode="numeric" placeholder="Б" />
           <input id="mealFat"  type="number" inputmode="numeric" placeholder="Ж" />
           <input id="mealCarb" type="number" inputmode="numeric" placeholder="В" />
-          <button id="saveMealRedesign the main navigation to be mobile-first and cleaner. Keep style/tokens,
-no build step, don't change localStorage keys, update CLAUDE.md. Commit after.
-
-- Move the top nav to a BOTTOM fixed navigation bar (like Instagram/TikTok),
-  pinned to the bottom of the viewport, safe-area aware (respect iPhone home
-  indicator with env(safe-area-inset-bottom)).
-- 7 items: Home / Зал / Їжа / Бюджет / Цілі / Магазин / Статистика. Show each as
-  a small ICON with a tiny label under it. Use simple inline SVG icons (no icon
-  library, no external requests) that fit the existing dark theme:
-    Home=house, Зал=dumbbell, Їжа=fork/utensils, Бюджет=wallet, Цілі=target/flag,
-    Магазин=shopping bag, Статистика=bar chart.
-- Active tab: accent color (the existing indigo) for icon + label; inactive tabs
-  muted/grey. Add a subtle top-border or dot indicator on the active item.
-- Make sure all 7 fit on a 360px-wide phone without horizontal scroll (shrink
-  icon/label sizes as needed, equal flex widths). If 7 truly don't fit, allow the
-  bar to scroll horizontally as a fallback, but try to fit them first.
-- Add bottom padding to page content so the fixed bar never covers the last
-  elements on any page.
-- Remove the old top nav buttons. Keep the clock card as the top element of Home.
-
-Then commit and push.">+</button>
+          <button id="saveMeal">+</button>
         </div>
       </div>
     </div>
@@ -240,6 +223,15 @@ Then commit and push.">+</button>
     <div class="card" style="margin-top:8px">
       <span class="label">Narrator</span>
       <div id="narratorSettingsContent" style="margin-top:10px"></div>
+    </div>
+
+    <!-- Data backup / restore -->
+    <div class="card" style="margin-top:8px">
+      <span class="label">Дані</span>
+      <button class="mini" id="exportData">⇩ Експортувати всі дані (JSON)</button>
+      <button class="mini" id="importData">⇧ Імпортувати з файлу</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none" />
+      <div class="foot-note" style="margin:10px 0 2px">Все живе в localStorage цього браузера.<br />Роби бекап періодично — очистка кешу зітре історію.</div>
     </div>
   </section>
 </div>
@@ -345,6 +337,7 @@ Nothing personal.</div>
 <script src="js/shop.js"></script>
 <script src="js/gym.js"></script>
 <script src="js/narrator.js"></script>
+<script src="js/backup.js"></script>
 <script src="js/app.js"></script>
 
 </body>

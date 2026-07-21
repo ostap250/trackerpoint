@@ -81,4 +81,8 @@ $('gymHomeBtn').onclick = () => switchTab('gym');
   renderGym();
   buildReminderQueue();
   await narratorInit();
+
+  /* PWA: offline cache + installability (skipped on file://) */
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
+    navigator.serviceWorker.register('sw.js').catch(() => {});
 })();

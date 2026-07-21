@@ -3,7 +3,8 @@
 ## What this is
 A personal habitpoints tracker. Single static site, deployed on GitHub Pages.
 Plain HTML/CSS/JS, NO build step, NO framework, NO npm. Data in localStorage.
-Files: index.html + css/styles.css + js/*.js (14 modules).
+Files: index.html + css/*.css + js/*.js (15 modules) + sw.js + manifest.webmanifest
++ fonts/ + icons/. Installable PWA, works offline.
 
 ## Hard rules (do not break)
 - NEVER add a bundler, framework, or build step. Must stay deployable as static
@@ -15,7 +16,9 @@ Files: index.html + css/styles.css + js/*.js (14 modules).
 - Respect prefers-reduced-motion for animations.
 
 ## Architecture
-index.html (HTML only) → css/styles.css → js modules in load order:
+index.html (HTML only) → css/fonts.css (self-hosted Sora + JetBrains Mono woff2 in
+fonts/ — NO external requests, keep it that way) → css/styles.css → js modules in
+load order:
   config.js  — all constants (RANKS, QUOTES, EXAMPLE_GOALS, BUDGETS, SHOP_*, MUSCLES,
                MUSCLE_RANK_TIERS, MUSCLE_LIFT_CONFIG, GYM_DAYS, EXERCISE_ALTERNATIVES, …)
   storage.js — sget/sset localStorage + helpers (today, fmt, torontoNow, …)
@@ -31,7 +34,15 @@ index.html (HTML only) → css/styles.css → js modules in load order:
   shop.js    — shop, spend log, grand reward
   gym.js     — workout program, per-muscle lift-based rank system, editable program
   narrator.js — scripted Stanley Parable-style commentary; narratorSay(trigger), narratorInit()
-  app.js     — tab navigation (switchTab), async INIT
+  backup.js  — export/import ALL app_* localStorage keys as one JSON file (Stats page)
+  app.js     — tab navigation (switchTab), async INIT, service-worker registration
+
+## PWA (sw.js + manifest.webmanifest + icons/)
+- sw.js: network-first with cache fallback (cache name tracker-v1) — fresh code always
+  wins online, full offline otherwise. New js/css/font files MUST be added to ASSETS.
+- Registered at end of INIT in app.js; skipped on file://.
+- icons/icon-{180,192,512}.png — indigo hex badge, generated via PowerShell
+  System.Drawing (.claude/ has no generator script; regenerate manually if needed).
 
 ## Pages / navigation
 Bottom fixed nav bar (Instagram-style, safe-area aware) with 7 items + inline SVG icons:
@@ -46,7 +57,8 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
 - Бюджет: weekly indulgence caps — Соцмережі / Ігри / Порушення плану
 - Цілі: user-defined goal slots (up to 4), empty slots prompt "Яка ваша ціль?"
 - Магазин: spend points on budget boosts / rewards
-- Статистика: Дні / Поінти / Покупки / Завдання sub-tabs + Narrator settings card (mode + name change)
+- Статистика: Дні / Поінти / Покупки / Завдання sub-tabs + Narrator settings card
+  (mode + name change) + Дані card (повний JSON експорт/імпорт localStorage)
 - Ранги (sub-page): per-muscle best-lift rank + % to next rank + per-muscle rank ladder
 
 ## Core concepts
