@@ -676,62 +676,89 @@ function renderBodyDiagram() {
   const card = document.createElement('div');
   card.className = 'card';
 
-  /* symmetric muscle: emit shape + its mirror across vertical axis */
-  const mir = (axis, inner) =>
-    inner + `<g transform="translate(${axis * 2} 0) scale(-1 1)">${inner}</g>`;
+  /* Catmull-Rom → cubic bezier: smooth closed path through the points */
+  const smooth = pts => {
+    const n = pts.length;
+    let d = `M${pts[0][0]},${pts[0][1]}`;
+    for (let i = 0; i < n; i++) {
+      const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+      d += `C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)},${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} `
+         + `${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)},${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} `
+         + `${p2[0]},${p2[1]}`;
+    }
+    return d + 'Z';
+  };
+  const flip = pts => pts.map(([x, y]) => [-x, y]);
+
+  /* muscle shape (+ mirrored twin unless mir:false) in figure-local coords */
+  const shape = (pts, m, o = {}) => {
+    const attrs = `class="bd-m" data-m="${m}" fill="${c(m)}" stroke="#0E1117" stroke-width="1.2"` +
+                  (o.op ? ` opacity="${o.op}"` : '');
+    let s = `<path ${attrs} d="${smooth(pts)}"/>`;
+    if (o.mir !== false) s += `<path ${attrs} d="${smooth(flip(pts))}"/>`;
+    return s;
+  };
+
+  /* half body outline: top of head → left side → around foot → crotch */
+  const HALF = [
+    [0,8],[-13,14],[-17,30],[-14,48],[-9,58],[-10,68],[-30,80],[-45,90],
+    [-52,102],[-56,128],[-60,160],[-65,195],[-67,225],[-72,250],[-73,268],
+    [-66,272],[-58,258],[-54,234],[-50,205],[-46,172],[-42,140],[-36,115],
+    [-38,145],[-30,188],[-36,228],[-38,255],[-34,310],[-36,350],[-28,415],
+    [-30,435],[-38,448],[-12,450],[-13,428],[-16,370],[-14,318],[-10,270],[0,245],
+  ];
+  const OUTLINE = smooth(HALF.concat(flip(HALF.slice(1, -1)).reverse()));
+
+  const FRONT =
+    shape([[-9,64],[-26,77],[-11,74]], 'back', { op: .9 }) +                                 /* traps sliver */
+    shape([[-44,90],[-52,101],[-54,116],[-47,122],[-40,106]], 'shoulders') +                 /* delts */
+    shape([[-3,94],[-24,92],[-36,102],[-37,118],[-30,134],[-14,140],[-3,134]], 'chest') +    /* pecs */
+    shape([[-47,128],[-53,143],[-52,166],[-45,168],[-42,146]], 'arms') +                     /* biceps */
+    shape([[-51,196],[-58,220],[-57,244],[-51,242],[-47,216]], 'arms', { op: .7 }) +         /* forearms */
+    shape([[-19,150],[-26,164],[-28,192],[-22,216],[-17,200],[-17,162]], 'core', { op: .75 }) + /* obliques */
+    shape([[-33,242],[-38,268],[-36,300],[-28,318],[-19,308],[-17,272],[-24,246]], 'legs') + /* quads */
+    shape([[-14,282],[-16,306],[-11,318],[-7,302],[-9,282]], 'legs', { op: .85 }) +          /* vastus med. */
+    shape([[-23,352],[-28,380],[-24,412],[-18,406],[-19,366]], 'legs', { op: .7 }) +         /* tibialis */
+    `<g class="bd-m" data-m="core">
+      <path fill="${c('core')}" stroke="#0E1117" stroke-width="1.2"
+        d="${smooth([[-14,146],[-17,180],[-15,215],[-8,240],[0,244],[8,240],[15,215],[17,180],[14,146],[0,142]])}"/>
+      <g stroke="#0E1117" stroke-opacity=".55" stroke-width="1.6">
+        <line x1="0" y1="144" x2="0" y2="242"/>
+        <line x1="-14" y1="164" x2="14" y2="164"/>
+        <line x1="-15" y1="184" x2="15" y2="184"/>
+        <line x1="-14" y1="204" x2="14" y2="204"/>
+        <line x1="-11" y1="224" x2="11" y2="224"/>
+      </g>
+    </g>`;
+
+  const BACK =
+    shape([[0,62],[-14,68],[-32,82],[-15,95],[-6,128],[0,148],[6,128],[15,95],[32,82],[14,68]],
+      'back', { mir: false }) +                                                              /* traps kite */
+    shape([[-44,90],[-52,101],[-54,116],[-47,122],[-40,106]], 'shoulders') +                 /* rear delts */
+    shape([[-28,102],[-37,112],[-33,126],[-23,120],[-22,108]], 'back', { op: .85 }) +        /* infraspinatus */
+    shape([[-7,138],[-32,118],[-37,138],[-30,172],[-12,194],[-5,168]], 'back') +             /* lats */
+    shape([[-3,150],[-9,160],[-10,190],[-8,218],[-3,236]], 'core', { op: .8 }) +             /* erectors */
+    shape([[-47,128],[-53,143],[-52,166],[-45,168],[-42,146]], 'arms') +                     /* triceps */
+    shape([[-51,196],[-58,220],[-57,244],[-51,242],[-47,216]], 'arms', { op: .7 }) +         /* forearms */
+    shape([[-3,236],[-22,230],[-33,244],[-31,266],[-18,280],[-4,272]], 'legs') +             /* glutes */
+    shape([[-28,286],[-33,308],[-29,344],[-21,352],[-15,338],[-17,300],[-23,286]], 'legs') + /* hamstrings */
+    shape([[-27,362],[-31,384],[-27,414],[-21,408],[-21,374]], 'legs') +                     /* calf outer */
+    shape([[-15,366],[-18,392],[-14,414],[-9,396],[-11,370]], 'legs', { op: .85 });          /* calf inner */
 
   card.innerHTML = `
     <div class="label">Схема тіла</div>
     <div class="bd-wrap">
-      <svg class="bd-svg" viewBox="0 0 240 300" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <g id="bdBase">
-            <ellipse class="bd-base" cx="60" cy="18" rx="10.5" ry="12.5"/>
-            <path class="bd-base" d="M54,29 L66,29 L65,40 L55,40 Z"/>
-            <path class="bd-base" d="M60,39 C49,40 38,43 34,49 C30,56 29,68 30,82 C31,98 33,111 37,120 C41,130 49,136 60,136 C71,136 79,130 83,120 C87,111 89,98 90,82 C91,68 90,56 86,49 C82,43 71,40 60,39 Z"/>
-            <path class="bd-base" d="M37,118 C36,130 40,140 46,144 L58,148 L60,142 L62,148 L74,144 C80,140 84,130 83,118 C70,126 50,126 37,118 Z"/>
-            ${mir(60, `
-              <path class="bd-base" d="M34,49 C28,53 25,60 24,69 L23,96 C23,100 25,103 28,103 C31,103 33,100 33,96 L35,68 C36,59 36,52 34,49 Z"/>
-              <path class="bd-base" d="M28,103 C26,110 24,120 23,130 C22,137 23,143 26,148 C28,151 31,150 32,146 C33,138 33,126 33,112 C33,108 31,104 28,103 Z"/>
-              <path class="bd-base" d="M43,136 C38,144 36,158 37,176 C38,190 41,200 46,202 C52,203 56,197 57,187 L58,150 C57,142 51,136 43,136 Z"/>
-              <path class="bd-base" d="M42,206 C40,214 39,226 40,240 C41,252 44,261 47,263 C51,264 54,258 55,248 L55,220 C54,211 49,205 42,206 Z"/>
-              <ellipse class="bd-base" cx="47" cy="271" rx="8" ry="4.5"/>`)}
-          </g>
-        </defs>
-
-        <!-- FRONT -->
-        <use href="#bdBase"/>
-        ${mir(60, `
-          <path class="bd-m" data-m="shoulders" fill="${c('shoulders')}" d="M35,47 C29,49 26,55 26,62 C30,66 36,65 39,60 C40,54 38,49 36,47 Z"/>
-          <path class="bd-m" data-m="chest" fill="${c('chest')}" d="M60.8,45 C51,45 43,48 40,53 C38,58 40,64 45,67 C51,70 58,70 60.8,68 Z"/>
-          <ellipse class="bd-m" data-m="arms" fill="${c('arms')}" cx="29.5" cy="79" rx="5.5" ry="12" transform="rotate(6 29.5 79)"/>
-          <path class="bd-m" data-m="core" fill="${c('core')}" opacity=".8" d="M47,76 C44,80 43,88 43,98 C43,106 45,112 48,115 L48,76 Z"/>
-          <path class="bd-m" data-m="legs" fill="${c('legs')}" d="M44,140 C39,147 37,159 38,175 C39,187 42,196 47,198 C52,196 55,188 55,177 L55,153 C54,145 50,139 44,140 Z"/>`)}
-        <g class="bd-m" data-m="core">
-          <path fill="${c('core')}" d="M52,72 C50,74 49,78 49,84 L49,109 C49,115 53,119 60,119 C67,119 71,115 71,109 L71,84 C71,78 70,74 68,72 C64,71 56,71 52,72 Z"/>
-          <g stroke="#0E1117" stroke-opacity=".45" stroke-width="1.3">
-            <line x1="60" y1="72" x2="60" y2="119"/>
-            <line x1="50" y1="85" x2="70" y2="85"/>
-            <line x1="50" y1="97" x2="70" y2="97"/>
-            <line x1="51" y1="108" x2="69" y2="108"/>
-          </g>
+      <svg class="bd-svg" viewBox="0 0 400 474" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(100,6)">
+          <path class="bd-base" d="${OUTLINE}"/>
+          ${FRONT}
         </g>
-        <text class="bd-fig-lbl" x="60" y="293">СПЕРЕДУ</text>
-
-        <!-- BACK -->
-        <use href="#bdBase" x="120"/>
-        <path class="bd-m" data-m="back" fill="${c('back')}" d="M180,33 C171,35 162,39 158,45 C165,49 171,57 175,68 C177,73 183,73 185,68 C189,57 195,49 202,45 C198,39 189,35 180,33 Z"/>
-        ${mir(180, `
-          <ellipse class="bd-m" data-m="shoulders" fill="${c('shoulders')}" cx="151" cy="55" rx="6.5" ry="9" transform="rotate(-14 151 55)"/>
-          <path class="bd-m" data-m="back" fill="${c('back')}" opacity=".85" d="M161,57 C157,61 155,67 156,73 C160,76 166,73 168,68 C167,62 165,58 161,57 Z"/>
-          <path class="bd-m" data-m="back" fill="${c('back')}" d="M162,64 C157,70 155,80 157,90 C161,100 169,108 177,111 L177,77 C173,70 168,66 162,64 Z"/>
-          <rect class="bd-m" data-m="core" fill="${c('core')}" opacity=".8" x="174.5" y="93" width="5" height="30" rx="2.5"/>
-          <ellipse class="bd-m" data-m="arms" fill="${c('arms')}" cx="149" cy="80" rx="5.5" ry="12" transform="rotate(-6 149 80)"/>
-          <ellipse class="bd-m" data-m="legs" fill="${c('legs')}" cx="170" cy="137" rx="10" ry="9"/>
-          <path class="bd-m" data-m="legs" fill="${c('legs')}" d="M164,150 C159,157 157,169 158,182 C159,192 162,199 166,201 C171,200 174,192 174,182 L174,161 C173,154 169,149 164,150 Z"/>
-          <ellipse class="bd-m" data-m="legs" fill="${c('legs')}" cx="165.5" cy="231" rx="6.5" ry="16"/>
-          <ellipse class="bd-m" data-m="legs" fill="${c('legs')}" cx="172" cy="227" rx="4" ry="11"/>`)}
-        <text class="bd-fig-lbl" x="180" y="293">ЗЗАДУ</text>
+        <text class="bd-fig-lbl" x="100" y="470">СПЕРЕДУ</text>
+        <g transform="translate(300,6)">
+          <path class="bd-base" d="${OUTLINE}"/>
+          ${BACK}
+        </g>
+        <text class="bd-fig-lbl" x="300" y="470">ЗЗАДУ</text>
       </svg>
     </div>
     <div class="bd-caption" id="bdCaption">Тапни на м'яз — побачиш ранг</div>

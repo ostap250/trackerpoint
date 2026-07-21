@@ -61,7 +61,7 @@ button:active{ filter:brightness(1.15); }
 .bd-m{ cursor:pointer; opacity:.92; transition:opacity .25s ease, filter .25s ease; }
 .bd-m:hover{ opacity:1; filter:brightness(1.25); }
 .bd-m.bd-sel{ opacity:1; filter:brightness(1.4) drop-shadow(0 0 5px rgba(255,255,255,.35)); }
-.bd-fig-lbl{ fill:#54607a; font-size:8px; font-family:'JetBrains Mono',monospace; letter-spacing:.12em; text-anchor:middle; }
+.bd-fig-lbl{ fill:#54607a; font-size:13px; font-family:'JetBrains Mono',monospace; letter-spacing:.12em; text-anchor:middle; }
 .bd-caption{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px;
   color:var(--muted); margin-top:10px; min-height:16px; transition:color .3s ease; }
 .bd-legend{ display:flex; flex-wrap:wrap; justify-content:center; gap:6px 12px; margin-top:10px; }
