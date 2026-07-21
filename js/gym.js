@@ -272,9 +272,7 @@ function renderGym() {
       <li>5 хв кардіо</li>
       <li>Band external rotations 2\xD715</li>
       <li>Face pulls 2\xD715</li>
-    </ul>
-    <div class="gym-constraint">⚠ NO overhead pressing (плечо). Лямки на тязі та RDL (зап'ясток).</div>
-    <div class="gym-progress-rule">Прогресія: додавай вагу коли досягаєш верху діапазону повторень у всіх підходах з чистою технікою.</div>`;
+    </ul>`;
   wrap.appendChild(wu);
 
   /* Muscle panel */
@@ -335,6 +333,9 @@ function renderGym() {
   ranksBtn.onclick = () => switchTab('ranks');
   mp.appendChild(ranksBtn);
   wrap.appendChild(mp);
+
+  /* Forecast subsection */
+  wrap.appendChild(renderGymForecast());
 
   /* Day selector */
   const ds = document.createElement('div');
@@ -443,7 +444,6 @@ function renderGym() {
     } else {
       footer.innerHTML = '<span class="gym-ex-last" style="opacity:.45">ще не записано</span>';
     }
-    footer.innerHTML += '<span class="gym-prog-rule">Додавай вагу на верху діапазону ↑</span>';
     exEl.appendChild(footer);
 
     /* Edit controls (swap / remove) */
@@ -549,7 +549,124 @@ function renderGym() {
   wrap.appendChild(renderBodyDiagram());
 }
 
-/* ---- Body diagram: stylised front/back figures, fill = rank color ---- */
+/* ---- Progress forecast (підсекція в Залі) ---- */
+
+/* least-squares slope of best lift per week; null when data is too sparse */
+function muscleTrendPerWeek(muscleKey) {
+  const cfg = MUSCLE_LIFT_CONFIG[muscleKey];
+  const byDate = {};
+  gymData.workoutLog.forEach(e => {
+    if (!cfg.exIds.includes(e.exId)) return;
+    const v = cfg.mode === 'reps' ? (e.reps || 0) : (e.weight || 0);
+    if (v > (byDate[e.date] || 0)) byDate[e.date] = v;
+  });
+  const pts = Object.keys(byDate).sort()
+    .map(d => ({ t: new Date(d + 'T00:00:00').getTime() / 86400000, v: byDate[d] }));
+  if (pts.length < 2 || pts[pts.length - 1].t - pts[0].t < 5) return null;
+  const n  = pts.length;
+  const mt = pts.reduce((s, p) => s + p.t, 0) / n;
+  const mv = pts.reduce((s, p) => s + p.v, 0) / n;
+  let num = 0, den = 0;
+  pts.forEach(p => { num += (p.t - mt) * (p.v - mv); den += (p.t - mt) * (p.t - mt); });
+  return den ? (num / den) * 7 : null;
+}
+
+function renderGymForecast() {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const bw = bodyWeight > 0 ? bodyWeight : 70;
+  const warns = [];
+  let mRows = '', nRows = '';
+
+  /* -- per-muscle ETA to next rank -- */
+  MUSCLES.forEach(m => {
+    const info = getMuscleRankInfo(m.key);
+    if (info.best === 0) return;
+    const slope = muscleTrendPerWeek(m.key);
+    const unit  = MUSCLE_LIFT_CONFIG[m.key].mode === 'reps' ? 'с' : 'кг';
+    let txt, cls = '';
+    if (!info.nextRank) {
+      txt = '★ MAX — тримай рівень'; cls = 'fc-ok';
+    } else if (slope == null) {
+      txt = 'мало даних — потрібно ще кілька записів у різні дні';
+    } else if (slope <= 0.01) {
+      txt = 'плато — вага не росте; перевір білок, сон і додавай навантаження';
+      cls = 'fc-warn';
+    } else {
+      const rawNext = info.cfg.mode === 'bw' ? info.nextThreshold * bw : info.nextThreshold;
+      const weeks   = Math.max(1, Math.ceil((rawNext - info.best) / slope));
+      if (weeks > 26) {
+        txt = `темп +${slope.toFixed(1)} ${unit}/тиж — до ${info.nextRank.name} понад пів року`;
+        cls = 'fc-warn';
+      } else {
+        txt = `≈${weeks} тиж до ${info.nextRank.name} (темп +${slope.toFixed(1)} ${unit}/тиж)`;
+        cls = 'fc-ok';
+      }
+    }
+    mRows += `<div class="fc-row ${cls}"><span class="fc-name" style="color:${m.color}">${m.name}</span><span>${txt}</span></div>`;
+  });
+  if (!mRows) mRows = '<div class="fc-row">Запиши перші підходи — прогноз з\'явиться тут.</div>';
+
+  /* -- nutrition (last logged days from history) -- */
+  const fed = history.filter(h => h.kcal > 0).slice(0, 7);
+  if (fed.length >= 3) {
+    const avgP    = Math.round(fed.reduce((s, h) => s + (h.p || 0), 0) / fed.length);
+    const avgKcal = Math.round(fed.reduce((s, h) => s + h.kcal, 0) / fed.length);
+    const perKg   = avgP / bw;
+    const pGoal   = Math.round(1.6 * bw);
+    if (perKg < 1.4) {
+      nRows += `<div class="fc-row fc-warn"><span>⚠ Білок ~${avgP} г/день (${perKg.toFixed(1)} г/кг). ` +
+        `Для росту м'язів ціль ≥1.6 г/кг (≈${pGoal} г) — з поточною нормою м'язи прогресуватимуть повільніше.</span></div>`;
+      warns.push('⚠ Білок нижче норми — м\'язи ростуть повільніше');
+    } else {
+      nRows += `<div class="fc-row fc-ok"><span>✓ Білок ~${avgP} г/день (${perKg.toFixed(1)} г/кг) — достатньо для росту.</span></div>`;
+    }
+    const kgWeek = ((avgKcal - KCAL_GOAL.kcal) * 7 / 7700);
+    if (avgKcal < KCAL_GOAL.kcal * 0.85) {
+      nRows += `<div class="fc-row fc-warn"><span>⚠ Калорії ~${avgKcal}/день — великий дефіцит: сила ростиме повільно, ` +
+        `вага знижуватиметься ≈${Math.abs(kgWeek).toFixed(1)} кг/тиж.</span></div>`;
+      warns.push('⚠ Великий дефіцит калорій — сила ростиме повільно');
+    } else if (avgKcal > KCAL_GOAL.kcal * 1.1) {
+      nRows += `<div class="fc-row"><span>Калорії ~${avgKcal}/день — профіцит: вага ростиме ≈${kgWeek.toFixed(1)} кг/тиж.</span></div>`;
+    } else {
+      nRows += `<div class="fc-row fc-ok"><span>✓ Калорії ~${avgKcal}/день — біля цілі ${KCAL_GOAL.kcal}.</span></div>`;
+    }
+  } else {
+    nRows += '<div class="fc-row"><span>Логуй їжу щодня (мінімум 3 дні) — прогноз по білку і калоріях стане точнішим.</span></div>';
+  }
+
+  /* -- training frequency, last 14 days -- */
+  const cutoff = Date.now() - 14 * 86400000;
+  const trainDays = new Set(gymData.workoutLog
+    .filter(e => new Date(e.date + 'T00:00:00').getTime() >= cutoff)
+    .map(e => e.date));
+  const perWeek = trainDays.size / 2;
+  if (trainDays.size === 0) {
+    nRows += '<div class="fc-row"><span>Тренувань за 2 тижні не записано.</span></div>';
+  } else if (perWeek < 2) {
+    nRows += `<div class="fc-row fc-warn"><span>⚠ ~${perWeek.toFixed(1)} трен/тиж — для стабільного прогресу треба 2–3.</span></div>`;
+    warns.push('⚠ Менше 2 тренувань на тиждень — ранги ростимуть повільно');
+  } else {
+    nRows += `<div class="fc-row fc-ok"><span>✓ ~${perWeek.toFixed(1)} трен/тиж — хороший ритм.</span></div>`;
+  }
+
+  card.innerHTML = `<div class="label">Прогноз прогресу</div>
+    <div class="fc-sub">М'язи — при поточному темпі</div>${mRows}
+    <div class="fc-sub">Живлення і режим</div>${nRows}`;
+
+  /* one notification per day for the top warning */
+  if (warns.length) {
+    sget('app_forecast_notif').then(async last => {
+      if (last !== today()) {
+        showNotif(warns[0]);
+        await sset('app_forecast_notif', today());
+      }
+    });
+  }
+  return card;
+}
+
+/* ---- Body diagram: anatomical front/back figures, fill = rank color ---- */
 
 function renderBodyDiagram() {
   const rank = {};
@@ -559,51 +676,62 @@ function renderBodyDiagram() {
   const card = document.createElement('div');
   card.className = 'card';
 
-  /* base silhouette shapes for one figure, offset by ox */
-  const base = ox => `
-    <circle class="bd-base" cx="${ox+55}" cy="14" r="9"/>
-    <rect class="bd-base" x="${ox+51}" y="21" width="8" height="8" rx="2"/>
-    <path class="bd-base" d="M${ox+35},30 L${ox+75},30 L${ox+71},84 L${ox+39},84 Z"/>
-    <rect class="bd-base" x="${ox+25}" y="31" width="9" height="50" rx="4.5"/>
-    <rect class="bd-base" x="${ox+76}" y="31" width="9" height="50" rx="4.5"/>
-    <rect class="bd-base" x="${ox+40}" y="84" width="13" height="94" rx="6"/>
-    <rect class="bd-base" x="${ox+57}" y="84" width="13" height="94" rx="6"/>`;
+  /* symmetric muscle: emit shape + its mirror across vertical axis */
+  const mir = (axis, inner) =>
+    inner + `<g transform="translate(${axis * 2} 0) scale(-1 1)">${inner}</g>`;
 
   card.innerHTML = `
     <div class="label">Схема тіла</div>
     <div class="bd-wrap">
-      <svg class="bd-svg" viewBox="0 0 220 196" xmlns="http://www.w3.org/2000/svg">
-        ${base(0)}
-        ${base(110)}
+      <svg class="bd-svg" viewBox="0 0 240 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <g id="bdBase">
+            <ellipse class="bd-base" cx="60" cy="18" rx="10.5" ry="12.5"/>
+            <path class="bd-base" d="M54,29 L66,29 L65,40 L55,40 Z"/>
+            <path class="bd-base" d="M60,39 C49,40 38,43 34,49 C30,56 29,68 30,82 C31,98 33,111 37,120 C41,130 49,136 60,136 C71,136 79,130 83,120 C87,111 89,98 90,82 C91,68 90,56 86,49 C82,43 71,40 60,39 Z"/>
+            <path class="bd-base" d="M37,118 C36,130 40,140 46,144 L58,148 L60,142 L62,148 L74,144 C80,140 84,130 83,118 C70,126 50,126 37,118 Z"/>
+            ${mir(60, `
+              <path class="bd-base" d="M34,49 C28,53 25,60 24,69 L23,96 C23,100 25,103 28,103 C31,103 33,100 33,96 L35,68 C36,59 36,52 34,49 Z"/>
+              <path class="bd-base" d="M28,103 C26,110 24,120 23,130 C22,137 23,143 26,148 C28,151 31,150 32,146 C33,138 33,126 33,112 C33,108 31,104 28,103 Z"/>
+              <path class="bd-base" d="M43,136 C38,144 36,158 37,176 C38,190 41,200 46,202 C52,203 56,197 57,187 L58,150 C57,142 51,136 43,136 Z"/>
+              <path class="bd-base" d="M42,206 C40,214 39,226 40,240 C41,252 44,261 47,263 C51,264 54,258 55,248 L55,220 C54,211 49,205 42,206 Z"/>
+              <ellipse class="bd-base" cx="47" cy="271" rx="8" ry="4.5"/>`)}
+          </g>
+        </defs>
 
         <!-- FRONT -->
-        <circle class="bd-m" data-m="shoulders" cx="32" cy="34" r="6.5" fill="${c('shoulders')}"/>
-        <circle class="bd-m" data-m="shoulders" cx="78" cy="34" r="6.5" fill="${c('shoulders')}"/>
-        <rect class="bd-m" data-m="chest" x="41" y="33" width="13.5" height="13" rx="3" fill="${c('chest')}"/>
-        <rect class="bd-m" data-m="chest" x="55.5" y="33" width="13.5" height="13" rx="3" fill="${c('chest')}"/>
-        <rect class="bd-m" data-m="core" x="46" y="48" width="18" height="28" rx="4" fill="${c('core')}"/>
-        <ellipse class="bd-m" data-m="arms" cx="29.5" cy="50" rx="4.5" ry="10" fill="${c('arms')}"/>
-        <ellipse class="bd-m" data-m="arms" cx="80.5" cy="50" rx="4.5" ry="10" fill="${c('arms')}"/>
-        <rect class="bd-m" data-m="legs" x="42" y="88" width="10.5" height="40" rx="5" fill="${c('legs')}"/>
-        <rect class="bd-m" data-m="legs" x="57.5" y="88" width="10.5" height="40" rx="5" fill="${c('legs')}"/>
-        <text class="bd-fig-lbl" x="55" y="192">СПЕРЕДУ</text>
+        <use href="#bdBase"/>
+        ${mir(60, `
+          <path class="bd-m" data-m="shoulders" fill="${c('shoulders')}" d="M35,47 C29,49 26,55 26,62 C30,66 36,65 39,60 C40,54 38,49 36,47 Z"/>
+          <path class="bd-m" data-m="chest" fill="${c('chest')}" d="M60.8,45 C51,45 43,48 40,53 C38,58 40,64 45,67 C51,70 58,70 60.8,68 Z"/>
+          <ellipse class="bd-m" data-m="arms" fill="${c('arms')}" cx="29.5" cy="79" rx="5.5" ry="12" transform="rotate(6 29.5 79)"/>
+          <path class="bd-m" data-m="core" fill="${c('core')}" opacity=".8" d="M47,76 C44,80 43,88 43,98 C43,106 45,112 48,115 L48,76 Z"/>
+          <path class="bd-m" data-m="legs" fill="${c('legs')}" d="M44,140 C39,147 37,159 38,175 C39,187 42,196 47,198 C52,196 55,188 55,177 L55,153 C54,145 50,139 44,140 Z"/>`)}
+        <g class="bd-m" data-m="core">
+          <path fill="${c('core')}" d="M52,72 C50,74 49,78 49,84 L49,109 C49,115 53,119 60,119 C67,119 71,115 71,109 L71,84 C71,78 70,74 68,72 C64,71 56,71 52,72 Z"/>
+          <g stroke="#0E1117" stroke-opacity=".45" stroke-width="1.3">
+            <line x1="60" y1="72" x2="60" y2="119"/>
+            <line x1="50" y1="85" x2="70" y2="85"/>
+            <line x1="50" y1="97" x2="70" y2="97"/>
+            <line x1="51" y1="108" x2="69" y2="108"/>
+          </g>
+        </g>
+        <text class="bd-fig-lbl" x="60" y="293">СПЕРЕДУ</text>
 
         <!-- BACK -->
-        <circle class="bd-m" data-m="shoulders" cx="142" cy="34" r="6.5" fill="${c('shoulders')}"/>
-        <circle class="bd-m" data-m="shoulders" cx="188" cy="34" r="6.5" fill="${c('shoulders')}"/>
-        <path class="bd-m" data-m="back" d="M151,31 L179,31 L165,52 Z" fill="${c('back')}"/>
-        <path class="bd-m" data-m="back" d="M149,42 L160,48 L158,68 L147,60 Z" fill="${c('back')}"/>
-        <path class="bd-m" data-m="back" d="M181,42 L170,48 L172,68 L183,60 Z" fill="${c('back')}"/>
-        <rect class="bd-m" data-m="core" x="158" y="60" width="14" height="14" rx="3" fill="${c('core')}"/>
-        <ellipse class="bd-m" data-m="arms" cx="139.5" cy="50" rx="4.5" ry="10" fill="${c('arms')}"/>
-        <ellipse class="bd-m" data-m="arms" cx="190.5" cy="50" rx="4.5" ry="10" fill="${c('arms')}"/>
-        <ellipse class="bd-m" data-m="legs" cx="158.5" cy="88" rx="8" ry="6.5" fill="${c('legs')}"/>
-        <ellipse class="bd-m" data-m="legs" cx="171.5" cy="88" rx="8" ry="6.5" fill="${c('legs')}"/>
-        <rect class="bd-m" data-m="legs" x="152" y="97" width="10.5" height="32" rx="5" fill="${c('legs')}"/>
-        <rect class="bd-m" data-m="legs" x="167.5" y="97" width="10.5" height="32" rx="5" fill="${c('legs')}"/>
-        <ellipse class="bd-m" data-m="legs" cx="156.5" cy="146" rx="5.5" ry="13" fill="${c('legs')}"/>
-        <ellipse class="bd-m" data-m="legs" cx="173.5" cy="146" rx="5.5" ry="13" fill="${c('legs')}"/>
-        <text class="bd-fig-lbl" x="165" y="192">ЗЗАДУ</text>
+        <use href="#bdBase" x="120"/>
+        <path class="bd-m" data-m="back" fill="${c('back')}" d="M180,33 C171,35 162,39 158,45 C165,49 171,57 175,68 C177,73 183,73 185,68 C189,57 195,49 202,45 C198,39 189,35 180,33 Z"/>
+        ${mir(180, `
+          <ellipse class="bd-m" data-m="shoulders" fill="${c('shoulders')}" cx="151" cy="55" rx="6.5" ry="9" transform="rotate(-14 151 55)"/>
+          <path class="bd-m" data-m="back" fill="${c('back')}" opacity=".85" d="M161,57 C157,61 155,67 156,73 C160,76 166,73 168,68 C167,62 165,58 161,57 Z"/>
+          <path class="bd-m" data-m="back" fill="${c('back')}" d="M162,64 C157,70 155,80 157,90 C161,100 169,108 177,111 L177,77 C173,70 168,66 162,64 Z"/>
+          <rect class="bd-m" data-m="core" fill="${c('core')}" opacity=".8" x="174.5" y="93" width="5" height="30" rx="2.5"/>
+          <ellipse class="bd-m" data-m="arms" fill="${c('arms')}" cx="149" cy="80" rx="5.5" ry="12" transform="rotate(-6 149 80)"/>
+          <ellipse class="bd-m" data-m="legs" fill="${c('legs')}" cx="170" cy="137" rx="10" ry="9"/>
+          <path class="bd-m" data-m="legs" fill="${c('legs')}" d="M164,150 C159,157 157,169 158,182 C159,192 162,199 166,201 C171,200 174,192 174,182 L174,161 C173,154 169,149 164,150 Z"/>
+          <ellipse class="bd-m" data-m="legs" fill="${c('legs')}" cx="165.5" cy="231" rx="6.5" ry="16"/>
+          <ellipse class="bd-m" data-m="legs" fill="${c('legs')}" cx="172" cy="227" rx="4" ry="11"/>`)}
+        <text class="bd-fig-lbl" x="180" y="293">ЗЗАДУ</text>
       </svg>
     </div>
     <div class="bd-caption" id="bdCaption">Тапни на м'яз — побачиш ранг</div>

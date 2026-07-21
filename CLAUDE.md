@@ -85,14 +85,21 @@ panel; no bottom-nav slot. switchTab('ranks') highlights the Зал nav item.
   Customisations saved in app_gym_program = { A:[…], B:[…], C:[…] }.
   EXERCISE_ALTERNATIVES in config.js defines one swap option per exercise.
   "↺ Відновити початкову програму" resets a day to GYM_DAYS defaults.
-- Body diagram (etap 2, done): renderBodyDiagram() in gym.js — original stylised SVG
-  front/back figures, regions filled with current rank color; tap → rank caption.
+- Body diagram (etap 2, done): renderBodyDiagram() in gym.js — original anatomical-ish
+  SVG front/back figures (pecs, abs 6-pack, traps kite, lats, erectors, glutes, hams,
+  calves; symmetric shapes mirrored via mir() helper), fill = current rank color;
+  tap → rank caption.
+- Forecast subsection: renderGymForecast() in gym.js — per-muscle least-squares trend
+  (muscleTrendPerWeek) → ETA to next rank; protein (≥1.6 г/кг rule) + kcal + training
+  frequency warnings from app_history; one showNotif warning per day
+  (app_narrator-style key: app_forecast_notif = date last shown).
 
 ## Workout program defaults (GYM_DAYS in config.js)
 - Day A: Full Body / Strength — Squat, Bench, Barbell Row, Lat Pulldown, Lateral Raise, Triceps
 - Day B: Full Body / Hypertrophy — RDL, Incline DB Press, DB Row, Leg Press, Lateral Raise, Biceps
 - Day C: Bonus (optional) — Pull-ups, Cable Crossover, Lateral Raise, Lunges, Bi+Tri, Core
-- Constraints: NO overhead pressing; warmup = 5 min cardio + band ext rotations 2×15 + face pulls 2×15.
+- Program constraint (config-level, not shown in UI): NO overhead pressing.
+  Warmup card = 5 min cardio + band ext rotations 2×15 + face pulls 2×15 only.
 
 ## Narrator feature (narrator.js)
 localStorage keys: app_narrator_last, app_profile_name, app_narrator_chars,
