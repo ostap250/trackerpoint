@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BodyViz prototype — layered morph</title>
+<style>
+  body{ margin:0; background:#0E1117; color:#E7ECF3; font-family:system-ui,sans-serif; padding:20px; }
+  h1{ font-size:15px; letter-spacing:.15em; text-transform:uppercase; color:#8A7BE6; font-family:monospace; }
+  .row{ display:flex; flex-wrap:wrap; gap:18px; margin-top:16px; }
+  .fig{ background:linear-gradient(180deg,#1B2330,#161C26); border:1px solid #28323F; border-radius:16px;
+        padding:14px; width:250px; }
+  .fig h2{ font-size:11px; font-family:monospace; letter-spacing:.12em; text-transform:uppercase;
+           color:#7E8AA0; margin:0 0 8px; }
+  .meta{ font-family:monospace; font-size:11px; color:#7E8AA0; margin-top:8px; line-height:1.7; }
+  .meta b{ color:#E7ECF3; }
+  .note{ font-size:10px; color:#54607a; margin-top:6px; line-height:1.5; }
+  .sliders{ margin-top:10px; font-family:monospace; font-size:11px; color:#7E8AA0; }
+  .sliders label{ display:block; margin-top:8px; }
+  input[type=range]{ width:100%; accent-color:#8A7BE6; }
+  svg{ width:100%; height:auto; display:block; }
+</style>
+</head>
+<body>
+<h1>BodyViz — layered SVG morph prototype</h1>
+<div class="row" id="stages"></div>
+
+<div class="row">
+  <div class="fig" style="width:250px">
+    <h2>Playground — незалежні входи</h2>
+    <div id="playFig"></div>
+    <div class="sliders">
+      <label>Вага: <span id="wVal"></span> кг
+        <input type="range" id="wSl" min="75" max="115" value="115" step="0.5" /></label>
+      <label>Зал (консистентність): <span id="mVal"></span>%
+        <input type="range" id="mSl" min="0" max="100" value="20" /></label>
+    </div>
+    <div class="meta" id="playMeta"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Layered parametric body (front view, cropped mid-thigh)
+   Inputs: f = fatStageProgress 0..1  (0 = 115kg baseline, 1 = stage-4 lean)
+           m = muscleDefinitionLevel 0..1 (gym log consistency)
+   Layers: torsoOutline / shoulderWidthLayer / chestLayer /
+           abdomenLayer / armLayer / legLayer / muscleDefinitionLayer
+   ============================================================ */
+
+const L  = (a, b, t) => a + (b - a) * t;
+const SS = (t, a, b) => { const x = Math.min(1, Math.max(0, (t - a) / (b - a))); return x * x * (3 - 2 * x); };
+
+/* Catmull-Rom smoothing (closed) */
+function smooth(pts) {
+  const n = pts.length;
+  let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i-1+n)%n], p1 = pts[i], p2 = pts[(i+1)%n], p3 = pts[(i+2)%n];
+    d += `C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)},${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} `
+       + `${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)},${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} `
+       + `${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d + 'Z';
+}
+const flip = pts => pts.map(([x,y]) => [-x,y]);
+/* half profile (x>=0) → full symmetric closed shape */
+const sym = half => half.concat(flip(half.slice(1,-1)).reverse());
+
+function bodyParams(f, m) {
+  return {
+    neckW:   L(13, 10.5, f),
+    shW:     L(56, 53, f) + 2.5*m,          /* shoulders ~stable; small delt gain */
+    chestW:  L(50, 43, f),
+    chestSag:L(14, 2, f),                   /* chest fullness */
+    waistW:  L(58, 35, f),                  /* main V-taper driver */
+    hipW:    L(54, 39, f),
+    drop:    L(24, 0, SS(f, 0, .65)),       /* overhang sags first, gone by ~stage2.5 */
+    bellyOp: L(1, .15, SS(f, .15, .8)),
+    armW:    L(13.5, 9.5, f) + 1.8*m,
+    foreW:   L(9.5, 7, f) + 1*m,
+    thighW:  L(27, 21, f),
+  };
+}
+
+function bodySVG(f, m, w = 250) {
+  const p = bodyParams(f, m);
+  const BASE = '#263140', LAYER = '#2e3a4b', LINE = '#151c27', RIM = '#38455a';
+
+  /* ---- torsoOutline (silhouette: head→trunk→cropped thighs) ---- */
+  const outline = smooth(sym([
+    [0,4],[9,6],[15,16],[16,30],[13,44],
+    [p.neckW,58],[p.neckW+1,71],
+    [p.shW*0.55,80],[p.shW,94],
+    [p.shW-11,120],[p.chestW+4,146],
+    [p.waistW,205],[p.hipW,252],
+    [p.hipW-4,310],[p.hipW-9,382],
+    [10,382],[8,326],[2,284],[0,280],
+  ]));
+
+  /* ---- shoulderWidthLayer: delt caps ---- */
+  const delt = smooth([
+    [p.shW-16,96],[p.shW-3,92],[p.shW+3,104],[p.shW+1,120],[p.shW-9,126],[p.shW-16,112],
+  ]);
+
+  /* ---- chestLayer: pec fullness (sag = fat fullness) ---- */
+  const s = p.chestSag;
+  const pec = smooth([
+    [3,118],[p.chestW*0.72,115],[p.chestW*0.94,128],
+    [p.chestW*0.88,142+s*0.5],[p.chestW*0.5,152+s],[8,148+s*0.6],[3,132],
+  ]);
+
+  /* ---- abdomenLayer: belly + overhang (sags below waistline) ---- */
+  const belly = smooth(sym([
+    [0,166],[p.waistW*0.78,178],[p.waistW*0.94,206],
+    [p.waistW*0.86,232],[p.waistW*0.5,250+p.drop],[0,256+p.drop],
+  ]));
+  const crease = `M${(-p.waistW*0.55).toFixed(1)},${(250+p.drop).toFixed(1)} `
+               + `Q0,${(262+p.drop).toFixed(1)} ${(p.waistW*0.55).toFixed(1)},${(250+p.drop).toFixed(1)}`;
+
+  /* ---- armLayer ---- */
+  const sx = p.shW + 1;
+  const arm = smooth([
+    [sx-4,96],[sx+p.armW*0.85,112],[sx+p.armW,150],[sx+p.armW*0.9+3,186],
+    [sx+9+p.foreW,226],[sx+12+p.foreW*0.7,256],[sx+14,278],[sx+7,284],
+    [sx+11-p.foreW,258],[sx+7-p.foreW,226],
+    [sx+2-p.armW*0.75,186],[sx-p.armW*0.6,150],[sx-p.armW*0.45,118],
+  ]);
+
+  /* ---- muscleDefinitionLayer (independent of fat where noted) ---- */
+  const defCommon = m * SS(f, .3, .8);          /* arms/delts/pecs */
+  const defAbs    = m * SS(f, .55, .9);         /* abs need low fat */
+  const bicep  = `M${(sx+p.armW*0.55).toFixed(1)},128 Q${(sx+p.armW*0.8).toFixed(1)},152 ${(sx+2).toFixed(1)},176`;
+  const deltCut= `M${(p.shW-14).toFixed(1)},122 Q${(p.shW-5).toFixed(1)},128 ${(p.shW+1).toFixed(1)},118`;
+  const pecCut = `M10,${(150+s*0.6).toFixed(1)} Q${(p.chestW*0.55).toFixed(1)},${(156+s).toFixed(1)} ${(p.chestW*0.9).toFixed(1)},${(142+s*0.5).toFixed(1)}`;
+  const absL = `
+    <line x1="0" y1="172" x2="0" y2="248"/>
+    <line x1="-14" y1="192" x2="14" y2="192"/>
+    <line x1="-15" y1="214" x2="15" y2="214"/>
+    <line x1="-13" y1="234" x2="13" y2="234"/>
+    <path d="M-${(p.waistW*0.62).toFixed(1)},186 Q-${(p.waistW*0.4).toFixed(1)},218 -12,242" fill="none"/>
+    <path d="M${(p.waistW*0.62).toFixed(1)},186 Q${(p.waistW*0.4).toFixed(1)},218 12,242" fill="none"/>`;
+
+  const mir = inner => inner + `<g transform="scale(-1,1)">${inner}</g>`;
+
+  return `<svg viewBox="-105 0 210 395" width="${w}" xmlns="http://www.w3.org/2000/svg">
+    <g id="torsoOutline"><path d="${outline}" fill="${BASE}" stroke="${RIM}" stroke-width="1.2"/></g>
+    <g id="legLayer"><path d="M-2,286 L-4,382 L2,382 L2,286 Z" fill="${LINE}" opacity=".55"/></g>
+    <g id="armLayer">${mir(`<path d="${arm}" fill="${LAYER}" stroke="${RIM}" stroke-width="1"/>`)}</g>
+    <g id="shoulderWidthLayer">${mir(`<path d="${delt}" fill="${LAYER}" stroke="${RIM}" stroke-width="1"/>`)}</g>
+    <g id="chestLayer">${mir(`<path d="${pec}" fill="${LAYER}" stroke="${RIM}" stroke-width="1"/>`)}</g>
+    <g id="abdomenLayer" opacity="${p.bellyOp.toFixed(2)}">
+      <path d="${belly}" fill="${LAYER}" stroke="${RIM}" stroke-width="1"/>
+      <path d="${crease}" fill="none" stroke="${LINE}" stroke-width="2" opacity="${SS(p.drop,2,14).toFixed(2)}"/>
+    </g>
+    <g id="muscleDefinitionLayer" stroke="${LINE}" stroke-width="2" stroke-linecap="round" fill="none">
+      <g opacity="${defCommon.toFixed(2)}">${mir(`<path d="${bicep}"/><path d="${deltCut}"/><path d="${pecCut}"/>`)}</g>
+      <g opacity="${defAbs.toFixed(2)}">${absL}</g>
+    </g>
+  </svg>`;
+}
+
+/* ---- BF% estimate (Deurenberg, male, age assumed 25 for prototype) ---- */
+const H = 1.83, AGE = 25;
+const bmi = kg => kg / (H * H);
+const bf  = kg => 1.20 * bmi(kg) + 0.23 * AGE - 10.8 * 1 - 5.4;
+
+/* fatStageProgress from weight: 0 at 115kg, 1 at stage-4 (~75kg for prototype) */
+const fOf = kg => Math.min(1, Math.max(0, (115 - kg) / (115 - 75)));
+
+const stages = [
+  { name: 'Stage 0 — базлайн', kg: 115, m: .15 },
+  { name: 'Stage 3 — із залом', kg: 80,  m: .85 },
+  { name: 'Stage 3 — без залу', kg: 80,  m: .1  },
+];
+document.getElementById('stages').innerHTML = stages.map(st => `
+  <div class="fig">
+    <h2>${st.name}</h2>
+    ${bodySVG(fOf(st.kg), st.m, 220)}
+    <div class="meta"><b>${st.kg} кг</b> · BMI ${bmi(st.kg).toFixed(1)} · BF% ≈ <b>${bf(st.kg).toFixed(0)}%</b> (оцінка)</div>
+    <div class="note">Оцінка за Deurenberg (BMI+вік). Стрічка (Navy) чи каліпер точніші — ручний ввід перекриє оцінку.</div>
+  </div>`).join('');
+
+/* playground */
+const wSl = document.getElementById('wSl'), mSl = document.getElementById('mSl');
+function renderPlay() {
+  const kg = +wSl.value, m = +mSl.value / 100;
+  document.getElementById('wVal').textContent = kg;
+  document.getElementById('mVal').textContent = mSl.value;
+  document.getElementById('playFig').innerHTML = bodySVG(fOf(kg), m, 220);
+  document.getElementById('playMeta').innerHTML =
+    `BMI ${bmi(kg).toFixed(1)} · BF% ≈ <b>${bf(kg).toFixed(0)}%</b> · fatStage ${(fOf(kg)*100).toFixed(0)}% · muscleDef ${(m*100).toFixed(0)}%`;
+}
+wSl.oninput = mSl.oninput = renderPlay;
+renderPlay();
+</script>
+</body>
+</html>
