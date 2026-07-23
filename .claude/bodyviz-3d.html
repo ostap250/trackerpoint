@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BodyViz 3D — MakeHuman mesh, round 2</title>
+<title>BodyViz 3D — MakeHuman mesh, round 3</title>
 <style>
   body{ margin:0; background:#0E1117; color:#E7ECF3; font-family:system-ui,sans-serif; padding:18px; }
   h1{ font-size:14px; letter-spacing:.15em; text-transform:uppercase; color:#8A7BE6; font-family:monospace; }
@@ -13,27 +13,24 @@
   .modes button.active{ background:#8A7BE6; color:#11131c; border-color:#8A7BE6; font-weight:700; }
   .caption{ font-family:monospace; font-size:11px; color:#8A7BE6; margin-top:8px; max-width:560px; line-height:1.5; }
   .row{ display:flex; flex-wrap:wrap; gap:14px; margin-top:12px; }
-  .fig{ background:linear-gradient(180deg,#1B2330,#161C26); border:1px solid #28323F; border-radius:16px;
-        padding:12px; }
-  .fig h2{ font-size:11px; font-family:monospace; letter-spacing:.12em; text-transform:uppercase;
-           color:#7E8AA0; margin:0 0 6px; }
+  .fig{ background:linear-gradient(180deg,#1B2330,#161C26); border:1px solid #28323F; border-radius:16px; padding:12px; }
+  .fig h2{ font-size:11px; font-family:monospace; letter-spacing:.12em; text-transform:uppercase; color:#7E8AA0; margin:0 0 6px; }
+  .redkey{ display:none; align-items:center; gap:6px; font-family:monospace; font-size:10px; color:#E4574E; margin-top:6px; }
+  .redkey b{ width:22px; height:8px; border-radius:2px; background:linear-gradient(90deg,#b6aca2,#E4574E); display:inline-block; }
   canvas{ border-radius:10px; display:block; touch-action:none; cursor:grab; }
   .meta{ font-family:monospace; font-size:11px; color:#7E8AA0; margin-top:8px; line-height:1.7; }
   .meta b{ color:#E7ECF3; }
-  .controls{ background:#161C26; border:1px solid #28323F; border-radius:14px; padding:14px;
-             font-family:monospace; font-size:12px; color:#7E8AA0; min-width:250px; max-width:300px; }
+  .controls{ background:#161C26; border:1px solid #28323F; border-radius:14px; padding:14px; font-family:monospace; font-size:12px; color:#7E8AA0; min-width:250px; max-width:300px; }
   .controls label{ display:block; margin-top:12px; }
-  .controls.dim{ opacity:.4; }
   input[type=range]{ width:100%; accent-color:#8A7BE6; }
-  input[type=number]{ width:70px; background:#0f141c; border:1px solid #28323F; color:#E7ECF3;
-                      font-family:monospace; padding:5px 7px; border-radius:8px; }
+  input[type=number]{ width:70px; background:#0f141c; border:1px solid #28323F; color:#E7ECF3; font-family:monospace; padding:5px 7px; border-radius:8px; }
   .disclaimer{ font-size:10px; color:#54607a; margin-top:12px; line-height:1.5; }
   .hint{ font-size:10px; color:#54607a; margin-top:6px; }
   #loading{ font-family:monospace; font-size:12px; color:#7E8AA0; padding:30px; }
 </style>
 </head>
 <body>
-<h1>BodyViz 3D — MakeHuman base mesh (CC0), round 2</h1>
+<h1>BodyViz 3D — MakeHuman base mesh (CC0), round 3</h1>
 <div class="modes" id="loadingModes" style="display:none">
   <button id="modeFatBtn" class="active">Fat view</button>
   <button id="modeMuscleBtn">Muscle view</button>
@@ -50,6 +47,7 @@
     <h2>+60 днів (проєкція)</h2>
     <canvas id="cvProj" width="250" height="360"></canvas>
     <div class="meta" id="metaProj"></div>
+    <div class="redkey" id="redKey"><b></b> червоне — де переважно піде жир</div>
   </div>
   <div class="controls" id="fatControls">
     <label>Вага сьогодні: <b id="wV">115</b> кг
@@ -62,24 +60,19 @@
       <input type="number" id="rateIn" value="-0.5" step="0.1" min="-2" max="2"> кг/тиж
     </label>
     <div class="meta" id="rateMeta"></div>
-    <div class="disclaimer">Оцінка за твоїм недавнім трендом — не гарантія; фактичний
-      результат залежить від консистентності.</div>
-    <div class="disclaimer">BF% — оцінка за Deurenberg (BMI+вік, тут вік=25).
-      Стрічка (Navy) чи каліпер точніші; ручний ввід перекриє оцінку.</div>
+    <div class="disclaimer">Оцінка за твоїм недавнім трендом — не гарантія; фактичний результат залежить від консистентності.</div>
+    <div class="disclaimer">BF% — оцінка за Deurenberg (BMI+вік, тут вік=25). Стрічка (Navy) чи каліпер точніші.</div>
   </div>
-  <div class="controls dim" id="muscleControls" style="display:none">
+  <div class="controls" id="muscleControls" style="display:none">
     <label>Зал (консистентність тренувань): <b id="mV">30</b>%
       <input type="range" id="mS" min="0" max="100" value="30"></label>
     <div class="meta" id="muscleRateMeta"></div>
-    <div class="disclaimer">Прототип: рівень консистентності задається повзунком.
-      В апці — з app_gym (частота + прогресія робочих ваг).</div>
-    <div class="hint">Ця модель НЕ враховує поточний жир — нейтральна статура,
-      лише м'язовий рельєф.</div>
+    <div class="disclaimer">Прототип: рівень консистентності задається повзунком. В апці — з app_gym (частота + прогресія робочих ваг).</div>
+    <div class="hint">Ця модель НЕ враховує поточний жир — нейтральна статура, лише м'язовий рельєф.</div>
   </div>
   <div class="controls" style="min-width:200px;max-width:230px">
     <div class="hint">🖱 Тягни будь-яку модель — обидві обертаються синхронно.</div>
-    <div class="hint">Меш: MakeHuman hm08 (CC0) + офіційні morph targets
-      weight / muscle / stomach. Голова анонімізована геометрично (не текстурою).</div>
+    <div class="hint">Меш: MakeHuman hm08 (CC0) + офіційні morph targets weight / muscle / stomach.</div>
     <div class="hint">Шорти — процедурна геометрія, підганяється під силует кожен кадр.</div>
   </div>
 </div>
@@ -92,11 +85,8 @@ const SS = (t,a,b) => { const x=Math.min(1,Math.max(0,(t-a)/(b-a))); return x*x*
 const clamp = (v,a,b) => Math.min(b,Math.max(a,v));
 
 /* ============ MakeHuman asset loading (base.obj + joint markers) ============ */
-
 function parseObj(text) {
-  const pos = [];
-  const idx = [];
-  const jointVerts = {};
+  const pos = [], idx = [], jointVerts = {};
   let mode = null, jointName = null;
   for (const line of text.split('\n')) {
     if (line.startsWith('v ')) {
@@ -105,10 +95,8 @@ function parseObj(text) {
     } else if (line.startsWith('g ')) {
       const name = line.slice(2).trim();
       if (name === 'body') { mode = 'body'; jointName = null; }
-      else if (name.startsWith('joint-')) {
-        mode = 'joint'; jointName = name.slice(6);
-        if (!jointVerts[jointName]) jointVerts[jointName] = new Set();
-      } else { mode = null; jointName = null; }
+      else if (name.startsWith('joint-')) { mode = 'joint'; jointName = name.slice(6); if (!jointVerts[jointName]) jointVerts[jointName] = new Set(); }
+      else { mode = null; jointName = null; }
     } else if (mode === 'body' && line.startsWith('f ')) {
       const f = line.slice(2).trim().split(/\s+/).map(w => parseInt(w, 10) - 1);
       for (let i = 2; i < f.length; i++) idx.push(f[0], f[i-1], f[i]);
@@ -119,8 +107,6 @@ function parseObj(text) {
   }
   return { base: new Float32Array(pos), index: idx, jointVerts };
 }
-
-/* .target: sparse per-vertex deltas "index dx dy dz" */
 function parseTarget(text) {
   const out = [];
   for (const line of text.split('\n')) {
@@ -133,73 +119,62 @@ function parseTarget(text) {
 }
 
 const [objT, tMale, tWeight, tMuscle, tBelly, tTone] = await Promise.all(
-  ['mh/base.obj','mh/male-young.target','mh/maxweight.target',
-   'mh/maxmuscle.target','mh/belly.target','mh/stomach-tone.target']
+  ['mh/base.obj','mh/male-young.target','mh/maxweight.target','mh/maxmuscle.target','mh/belly.target','mh/stomach-tone.target']
   .map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u); return r.text(); })));
 
 const { base, index, jointVerts } = parseObj(objT);
-const T = { male: parseTarget(tMale), weight: parseTarget(tWeight),
-            muscle: parseTarget(tMuscle), belly: parseTarget(tBelly), tone: parseTarget(tTone) };
+const T = { male: parseTarget(tMale), weight: parseTarget(tWeight), muscle: parseTarget(tMuscle), belly: parseTarget(tBelly), tone: parseTarget(tTone) };
 const bodyVerts = new Set(index);
+const nVerts = base.length / 3;
 
-/* ---- skeleton landmarks: real MakeHuman joint markers, not guessed height fractions ---- */
+/* ---- skeleton landmarks: real joint markers ---- */
 function jointPos(name) {
   const set = jointVerts[name];
   if (!set || !set.size) return null;
   let x=0,y=0,z=0;
   set.forEach(vi => { x+=base[vi*3]; y+=base[vi*3+1]; z+=base[vi*3+2]; });
-  const n = set.size;
-  return { x:x/n, y:y/n, z:z/n };
+  return { x:x/set.size, y:y/set.size, z:z/set.size };
 }
-function mirrorFallback(l, r) { return r || (l && { x:-l.x, y:l.y, z:l.z }); }
+const mf = (l,r) => r || (l && { x:-l.x, y:l.y, z:l.z });
 const J = {
   neck: jointPos('neck'),
-  lShoulder: jointPos('l-shoulder'), rShoulder: mirrorFallback(jointPos('l-shoulder'), jointPos('r-shoulder')),
-  lElbow: jointPos('l-elbow'),       rElbow: mirrorFallback(jointPos('l-elbow'), jointPos('r-elbow')),
+  lShoulder: jointPos('l-shoulder'), rShoulder: mf(jointPos('l-shoulder'), jointPos('r-shoulder')),
+  lElbow: jointPos('l-elbow'),
   pelvis: jointPos('pelvis'),
-  lHip: jointPos('l-upper-leg'),     rHip: mirrorFallback(jointPos('l-upper-leg'), jointPos('r-upper-leg')),
-  lKnee: jointPos('l-knee'),         rKnee: mirrorFallback(jointPos('l-knee'), jointPos('r-knee')),
+  lHip: jointPos('l-upper-leg'), rHip: mf(jointPos('l-upper-leg'), jointPos('r-upper-leg')),
+  lKnee: jointPos('l-knee'), rKnee: mf(jointPos('l-knee'), jointPos('r-knee')),
 };
 
-/* raw body height (pre-morph), used only to express margins as fractions of height */
-let rawMinY = 1e9, rawMaxY = -1e9;
-bodyVerts.forEach(vi => { const y = base[vi*3+1]; if (y<rawMinY) rawMinY=y; if (y>rawMaxY) rawMaxY=y; });
+let rawMinY=1e9, rawMaxY=-1e9;
+bodyVerts.forEach(vi => { const y=base[vi*3+1]; if (y<rawMinY) rawMinY=y; if (y>rawMaxY) rawMaxY=y; });
 const bodyH = rawMaxY - rawMinY;
 
-/* ---- one-time proportion correction: widen shoulders/upper-arms in the BASE mesh
-   (a static mesh edit, independent of any morph — applies identically to both views) ---- */
+/* ---- proportion correction: widen shoulders + upper arms, FEATHERED so there's
+   no kink at the elbow (fixes the "laggy elbow" step from round 2) ---- */
 (function widenShouldersArms() {
-  const shX   = (Math.abs(J.lShoulder.x) + Math.abs(J.rShoulder.x)) / 2;
-  const shY   = Math.max(J.lShoulder.y, J.rShoulder.y);
-  const elY   = Math.min(J.lElbow.y, J.rElbow.y);
-  const yTop  = shY + 0.010 * bodyH;
-  const yBot  = L(elY, shY, 0.15);          /* stop well above the elbow — upper arm only */
-  const xThr  = shX * 0.55;
-  const WIDEN = 1.09;
+  const shX = (Math.abs(J.lShoulder.x) + Math.abs(J.rShoulder.x)) / 2;
+  const shY = J.lShoulder.y, elY = J.lElbow.y;
+  const xThr = shX * 0.5;
   bodyVerts.forEach(vi => {
     const j = vi*3, x = base[j], y = base[j+1];
-    if (y >= yBot && y <= yTop && Math.abs(x) > xThr) base[j] = x * WIDEN;
+    if (y < elY || y > shY + 0.15*bodyH || Math.abs(x) <= xThr) return;
+    const t = SS(y, elY, shY);              /* 0 at elbow → 1 at shoulder, smooth */
+    base[j] = x * (1 + 0.10 * t);
   });
 })();
 
-/* ---- regional modulation for belly/weight targets: lower-abdomen "apron" overhang
-   more pronounced than upper torso; chest fullness kept subtle ---- */
-let bMinY=1e9, bMaxY=-1e9, bSum=0, bWSum=0;
+/* ---- belly regional apron: lower abdomen sags a bit more than upper, but gentle
+   (round 2 was too extreme). Weight target is left UNMODIFIED so fat sits all
+   around — chest/flanks/arms/thighs — matching a real ~35% BF distribution. ---- */
+let bMinY=1e9, bMaxY=-1e9, bSum=0, bW=0;
 for (const d of T.belly) {
   const y = base[d[0]*3+1];
   if (y<bMinY) bMinY=y; if (y>bMaxY) bMaxY=y;
-  const mag = Math.hypot(d[1],d[2],d[3]);
-  bSum += y*mag; bWSum += mag;
+  const m = Math.hypot(d[1],d[2],d[3]); bSum += y*m; bW += m;
 }
-const bellyMid = bWSum ? bSum/bWSum : (bMinY+bMaxY)/2;
-const chestHi  = Math.min(J.lShoulder.y, J.rShoulder.y);
-
+const bellyMid = bW ? bSum/bW : (bMinY+bMaxY)/2;
 const REGION_MOD = {
-  belly: y => y < bellyMid
-    ? L(1.55, 1.0, SS(y, bMinY, bellyMid))     /* lower abdomen: pronounced apron/overhang */
-    : L(1.0, 0.4, SS(y, bellyMid, bMaxY)),     /* upper abdomen: tapers off quickly */
-  weight: y => (y <= bellyMid || y >= chestHi) ? 1
-    : L(1, 0.72, SS(y, bellyMid, chestHi)),    /* chest: subtle, not exaggerated */
+  belly: y => y < bellyMid ? L(1.28, 1.0, SS(y, bMinY, bellyMid)) : L(1.0, 0.7, SS(y, bellyMid, bMaxY)),
 };
 
 function compose(dst, w) {
@@ -209,219 +184,178 @@ function compose(dst, w) {
     if (!k) continue;
     const mod = REGION_MOD[name];
     for (let i = 0; i < list.length; i++) {
-      const d = list[i], j = d[0] * 3;
+      const d = list[i], j = d[0]*3;
       const local = mod ? k * mod(base[j+1]) : k;
-      dst[j]   += d[1] * local;
-      dst[j+1] += d[2] * local;
-      dst[j+2] += d[3] * local;
+      dst[j] += d[1]*local; dst[j+1] += d[2]*local; dst[j+2] += d[3]*local;
     }
   }
 }
 
-/* normalisation: scale so height = 1.83m, feet at y=0 (probe = representative pose) */
+/* normalisation */
 const probe = new Float32Array(base.length);
-compose(probe, { male:1, weight:0.7, belly:0.3, muscle:.15, tone:.1 });
-let minY = 1e9, maxY = -1e9;
-bodyVerts.forEach(vi => { const y = probe[vi*3+1]; if (y < minY) minY = y; if (y > maxY) maxY = y; });
+compose(probe, { male:1, weight:0.9, belly:0.4, muscle:.15, tone:.1 });
+let minY=1e9, maxY=-1e9;
+bodyVerts.forEach(vi => { const y=probe[vi*3+1]; if (y<minY) minY=y; if (y>maxY) maxY=y; });
 const SCALE = 1.83 / (maxY - minY);
 
-/* ---- anonymized head: project the face half onto a smooth dome, NO texture/smiley —
-   a blank mannequin head, feathered blend so there's no seam at any camera angle ---- */
-const headYmin = J.neck.y + 0.01 * bodyH;
-let hcx=0, hcy=0, hcz=0, hn=0;
-bodyVerts.forEach(vi => {
-  if (probe[vi*3+1] > headYmin) { hcx+=probe[vi*3]; hcy+=probe[vi*3+1]; hcz+=probe[vi*3+2]; hn++; }
-});
-hcx/=hn; hcy/=hn; hcz/=hn;
-let rSum=0, rN=0;
-bodyVerts.forEach(vi => {
-  const y=probe[vi*3+1], z=probe[vi*3+2]-hcz;
-  if (y>headYmin && z>0) { rSum += Math.hypot(probe[vi*3]-hcx, y-hcy, z); rN++; }
-});
-const R = rSum/rN;
-const faceSmooth = [];
-const feather = (maxY-minY)*0.035;
-bodyVerts.forEach(vi => {
-  const yAbs = probe[vi*3+1];
-  const x=probe[vi*3]-hcx, y=yAbs-hcy, z=probe[vi*3+2]-hcz;
-  if (yAbs>headYmin && z>0) {
-    const d = Math.hypot(x,y,z) || 1;
-    const b = .85 * SS(yAbs, headYmin, headYmin+feather) * SS(z, 0, .35);
-    faceSmooth.push([vi, hcx+x/d*R, hcy+y/d*R, hcz+z/d*R, b]);
-  }
-});
-function anonymizeFace(dst) {
-  for (const [vi,tx,ty,tz,b] of faceSmooth) {
-    const j = vi*3;
-    dst[j]   = dst[j]  *(1-b) + tx*b;
-    dst[j+1] = dst[j+1]*(1-b) + ty*b;
-    dst[j+2] = dst[j+2]*(1-b) + tz*b;
-  }
-}
-
-/* ============ shorts: procedural geometry, refit to the actual silhouette each update ============ */
-
+/* ============ shorts: short trunks (hip → high thigh, avoids inter-leg webbing) ============ */
 const hipY  = (J.lHip.y + J.rHip.y) / 2;
 const kneeY = (J.lKnee.y + J.rKnee.y) / 2;
-const SHORTS_Y = [
-  hipY + 0.020*bodyH,          /* waistband */
-  hipY,                        /* hip — widest */
-  L(hipY, kneeY, 0.30),        /* upper thigh */
-  L(hipY, kneeY, 0.42),        /* hem (mid-thigh) */
-];
-const SHORTS_PAD = 1.08;
+const SHORTS_Y = [ hipY + 0.055*bodyH, hipY + 0.005*bodyH, L(hipY, kneeY, 0.20) ];
+const SHORTS_PAD = 1.06;
 
-function sampleBand(arr, yTarget, tol) {
+function sampleBand(arr, y, tol) {
   let sx=0, sz=0, n=0;
-  bodyVerts.forEach(vi => {
-    if (Math.abs(arr[vi*3+1]-yTarget) < tol) { sx+=arr[vi*3]; sz+=arr[vi*3+2]; n++; }
-  });
+  bodyVerts.forEach(vi => { if (Math.abs(arr[vi*3+1]-y)<tol) { sx+=arr[vi*3]; sz+=arr[vi*3+2]; n++; } });
   if (!n) return { cx:0, cz:0, hw:0.15, hd:0.12 };
   const cx=sx/n, cz=sz/n;
   let hw=0, hd=0;
-  bodyVerts.forEach(vi => {
-    if (Math.abs(arr[vi*3+1]-yTarget) < tol) {
-      hw = Math.max(hw, Math.abs(arr[vi*3]-cx));
-      hd = Math.max(hd, Math.abs(arr[vi*3+2]-cz));
-    }
-  });
+  bodyVerts.forEach(vi => { if (Math.abs(arr[vi*3+1]-y)<tol) { hw=Math.max(hw,Math.abs(arr[vi*3]-cx)); hd=Math.max(hd,Math.abs(arr[vi*3+2]-cz)); } });
   return { cx, cz, hw, hd };
 }
-
 class RadialLoft {
   constructor(nSt, nSeg) {
     this.nSt=nSt; this.nSeg=nSeg;
     this.geo = new THREE.BufferGeometry();
     this.pos = new Float32Array(nSt*(nSeg+1)*3);
-    const idxArr = [];
-    for (let i=0;i<nSt-1;i++) for (let j=0;j<nSeg;j++) {
-      const a=i*(nSeg+1)+j, b=a+nSeg+1;
-      idxArr.push(a,b,a+1, b,b+1,a+1);
-    }
-    this.geo.setIndex(idxArr);
+    const ia = [];
+    for (let i=0;i<nSt-1;i++) for (let j=0;j<nSeg;j++) { const a=i*(nSeg+1)+j, b=a+nSeg+1; ia.push(a,b,a+1, b,b+1,a+1); }
+    this.geo.setIndex(ia);
     this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos,3));
   }
-  update(stations) {
+  update(st) {
     let k=0;
-    for (let i=0;i<this.nSt;i++) {
-      const s = stations[i];
-      for (let j=0;j<=this.nSeg;j++) {
-        const t = j/this.nSeg*Math.PI*2;
-        this.pos[k++] = s.cx + s.hw*Math.cos(t);
-        this.pos[k++] = s.y;
-        this.pos[k++] = s.cz + s.hd*Math.sin(t);
-      }
-    }
+    for (let i=0;i<this.nSt;i++) { const s=st[i];
+      for (let j=0;j<=this.nSeg;j++) { const t=j/this.nSeg*Math.PI*2;
+        this.pos[k++]=s.cx+s.hw*Math.cos(t); this.pos[k++]=s.y; this.pos[k++]=s.cz+s.hd*Math.sin(t); } }
     this.geo.attributes.position.needsUpdate = true;
     this.geo.computeVertexNormals();
   }
 }
 function updateShorts(loft, arr) {
-  const tol = 0.02 * bodyH;
-  const stations = SHORTS_Y.map(y => {
-    const s = sampleBand(arr, y, tol);
-    return { y, cx:s.cx, cz:s.cz, hw:s.hw*SHORTS_PAD, hd:s.hd*SHORTS_PAD };
-  });
-  loft.update(stations);
+  const tol = 0.02*bodyH;
+  loft.update(SHORTS_Y.map(y => { const s=sampleBand(arr,y,tol); return { y, cx:s.cx, cz:s.cz, hw:s.hw*SHORTS_PAD, hd:s.hd*SHORTS_PAD }; }));
 }
 
 /* ============ scene per canvas ============ */
-const CLAY   = new THREE.MeshStandardMaterial({ color:0xb6aca2, roughness:.85, metalness:0 });
-const SHORTS = new THREE.MeshStandardMaterial({ color:0x272f3b, roughness:.8, metalness:0 });
+const CLAY_RGB = [0.714, 0.675, 0.635], RED_RGB = [0.95, 0.18, 0.15];
+const SHORTS_MAT = new THREE.MeshStandardMaterial({ color:0x252c3a, roughness:.85, metalness:0, side:THREE.DoubleSide });
 
-function makeView(canvas) {
+function makeView(canvas, withColors) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
   renderer.setPixelRatio(Math.min(2, devicePixelRatio));
   const scene = new THREE.Scene();
   const cam = new THREE.PerspectiveCamera(32, canvas.width/canvas.height, .1, 10);
   cam.position.set(0, 1.05, 3.2); cam.lookAt(0, .95, 0);
-  scene.add(new THREE.AmbientLight(0xffffff, .38));
-  const key = new THREE.DirectionalLight(0xfff2e0, 2.4); key.position.set(2,3,4);
+  scene.add(new THREE.AmbientLight(0xffffff, .40));
+  const key = new THREE.DirectionalLight(0xfff2e0, 2.3); key.position.set(2,3,4);
   const fill = new THREE.DirectionalLight(0xbcd3ff, .7); fill.position.set(-3,1.5,2);
-  const rim = new THREE.DirectionalLight(0x8A7BE6, 1.6); rim.position.set(0,3,-4);
+  const rim = new THREE.DirectionalLight(0x8A7BE6, 1.4); rim.position.set(0,3,-4);
   scene.add(key, fill, rim);
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(base.length), 3));
   geo.setIndex(index);
-  const mesh = new THREE.Mesh(geo, CLAY);
+  let colorAttr = null, mat;
+  if (withColors) {
+    const col = new Float32Array(base.length);
+    for (let i=0;i<nVerts;i++) { col[i*3]=CLAY_RGB[0]; col[i*3+1]=CLAY_RGB[1]; col[i*3+2]=CLAY_RGB[2]; }
+    colorAttr = new THREE.BufferAttribute(col, 3);
+    geo.setAttribute('color', colorAttr);
+    mat = new THREE.MeshStandardMaterial({ color:0xffffff, vertexColors:true, roughness:.85, metalness:0 });
+  } else {
+    mat = new THREE.MeshStandardMaterial({ color:0xb6aca2, roughness:.85, metalness:0 });
+  }
+  const mesh = new THREE.Mesh(geo, mat);
 
-  const shortsLoft = new RadialLoft(4, 24);
-  const shortsMesh = new THREE.Mesh(shortsLoft.geo, SHORTS);
+  const shortsLoft = new RadialLoft(SHORTS_Y.length, 24);
+  const shortsMesh = new THREE.Mesh(shortsLoft.geo, SHORTS_MAT);
 
   const group = new THREE.Group();
   group.add(mesh, shortsMesh);
   group.scale.setScalar(SCALE);
   group.position.y = -minY * SCALE;
   scene.add(group);
-
-  return { renderer, scene, cam, group, geo, shortsLoft };
+  return { renderer, scene, cam, group, geo, shortsLoft, colorAttr };
 }
-const vNow = makeView(document.getElementById('cvNow'));
-const vPrj = makeView(document.getElementById('cvProj'));
+const vNow = makeView(document.getElementById('cvNow'), false);
+const vPrj = makeView(document.getElementById('cvProj'), true);
 
-/* synced orbit — same for both views, both modes */
+/* synced orbit */
 let rotY = .35, tilt = 0, drag = null;
 [vNow, vPrj].forEach(v => {
   const el = v.renderer.domElement;
-  el.addEventListener('pointerdown', e => { drag = [e.clientX, e.clientY]; el.setPointerCapture(e.pointerId); });
-  el.addEventListener('pointermove', e => {
-    if (!drag) return;
-    rotY += (e.clientX - drag[0]) * .012;
-    tilt = clamp(tilt + (e.clientY - drag[1]) * .006, -.4, .4);
-    drag = [e.clientX, e.clientY];
-  });
+  el.addEventListener('pointerdown', e => { drag=[e.clientX,e.clientY]; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointermove', e => { if (!drag) return;
+    rotY += (e.clientX-drag[0])*.012; tilt = clamp(tilt+(e.clientY-drag[1])*.006, -.4, .4); drag=[e.clientX,e.clientY]; });
   el.addEventListener('pointerup', () => drag = null);
 });
 
-/* ============ Fat view / Muscle view weight functions ============ */
-const H = 1.83, AGE = 25, BASE_KG = 115, FLOOR = 75, AUTO_RATE = -0.6;
+/* ============ Fat / Muscle weight functions ============ */
+const H=1.83, AGE=25, BASE_KG=115, FLOOR=75, AUTO_RATE=-0.6;
 const bmi = kg => kg/(H*H);
 const bf  = kg => 1.20*bmi(kg) + .23*AGE - 10.8 - 5.4;
 const fOf = kg => clamp((BASE_KG-kg)/(BASE_KG-FLOOR), 0, 1);
 
-function fatWeights(f) {
-  return { male:1, weight:L(1.6,0.12,f), belly:L(1.15,0,SS(f,0,.75)), muscle:0, tone:0 };
-}
-const MUSCLE_VIEW_NEUTRAL = 0.5;   /* fixed neutral frame — this view isn't about fat */
-function frameSizeFromKg(kg) { return L(0.97, 1.06, clamp((kg-FLOOR)/(BASE_KG-FLOOR), 0, 1)); }
-function muscleWeights(m) {
-  return { male:1, weight:MUSCLE_VIEW_NEUTRAL, belly:0, muscle:m, tone:m*0.8 };
-}
+/* fat everywhere via strong whole-body weight target; belly overhang on top */
+function fatWeights(f) { return { male:1, weight:L(1.7,0.12,f), belly:L(1.05,0,SS(f,0,.75)), muscle:0, tone:0 }; }
+const MUSCLE_VIEW_NEUTRAL = 0.5;
+const frameSizeFromKg = kg => L(0.97, 1.06, clamp((kg-FLOOR)/(BASE_KG-FLOOR), 0, 1));
+function muscleWeights(m) { return { male:1, weight:MUSCLE_VIEW_NEUTRAL, belly:0, muscle:m, tone:m*0.8 }; }
 
 let mode = 'fat';
 const CAPTIONS = {
-  fat:    'Estimated body composition based on weight trend',
+  fat: 'Estimated body composition based on weight trend',
   muscle: 'Estimated muscle development based on training consistency and strength progress — not adjusted for current body fat',
 };
+const st = { now:{f:0,m:.3}, prj:{f:0,m:.3}, tgtNow:{f:0,m:.3}, tgtPrj:{f:0,m:.3}, frameNow:1, framePrj:1 };
 
-const st = { now:{f:0,m:.3}, prj:{f:0,m:.3}, tgtNow:{f:0,m:.3}, tgtPrj:{f:0,m:.3},
-             frameNow:1, framePrj:1 };
+/* ---- red fat-loss zone: per-vertex shrink between now & projected geometry,
+   painted onto the projection mesh (fat mode, only when losing weight) ---- */
+const scratchNow = new Float32Array(base.length), scratchPrj = new Float32Array(base.length);
+function paintFatLoss(fNow, fPrj, losing) {
+  const col = vPrj.colorAttr.array;
+  if (!losing) {
+    for (let i=0;i<nVerts;i++){ col[i*3]=CLAY_RGB[0]; col[i*3+1]=CLAY_RGB[1]; col[i*3+2]=CLAY_RGB[2]; }
+    vPrj.colorAttr.needsUpdate = true; redKey.style.display='none'; return;
+  }
+  compose(scratchNow, fatWeights(fNow));
+  compose(scratchPrj, fatWeights(fPrj));
+  let maxD = 1e-6; const db = new Float32Array(nVerts);
+  bodyVerts.forEach(vi => { const j=vi*3;
+    const d = Math.hypot(scratchNow[j]-scratchPrj[j], scratchNow[j+1]-scratchPrj[j+1], scratchNow[j+2]-scratchPrj[j+2]);
+    db[vi]=d; if (d>maxD) maxD=d; });
+  for (let i=0;i<nVerts;i++){ col[i*3]=CLAY_RGB[0]; col[i*3+1]=CLAY_RGB[1]; col[i*3+2]=CLAY_RGB[2]; }
+  bodyVerts.forEach(vi => { const t = SS(db[vi], 0.18*maxD, 0.72*maxD); const j=vi*3;
+    col[j]   = L(CLAY_RGB[0], RED_RGB[0], t);
+    col[j+1] = L(CLAY_RGB[1], RED_RGB[1], t);
+    col[j+2] = L(CLAY_RGB[2], RED_RGB[2], t); });
+  vPrj.colorAttr.needsUpdate = true; redKey.style.display='flex';
+}
 
 function recomputeFat() {
   const kg = +wS.value;
   const rate = rmAuto.checked ? AUTO_RATE : (+rateIn.value || 0);
   const kgPrj = clamp(kg + rate*60/7, FLOOR, BASE_KG);
-  st.tgtNow = { f:fOf(kg),    m:0 };
-  st.tgtPrj = { f:fOf(kgPrj), m:0 };
+  st.tgtNow = { f:fOf(kg), m:0 }; st.tgtPrj = { f:fOf(kgPrj), m:0 };
   st.frameNow = st.framePrj = 1;
   wV.textContent = kg;
   metaNow.innerHTML  = `<b>${kg} кг</b> · BMI ${bmi(kg).toFixed(1)} · BF% ≈ <b>${bf(kg).toFixed(0)}%</b> (оцінка)`;
   metaProj.innerHTML = `<b>${kgPrj.toFixed(1)} кг</b> · BMI ${bmi(kgPrj).toFixed(1)} · BF% ≈ <b>${bf(kgPrj).toFixed(0)}%</b> (оцінка)`;
   rateMeta.innerHTML = `темп: <b>${rate>0?'+':''}${rate} кг/тиж</b> → ${(rate*60/7).toFixed(1)} кг за 60 дн`;
+  paintFatLoss(fOf(kg), fOf(kgPrj), kgPrj < kg - 0.05);
 }
 function recomputeMuscle() {
-  const kg = +wS.value;
-  const level = +mS.value/100;
-  const gainPerWeek = 0.02 + level*0.04;      /* illustrative: more consistency compounds faster */
-  const levelPrj = clamp(level + gainPerWeek*60/7, 0, 1);
-  st.tgtNow = { f:0, m:level };
-  st.tgtPrj = { f:0, m:levelPrj };
+  const kg = +wS.value, level = +mS.value/100;
+  const gpw = 0.02 + level*0.04;
+  const levelPrj = clamp(level + gpw*60/7, 0, 1);
+  st.tgtNow = { f:0, m:level }; st.tgtPrj = { f:0, m:levelPrj };
   st.frameNow = st.framePrj = frameSizeFromKg(kg);
   mV.textContent = mS.value;
   metaNow.innerHTML  = `Оцінка м'язового розвитку: <b>${mS.value}%</b>`;
   metaProj.innerHTML = `Прогноз +60д: <b>${(levelPrj*100).toFixed(0)}%</b> (за поточним темпом)`;
-  muscleRateMeta.innerHTML = `темп приросту: ~${(gainPerWeek*100).toFixed(1)}%/тиж → +${((levelPrj-level)*100).toFixed(0)}% за 60 дн`;
+  muscleRateMeta.innerHTML = `темп приросту: ~${(gpw*100).toFixed(1)}%/тиж → +${((levelPrj-level)*100).toFixed(0)}% за 60 дн`;
+  paintFatLoss(0, 0, false);
 }
 function recompute() { mode === 'fat' ? recomputeFat() : recomputeMuscle(); }
 
@@ -429,21 +363,19 @@ function setMode(next) {
   mode = next;
   modeFatBtn.classList.toggle('active', mode==='fat');
   modeMuscleBtn.classList.toggle('active', mode==='muscle');
-  fatControls.style.display    = mode==='fat' ? 'block' : 'none';
+  fatControls.style.display = mode==='fat' ? 'block' : 'none';
   muscleControls.style.display = mode==='muscle' ? 'block' : 'none';
   viewCaption.textContent = CAPTIONS[mode];
   recompute();
 }
-modeFatBtn.onclick    = () => setMode('fat');
+modeFatBtn.onclick = () => setMode('fat');
 modeMuscleBtn.onclick = () => setMode('muscle');
 [wS, rateIn, rmAuto, rmMan, mS].forEach(el => el.oninput = recompute);
 
-/* ============ render loop — ~1.5s smooth morph transitions ============ */
+/* ============ render loop ============ */
 function applyMorph(v, s, frameScale) {
   const arr = v.geo.attributes.position.array;
-  const w = mode === 'fat' ? fatWeights(s.f) : muscleWeights(s.m);
-  compose(arr, w);
-  anonymizeFace(arr);
+  compose(arr, mode==='fat' ? fatWeights(s.f) : muscleWeights(s.m));
   v.geo.attributes.position.needsUpdate = true;
   v.geo.computeVertexNormals();
   updateShorts(v.shortsLoft, arr);
@@ -455,8 +387,7 @@ function frame(t) {
   const k = 1 - Math.pow(.05, dt/1.5);
   [['now','tgtNow',vNow,'frameNow'], ['prj','tgtPrj',vPrj,'framePrj']].forEach(([a,b,v,fk]) => {
     const s = st[a], g = st[b];
-    const changed = !v.group.userData.init || Math.abs(s.f-g.f) > .0004 || Math.abs(s.m-g.m) > .0004;
-    if (changed) {
+    if (!v.group.userData.init || Math.abs(s.f-g.f)>.0004 || Math.abs(s.m-g.m)>.0004) {
       s.f += (g.f-s.f)*k; s.m += (g.m-s.m)*k;
       applyMorph(v, s, st[fk]);
       v.group.userData.init = true;
